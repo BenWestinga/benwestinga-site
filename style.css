@@ -94,6 +94,45 @@ p {
   margin: 0;
 }
 
+.section-intro {
+  color: var(--muted);
+}
+
+.game-list {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.game-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  background: #fbfcff;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.game-link:hover,
+.game-link:focus-visible {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.game-title {
+  font-weight: 600;
+}
+
+.game-note {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
 @media (max-width: 600px) {
   .page {
     padding-top: 3.2rem;
@@ -101,5 +140,10 @@ p {
 
   .card {
     padding: 1.1rem;
+  }
+
+  .game-link {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
