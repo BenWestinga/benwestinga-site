@@ -1,0 +1,106 @@
+{
+  "accounts": {
+    "kkk": {
+      "password_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "settings": {
+        "shield_enabled": false,
+        "game_speed_percent": 200
+      },
+      "best_speed_by_boss": {
+        "joe_biden": 0,
+        "trump": 0,
+        "epstein": 0,
+        "mrbeast": 0,
+        "hitler": 0,
+        "p_diddy": 0,
+        "drug_addict": 0,
+        "hottie": 0,
+        "james_bond": 0
+      },
+      "achievements": {},
+      "best_arcade_seconds": 0
+    },
+    "Bennieboy": {
+      "password_hash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+      "settings": {
+        "shield_enabled": true,
+        "game_speed_percent": 100
+      },
+      "best_speed_by_boss": {
+        "joe_biden": 0,
+        "trump": 0,
+        "epstein": 0,
+        "mrbeast": 0,
+        "hitler": 0,
+        "p_diddy": 0,
+        "drug_addict": 0,
+        "hottie": 0,
+        "james_bond": 0
+      },
+      "achievements": {},
+      "best_arcade_seconds": 0
+    },
+    "kkk-member": {
+      "password_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+      "settings": {
+        "shield_enabled": true,
+        "game_speed_percent": 60
+      },
+      "best_speed_by_boss": {
+        "joe_biden": 0,
+        "trump": 0,
+        "epstein": 0,
+        "mrbeast": 0,
+        "hitler": 0,
+        "p_diddy": 0,
+        "drug_addict": 0,
+        "hottie": 0,
+        "james_bond": 60
+      },
+      "achievements": {
+        "beat_james_bond": true
+      },
+      "best_arcade_seconds": 1
+    },
+    "bennieboy": {
+      "password_hash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+      "settings": {
+        "shield_enabled": true,
+        "game_speed_percent": 100
+      },
+      "best_speed_by_boss": {
+        "joe_biden": 0,
+        "trump": 0,
+        "epstein": 0,
+        "mrbeast": 0,
+        "hitler": 0,
+        "p_diddy": 0,
+        "drug_addict": 0,
+        "hottie": 0,
+        "james_bond": 0
+      },
+      "achievements": {},
+      "best_arcade_seconds": 0
+    },
+    "k": {
+      "password_hash": "8254c329a92850f6d539dd376f4816ee2764517da5e0235514af433164480d7a",
+      "settings": {
+        "shield_enabled": true,
+        "game_speed_percent": 100
+      },
+      "best_speed_by_boss": {
+        "joe_biden": 0,
+        "trump": 0,
+        "epstein": 0,
+        "mrbeast": 0,
+        "hitler": 0,
+        "p_diddy": 0,
+        "drug_addict": 0,
+        "hottie": 0,
+        "james_bond": 0
+      },
+      "achievements": {},
+      "best_arcade_seconds": 38
+    }
+  }
+}
