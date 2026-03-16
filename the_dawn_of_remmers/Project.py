@@ -1,5 +1,6 @@
 import hashlib
 import json
+import sys
 from pathlib import Path
 
 import pygame
@@ -211,7 +212,10 @@ def run_boss(i, screen):
 
 pygame.init()
 pygame.font.init()
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SCALED)
+if sys.platform == "emscripten":
+    # pygame.SCALED is flaky in browser builds; use a fixed compatible canvas size.
+    SCREEN_WIDTH, SCREEN_HEIGHT = 1280, 720
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 
 font = pygame.font.SysFont(None, 32)
