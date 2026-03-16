@@ -6,7 +6,7 @@ from pathlib import Path
 import game_settings
 
 
-def bossfight_Hottie(screen):
+def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     # ============================================================
     # Setup
     # ============================================================
@@ -40,6 +40,8 @@ def bossfight_Hottie(screen):
     # End screen
     # ============================================================
     def end_screen(result: str):
+        if arcade_no_endscreen:
+            return
         t0 = pygame.time.get_ticks()
         font_big = pygame.font.SysFont(None, 90)
         font_small = pygame.font.SysFont(None, 42)
@@ -286,6 +288,12 @@ def bossfight_Hottie(screen):
     boss_name = "hottie"
     boss_hp = 4
     boss_max_hp = 4
+    try:
+        start_stage = int(start_stage)
+    except Exception:
+        start_stage = 1
+    start_stage = max(1, min(boss_max_hp, start_stage))
+    boss_hp = max(1, boss_max_hp - (start_stage - 1))
 
     boss_size = 120
     boss_img = pygame.transform.smoothscale(raw_face, (boss_size, boss_size))
@@ -396,7 +404,10 @@ def bossfight_Hottie(screen):
     def boss_take_damage(now):
         nonlocal boss_hp, machinegun_active, phase_pause_until, phase_pending_setup, next_attack_time
 
-        boss_hp -= 1
+        if arcade_hp_one:
+            boss_hp = 0
+        else:
+            boss_hp -= 1
         if boss_hp <= 0:
             end_screen("win")
             return True
@@ -620,7 +631,10 @@ def bossfight_Hottie(screen):
     def boss_take_damage(now):
         nonlocal boss_hp, machinegun_active, phase_pause_until, phase_pending_setup, next_attack_time
 
-        boss_hp -= 1
+        if arcade_hp_one:
+            boss_hp = 0
+        else:
+            boss_hp -= 1
         if boss_hp <= 0:
             end_screen("win")
             return True
@@ -1700,6 +1714,9 @@ def bossfight_Hottie(screen):
         draw_boss_ui()
 
         pygame.display.flip()
+
+
+
 
 
 

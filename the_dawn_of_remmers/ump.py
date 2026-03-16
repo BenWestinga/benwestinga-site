@@ -5,7 +5,7 @@ from pathlib import Path
 import random
 import game_settings
 
-def bossfight_ump(screen):
+def bossfight_ump(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     w, h = screen.get_size()
     clock = pygame.time.Clock()
     pygame.mouse.set_pos(w // 2, h // 2)
@@ -108,6 +108,12 @@ def bossfight_ump(screen):
 
     boss_max_hp = 3
     boss_hp = 3
+    try:
+        start_stage = int(start_stage)
+    except Exception:
+        start_stage = 1
+    start_stage = max(1, min(boss_max_hp, start_stage))
+    boss_hp = max(1, boss_max_hp - (start_stage - 1))
 
     lost_flash_index = None
     lost_flash_until = 0
@@ -256,6 +262,8 @@ def bossfight_ump(screen):
     font = pygame.font.SysFont(None, 40)
 
     def end_screen(result: str):
+        if arcade_no_endscreen:
+            return
         t0 = pygame.time.get_ticks()
         font_big = pygame.font.SysFont(None, 90)
         font_small = pygame.font.SysFont(None, 42)
@@ -300,24 +308,27 @@ def bossfight_ump(screen):
         if now2 < boss_damage_cooldown_until:
             return
 
-        boss_hp -= 1
-        lost_flash_index = boss_hp
+        if arcade_hp_one:
+            boss_hp = 0
+        else:
+            boss_hp -= 1
+        lost_flash_index = max(0, boss_hp)
         lost_flash_until = now2 + LOST_FLASH_MS
         boss_damage_cooldown_until = now2 + BOSS_DAMAGE_COOLDOWN_MS
-
-        boss_invuln_until = now2 + BOSS_INVULN_MS
-
-        apply_scaling_after_hit()
 
         if boss_hp <= 0:
             end_screen("win")
             raise SystemExit
+
+        boss_invuln_until = now2 + BOSS_INVULN_MS
+        apply_scaling_after_hit()
 
     safe_rx = base_rx0
     safe_ry = base_ry0
     head_bounces_allowed = 0
     bounce_max_hits_current = BOUNCE_BASE_HITS
     lives_lost = 0
+    apply_scaling_after_hit()
 
     # ----------------------------
     # Main loop
@@ -625,7 +636,11 @@ def bossfight_ump(screen):
             clock.tick(60)
 
     except SystemExit:
-        return
+        return "win"
+
+
+
+
 
 
 

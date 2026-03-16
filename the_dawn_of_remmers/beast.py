@@ -5,7 +5,7 @@ import math
 from pathlib import Path
 import game_settings
 
-def bossfight_beast(screen):
+def bossfight_beast(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     w, h = screen.get_size()
     clock = pygame.time.Clock()
     pygame.mouse.set_pos(w // 2, h // 2)
@@ -24,6 +24,8 @@ def bossfight_beast(screen):
         screen.blit(surf, rect)
 
     def end_screen(result: str):
+        if arcade_no_endscreen:
+            return
         t0 = pygame.time.get_ticks()
         font_big = pygame.font.SysFont(None, 90)
         font_small = pygame.font.SysFont(None, 42)
@@ -146,8 +148,14 @@ def bossfight_beast(screen):
 
     boss_max_hp = 4
     boss_hp = boss_max_hp
+    try:
+        start_stage = int(start_stage)
+    except Exception:
+        start_stage = 1
+    start_stage = max(1, min(boss_max_hp, start_stage))
+    boss_hp = max(1, boss_max_hp - (start_stage - 1))
 
-    last_recorded_hp = boss_hp
+    last_recorded_hp = boss_max_hp
 
     ORB_REFLECT_SPEED_BASE = 14.0
 
@@ -407,6 +415,19 @@ def bossfight_beast(screen):
         green_orb["vx"] = dx / dist * sp
         green_orb["vy"] = dy / dist * sp
 
+    def apply_post_hit_scaling():
+        nonlocal ARC_SHOT_MS, STORM_FORCE, SHRAPNEL_BOUNCES, ORB_REFLECT_SPEED_BASE, last_recorded_hp
+        if boss_hp < last_recorded_hp:
+            lives_lost_now = boss_max_hp - boss_hp
+            ARC_SHOT_MS = max(800, ARC_SHOT_MS - 50)
+            STORM_FORCE += 0.1
+            SHRAPNEL_BOUNCES += 1
+            ORB_REFLECT_SPEED_BASE = 14.0 + lives_lost_now * 3
+            last_recorded_hp = boss_hp
+
+    while last_recorded_hp > boss_hp:
+        apply_post_hit_scaling()
+
     # ============================================================
     # Main loop
     # ============================================================
@@ -636,28 +657,19 @@ def bossfight_beast(screen):
                         reflected_count += 1
                         orb_reflect_to_mouse(now, mx, my)
                     else:
-                        # boss krijgt damage
-                        boss_hp -= 1
+                                                # boss krijgt damage
+                        if arcade_hp_one:
+                            boss_hp = 0
+                        else:
+                            boss_hp -= 1
                         green_orb = None
                         reflected_count = 0
 
                         if boss_hp <= 0:
                             end_screen("win")
                             return "win"
-                        
-                        # ============================
-                        # Difficulty scaling per verloren leven
-                        # ============================
-                        if boss_hp < last_recorded_hp:
-                            lives_lost = boss_max_hp - boss_hp
 
-                            ARC_SHOT_MS = max(800, ARC_SHOT_MS - 50)
-                            STORM_FORCE += 0.1
-                            SHRAPNEL_BOUNCES += 1
-
-                            ORB_REFLECT_SPEED_BASE = 14.0 + lives_lost * 3
-
-                            last_recorded_hp = boss_hp
+                        apply_post_hit_scaling()
 
 
             elif g["state"] == "reflected":
@@ -848,6 +860,12 @@ def bossfight_beast(screen):
 
         pygame.display.flip()
         clock.tick(60)
+
+
+
+
+
+
 
 
 

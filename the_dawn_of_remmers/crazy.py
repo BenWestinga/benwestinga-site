@@ -6,7 +6,7 @@ from pathlib import Path
 import game_settings
 
 
-def bossfight_crazy(screen):
+def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     # ============================================================
     # Setup
     # ============================================================
@@ -40,6 +40,8 @@ def bossfight_crazy(screen):
     # End screen
     # ============================================================
     def end_screen(result: str):
+        if arcade_no_endscreen:
+            return
         t0 = pygame.time.get_ticks()
         font_big = pygame.font.SysFont(None, 90)
         font_small = pygame.font.SysFont(None, 42)
@@ -188,6 +190,12 @@ def bossfight_crazy(screen):
     boss_name = "Drug addict"
     boss_hp = 15
     boss_max_hp = 15
+    try:
+        start_stage = int(start_stage)
+    except Exception:
+        start_stage = 1
+    start_stage = max(1, min(boss_max_hp, start_stage))
+    boss_hp = max(1, boss_max_hp - (start_stage - 1))
 
     boss_size = 110
     boss_img = pygame.transform.smoothscale(raw_face, (boss_size, boss_size))
@@ -359,7 +367,10 @@ def bossfight_crazy(screen):
 
     def boss_take_damage(now, mx, my, boss_draw_x, boss_draw_y):
         nonlocal boss_hp
-        boss_hp -= 1
+        if arcade_hp_one:
+            boss_hp = 0
+        else:
+            boss_hp -= 1
         spawn_ring(now, mx, my, boss_draw_x, boss_draw_y)
         if boss_hp <= 0:
             end_screen("win")
@@ -1168,6 +1179,9 @@ def bossfight_crazy(screen):
             pygame.draw.rect(screen, (0, 255, 0), (sx, by0 + inner_pad, sw, inner_h))
 
         pygame.display.flip()
+
+
+
 
 
 

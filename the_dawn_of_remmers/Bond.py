@@ -1,4 +1,4 @@
-﻿import math
+import math
 import random
 from pathlib import Path
 import game_settings
@@ -6,7 +6,7 @@ import game_settings
 import pygame
 
 
-def bossfight_Bond(screen, start_stage=1):
+def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     # ============================================================
     # Setup
     # ============================================================
@@ -46,6 +46,8 @@ def bossfight_Bond(screen, start_stage=1):
     # End screen
     # ============================================================
     def end_screen(result: str):
+        if arcade_no_endscreen:
+            return
         t0 = pygame.time.get_ticks()
         font_big = pygame.font.SysFont(None, 90)
         font_small = pygame.font.SysFont(None, 42)
@@ -1112,7 +1114,10 @@ def bossfight_Bond(screen, start_stage=1):
         nonlocal arena_safe_until
 
         hp_before = boss_hp
-        boss_hp -= 1
+        if arcade_hp_one:
+            boss_hp = 0
+        else:
+            boss_hp -= 1
         flash_boss(now)
         if boss_hp <= 0:
             boss_hp = 0
@@ -3145,6 +3150,9 @@ def bossfight_Bond(screen, start_stage=1):
         screen.blit(stage_surf, stage_surf.get_rect(topright=(w - 80, 145)))
 
         pygame.display.flip()
+
+
+
 
 
 

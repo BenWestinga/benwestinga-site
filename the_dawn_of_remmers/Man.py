@@ -5,7 +5,7 @@ import math
 from pathlib import Path
 import game_settings
 
-def bossfight_Man(screen):
+def bossfight_Man(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     w, h = screen.get_size()
     clock = pygame.time.Clock()
     pygame.mouse.set_pos(w // 2, h // 2)
@@ -23,6 +23,8 @@ def bossfight_Man(screen):
         screen.blit(surf, rect)
 
     def end_screen(result: str):
+        if arcade_no_endscreen:
+            return
         t0 = pygame.time.get_ticks()
         font_big = pygame.font.SysFont(None, 90)
         font_small = pygame.font.SysFont(None, 42)
@@ -215,6 +217,12 @@ def bossfight_Man(screen):
 
     boss_max_hp = 3
     boss_hp = boss_max_hp
+    try:
+        start_stage = int(start_stage)
+    except Exception:
+        start_stage = 1
+    start_stage = max(1, min(boss_max_hp, start_stage))
+    boss_hp = max(1, boss_max_hp - (start_stage - 1))
 
     font = pygame.font.SysFont(None, 40)
 
@@ -948,7 +956,10 @@ def bossfight_Man(screen):
         if boss_rect.collidepoint(mx, my):
             if in_yellow:
                 if (not special_hit_used) and (now >= boss_invuln_until):
-                    boss_hp -= 1
+                    if arcade_hp_one:
+                        boss_hp = 0
+                    else:
+                        boss_hp -= 1
                     special_hit_used = True
                     boss_invuln_until = now + BOSS_INVULN_AFTER_HIT_MS
                     if boss_hp <= 0:
@@ -1094,6 +1105,9 @@ def bossfight_Man(screen):
 
         pygame.display.flip()
         clock.tick(60)
+
+
+
 
 
 

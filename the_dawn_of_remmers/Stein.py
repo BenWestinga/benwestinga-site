@@ -5,7 +5,7 @@ import math
 from pathlib import Path
 import game_settings
 
-def bossfight_Stein(screen):
+def bossfight_Stein(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     w, h = screen.get_size()
     clock = pygame.time.Clock()
     pygame.mouse.set_pos(w // 2, h // 2)
@@ -101,6 +101,12 @@ def bossfight_Stein(screen):
 
     boss_max_hp = 2
     boss_hp = boss_max_hp
+    try:
+        start_stage = int(start_stage)
+    except Exception:
+        start_stage = 1
+    start_stage = max(1, min(boss_max_hp, start_stage))
+    boss_hp = max(1, boss_max_hp - (start_stage - 1))
 
     font = pygame.font.SysFont(None, 40)
     rinke_img_raw = pygame.image.load(str(Path(__file__).resolve().with_name("Stein.png"))).convert_alpha()
@@ -291,6 +297,8 @@ def bossfight_Stein(screen):
     SPREAD_BULLET_SPEED = 8.0
 
     def end_screen(result: str):
+        if arcade_no_endscreen:
+            return
         t0 = pygame.time.get_ticks()
         font_big = pygame.font.SysFont(None, 90)
         font_small = pygame.font.SysFont(None, 42)
@@ -331,6 +339,16 @@ def bossfight_Stein(screen):
         stun_end = now + STUN_MS
         stun_return = return_phase
         stun_hit_done = False
+
+    if start_stage > 1:
+        now_boot = pygame.time.get_ticks()
+        fight_start = now_boot - START_DELAY_MS
+        minions_enabled = False
+        minions.clear()
+        wave_index = 0
+        bullets.clear()
+        boss_x, boss_y = center_target
+        start_phaseB(now_boot + 500)
 
     # ============================================================
     # Main loop
@@ -580,7 +598,10 @@ def bossfight_Stein(screen):
             if boss_state == "stun":
                 if not stun_hit_done:
                     stun_hit_done = True
-                    boss_hp -= 1
+                    if arcade_hp_one:
+                        boss_hp = 0
+                    else:
+                        boss_hp -= 1
                     if boss_hp <= 0:
                         end_screen("win")
                         return "win"
@@ -600,6 +621,9 @@ def bossfight_Stein(screen):
 
         pygame.display.flip()
         clock.tick(60)
+
+
+
 
 
 

@@ -5,7 +5,7 @@ import math
 from pathlib import Path
 import game_settings
 
-def bossfight_Did(screen):
+def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     # ============================================================
     # Setup
     # ============================================================
@@ -148,6 +148,11 @@ def bossfight_Did(screen):
     boss_name = "P. Diddy"
     boss_hp = 1
     boss_max_hp = 1
+    try:
+        start_stage = int(start_stage)
+    except Exception:
+        start_stage = 1
+    start_stage = max(1, min(4, start_stage))
 
     boss_size_base = 100
     boss_size = boss_size_base
@@ -301,6 +306,8 @@ def bossfight_Did(screen):
     # End screen
     # ============================================================
     def end_screen(result: str):
+        if arcade_no_endscreen:
+            return
         t0 = pygame.time.get_ticks()
         font_big = pygame.font.SysFont(None, 90)
         font_small = pygame.font.SysFont(None, 42)
@@ -607,9 +614,14 @@ def bossfight_Did(screen):
         wall_damage_ball = ball
 
     def apply_wall_damage(now):
+
         nonlocal wall_hp, wall_exists, wall_damage_in_progress, wall_damage_ball
         nonlocal grid_done, balls_done, stage_queue
         nonlocal boss_size, boss_x, boss_y
+
+        if arcade_hp_one:
+            end_screen("win")
+            return True
 
         # hit -> wall_hp--
         wall_hp -= 1
@@ -630,6 +642,8 @@ def bossfight_Did(screen):
         # als muur kapot: start rage meteen
         if not wall_exists:
             start_rage(now)
+
+        return False
 
     # ============================================================
     # Rage attack (wall kapot)
@@ -735,6 +749,21 @@ def bossfight_Did(screen):
     current_attack_reset()
     start_delay_until = pygame.time.get_ticks() + 2000
     attack_gap_until = start_delay_until  # begint pas na de 2s start delay
+
+    if start_stage > 1:
+        wall_hp = max(0, 4 - start_stage)
+        wall_exists = wall_hp > 0
+        clear_stage_hazards()
+        stage_queue = new_stage_queue()
+        grid_done = False
+        balls_done = False
+        pick_new_safe_cell()
+        current_attack_reset()
+        now_boot = pygame.time.get_ticks()
+        start_delay_until = now_boot + 700
+        attack_gap_until = start_delay_until
+        if start_stage >= 4:
+            start_rage(now_boot)
 
     def spawn_bounce_meteors(now, count=3):
         for _ in range(count):
@@ -960,7 +989,8 @@ def bossfight_Did(screen):
 
                 # geraakt
                 if abs(wall_damage_ball["x"] - tx) < 12:
-                    apply_wall_damage(now)
+                    if apply_wall_damage(now):
+                        return "win"
                     continue  # skip rest update
 
             # phase machine
@@ -1486,6 +1516,10 @@ def bossfight_Did(screen):
 
         pygame.display.flip()
         clock.tick(60)
+
+
+
+
 
 
 

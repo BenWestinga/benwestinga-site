@@ -4,7 +4,7 @@ import random
 from pathlib import Path
 import game_settings
 
-def bossfight_Joe(screen):
+def bossfight_Joe(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     """
     Runs the Joe bossfight on the given screen.
     Returns to caller after showing a WIN/LOSE screen for 3 seconds.
@@ -18,6 +18,8 @@ def bossfight_Joe(screen):
         screen.blit(surf, rect)
 
     def end_screen(result: str):
+        if arcade_no_endscreen:
+            return
         """result: 'win' or 'lose'"""
         t0 = pygame.time.get_ticks()
         while True:
@@ -122,6 +124,12 @@ def bossfight_Joe(screen):
     stefan_name = "Joe Biden"
     stefan_max_hp = 5
     stefan_hp = 5
+    try:
+        start_stage = int(start_stage)
+    except Exception:
+        start_stage = 1
+    start_stage = max(1, min(stefan_max_hp, start_stage))
+    stefan_hp = max(1, stefan_max_hp - (start_stage - 1))
 
     font = pygame.font.SysFont(None, 40)
 
@@ -177,6 +185,8 @@ def bossfight_Joe(screen):
 
         # bullets homing increases
         bullet_homing = lost_hp * 0.01
+
+    update_difficulty()
 
     warn_font = pygame.font.SysFont(None, 80)
 
@@ -397,13 +407,16 @@ def bossfight_Joe(screen):
             # hit boss -> damage
             stefan_rect = pygame.Rect(stefan_x, stefan_y, stefan_size, stefan_size)
             if stefan_rect.collidepoint(g["x"], g["y"]):
-                stefan_hp -= 1
-                update_difficulty()
+                if arcade_hp_one:
+                    stefan_hp = 0
+                else:
+                    stefan_hp -= 1
                 green_orb = None
 
                 if stefan_hp <= 0:
                     end_screen("win")
                     return "win"
+                update_difficulty()
 
             # off-screen -> despawn
             if green_orb is not None:
@@ -437,6 +450,11 @@ def bossfight_Joe(screen):
 
         pygame.display.flip()
         clock.tick(60)
+
+
+
+
+
 
 
 
