@@ -1,11 +1,12 @@
 # Stein.py
+import asyncio
 import pygame
 import random
 import math
 from pathlib import Path
 import game_settings
 
-def bossfight_Stein(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
+async def bossfight_Stein(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     w, h = screen.get_size()
     clock = pygame.time.Clock()
     pygame.mouse.set_pos(w // 2, h // 2)
@@ -296,7 +297,7 @@ def bossfight_Stein(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
     SPREAD_EVERY_MS = 5000
     SPREAD_BULLET_SPEED = 8.0
 
-    def end_screen(result: str):
+    async def end_screen(result: str):
         if arcade_no_endscreen:
             return
         t0 = pygame.time.get_ticks()
@@ -320,6 +321,7 @@ def bossfight_Stein(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
             if pygame.time.get_ticks() - t0 >= 3000:
                 return
             clock.tick(60)
+            await asyncio.sleep(0)
 
     def start_phaseA(now):
         nonlocal boss_state, phase_end, next_random_shot
@@ -499,7 +501,7 @@ def bossfight_Stein(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
                         start_phaseB(now)
                 else:
                     if boss_hp <= 0:
-                        end_screen("win")
+                        await end_screen("win")
                         return "win"
                     if stun_return == "phaseA":
                         start_phaseB(now)
@@ -574,12 +576,12 @@ def bossfight_Stein(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
         # ============================================================
         if orange_wall.collidepoint(mx, my):
             if damage_should_kill(now):
-                end_screen("lose")
+                await end_screen("lose")
                 return "lose"
 
         if left_wall.collidepoint(mx, my) or top_wall.collidepoint(mx, my) or bot_wall.collidepoint(mx, my):
             if damage_should_kill(now):
-                end_screen("lose")
+                await end_screen("lose")
                 return "lose"
 
         for b in bullets[:]:
@@ -587,7 +589,7 @@ def bossfight_Stein(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
             dy = my - b["y"]
             if dx * dx + dy * dy <= (b["r"] + 2) ** 2:
                 if damage_should_kill(now):
-                    end_screen("lose")
+                    await end_screen("lose")
                     return "lose"
                 else:
                     bullets.remove(b)
@@ -603,11 +605,11 @@ def bossfight_Stein(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
                     else:
                         boss_hp -= 1
                     if boss_hp <= 0:
-                        end_screen("win")
+                        await end_screen("win")
                         return "win"
             else:
                 if damage_should_kill(now):
-                    end_screen("lose")
+                    await end_screen("lose")
                     return "lose"
 
         if boss_state == "minions" and minions_enabled:
@@ -615,12 +617,13 @@ def bossfight_Stein(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
                 r = pygame.Rect(int(m["x"]), int(m["y"]), m["size"], m["size"])
                 if r.collidepoint(mx, my):
                     if damage_should_kill(now):
-                        end_screen("lose")
+                        await end_screen("lose")
                         return "lose"
                     break
 
         pygame.display.flip()
         clock.tick(60)
+        await asyncio.sleep(0)
 
 
 

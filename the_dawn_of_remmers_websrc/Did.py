@@ -1,11 +1,12 @@
 # Did.py
+import asyncio
 import pygame
 import random
 import math
 from pathlib import Path
 import game_settings
 
-def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
+async def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     # ============================================================
     # Setup
     # ============================================================
@@ -305,7 +306,7 @@ def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
     # ============================================================
     # End screen
     # ============================================================
-    def end_screen(result: str):
+    async def end_screen(result: str):
         if arcade_no_endscreen:
             return
         t0 = pygame.time.get_ticks()
@@ -330,6 +331,7 @@ def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
             if pygame.time.get_ticks() - t0 >= 3000:
                 return
             clock.tick(60)
+            await asyncio.sleep(0)
 
     # ============================================================
     # Attack scheduler:
@@ -613,14 +615,14 @@ def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
         wall_damage_in_progress = True
         wall_damage_ball = ball
 
-    def apply_wall_damage(now):
+    async def apply_wall_damage(now):
 
         nonlocal wall_hp, wall_exists, wall_damage_in_progress, wall_damage_ball
         nonlocal grid_done, balls_done, stage_queue
         nonlocal boss_size, boss_x, boss_y
 
         if arcade_hp_one:
-            end_screen("win")
+            await end_screen("win")
             return True
 
         # hit -> wall_hp--
@@ -790,9 +792,9 @@ def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
     # ============================================================
     # Death check helper
     # ============================================================
-    def die(now):
+    async def die(now):
         if damage_should_kill(now):
-            end_screen("lose")
+            await end_screen("lose")
             return True
         return False
     # ============================================================

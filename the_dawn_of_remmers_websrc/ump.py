@@ -1,11 +1,12 @@
 # ump.py
+import asyncio
 import pygame
 import math
 from pathlib import Path
 import random
 import game_settings
 
-def bossfight_ump(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
+async def bossfight_ump(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     w, h = screen.get_size()
     clock = pygame.time.Clock()
     pygame.mouse.set_pos(w // 2, h // 2)
@@ -261,7 +262,7 @@ def bossfight_ump(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
 
     font = pygame.font.SysFont(None, 40)
 
-    def end_screen(result: str):
+    async def end_screen(result: str):
         if arcade_no_endscreen:
             return
         t0 = pygame.time.get_ticks()
@@ -287,6 +288,7 @@ def bossfight_ump(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
             if pygame.time.get_ticks() - t0 >= 3000:
                 return
             clock.tick(60)
+            await asyncio.sleep(0)
 
     def apply_scaling_after_hit():
         nonlocal lives_lost, safe_rx, safe_ry, head_bounces_allowed, bounce_max_hits_current
@@ -297,7 +299,7 @@ def bossfight_ump(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
         head_bounces_allowed = lives_lost
         bounce_max_hits_current = BOUNCE_BASE_HITS + 5 * lives_lost
 
-    def boss_take_damage():
+    async def boss_take_damage():
         nonlocal boss_hp, lost_flash_index, lost_flash_until
         nonlocal boss_damage_cooldown_until, boss_invuln_until
 
@@ -317,7 +319,7 @@ def bossfight_ump(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
         boss_damage_cooldown_until = now2 + BOSS_DAMAGE_COOLDOWN_MS
 
         if boss_hp <= 0:
-            end_screen("win")
+            await end_screen("win")
             raise SystemExit
 
         boss_invuln_until = now2 + BOSS_INVULN_MS
@@ -342,10 +344,10 @@ def bossfight_ump(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
                     return
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_ESCAPE:
-                        end_screen("lose")
+                        await end_screen("lose")
                         return "lose"
                     if e.key == pygame.K_SPACE:
-                        end_screen("win")
+                        await end_screen("win")
                         return "win"
 
             mx, my = pygame.mouse.get_pos()
@@ -613,20 +615,20 @@ def bossfight_ump(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
             # ----------------------------
             if not in_safe_zone(mx, my):
                 if damage_should_kill(now):
-                    end_screen("lose")
+                    await end_screen("lose")
                     return "lose"
 
             if squares_hit_mouse(mx, my):
                 if damage_should_kill(now):
-                    end_screen("lose")
+                    await end_screen("lose")
                     return "lose"
 
             if (not boss_hidden) and boss_rect.collidepoint(mx, my):
                 if state == "boss_stun":
-                    boss_take_damage()
+                    await boss_take_damage()
                 else:
                     if damage_should_kill(now):
-                        end_screen("lose")
+                        await end_screen("lose")
                         return "lose"
             
             draw_shield_pickup()
@@ -634,6 +636,7 @@ def bossfight_ump(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
 
             pygame.display.flip()
             clock.tick(60)
+            await asyncio.sleep(0)
 
     except SystemExit:
         return "win"
