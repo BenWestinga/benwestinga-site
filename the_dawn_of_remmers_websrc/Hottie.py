@@ -1,4 +1,5 @@
 # Hottie.py
+import asyncio
 import pygame
 import random
 import math
@@ -6,7 +7,7 @@ from pathlib import Path
 import game_settings
 
 
-def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
+async def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     # ============================================================
     # Setup
     # ============================================================
@@ -39,7 +40,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
     # ============================================================
     # End screen
     # ============================================================
-    def end_screen(result: str):
+    async def end_screen(result: str):
         if arcade_no_endscreen:
             return
         t0 = pygame.time.get_ticks()
@@ -64,6 +65,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
             if pygame.time.get_ticks() - t0 >= 3000:
                 return
             clock.tick(60)
+            await asyncio.sleep(0)
 
     # ============================================================
     # Load Hottie face
@@ -226,9 +228,9 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
             return False
         return True
 
-    def die(now):
+    async def die(now):
         if damage_should_kill(now):
-            end_screen("lose")
+            await end_screen("lose")
             return True
         return False
 
@@ -401,7 +403,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
     box = None
     green_ball = None
 
-    def boss_take_damage(now):
+    async def boss_take_damage(now):
         nonlocal boss_hp, machinegun_active, phase_pause_until, phase_pending_setup, next_attack_time
 
         if arcade_hp_one:
@@ -409,7 +411,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
         else:
             boss_hp -= 1
         if boss_hp <= 0:
-            end_screen("win")
+            await end_screen("win")
             return True
 
         # ✅ alles weg meteen
@@ -628,7 +630,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
             "homing": False,
         }
 
-    def boss_take_damage(now):
+    async def boss_take_damage(now):
         nonlocal boss_hp, machinegun_active, phase_pause_until, phase_pending_setup, next_attack_time
 
         if arcade_hp_one:
@@ -636,7 +638,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
         else:
             boss_hp -= 1
         if boss_hp <= 0:
-            end_screen("win")
+            await end_screen("win")
             return True
 
         # ✅ alles weg meteen
@@ -664,6 +666,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
     # ============================================================
     while True:
         dt_ms = clock.tick(60)
+        await asyncio.sleep(0)
         step = dt_ms / 16.6667
         now = pygame.time.get_ticks()
 
@@ -682,12 +685,12 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
 
         # lethal outside square
         if not inside_arena(mx, my):
-            if die(now):
+            if await die(now):
                 return
 
         # boss touch lethal
         if boss_rect().collidepoint(mx, my):
-            if die(now):
+            if await die(now):
                 return
 
         # ============================================================
@@ -842,7 +845,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
 
                     # lethal tornado
                     if (mx - tx) ** 2 + (my - ty) ** 2 <= (R * 0.95) ** 2:
-                        if die(now):
+                        if await die(now):
                             return
 
                 # spawn stones: 30 in 30s
@@ -898,7 +901,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
                     if now >= tornado["warn_end"]:
                         rr = s["r"]
                         if (mx - s["x"]) ** 2 + (my - s["y"]) ** 2 <= rr ** 2:
-                            if die(now):
+                            if await die(now):
                                 return
 
         # ============================================================
@@ -938,7 +941,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
                     hb["y"] += hb["vy"] * step
 
                     if (mx - hb["x"]) ** 2 + (my - hb["y"]) ** 2 <= (hb["r"] * 1.05) ** 2:
-                        if die(now):
+                        if await die(now):
                             return
 
                     if now >= hb["home_until"]:
@@ -956,11 +959,11 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
                         ax, ay = hb["trail_start"]
                         bx2, by2 = hb["trail_end"]
                         if dist_point_to_segment(mx, my, ax, ay, bx2, by2) <= 8:
-                            if die(now):
+                            if await die(now):
                                 return
 
                     if (mx - hb["x"]) ** 2 + (my - hb["y"]) ** 2 <= (hb["r"] * 1.05) ** 2:
-                        if die(now):
+                        if await die(now):
                             return
 
                     if out_of_bounds(hb["x"], hb["y"], pad=0):
@@ -1022,7 +1025,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
                 elif bmb["state"] == "armed":
                     # bom zelf lethal zodra armed
                     if (mx - bmb["x"]) ** 2 + (my - bmb["y"]) ** 2 <= (bmb["r"] ** 2):
-                        if die(now):
+                        if await die(now):
                             return
 
                     if now >= bmb["boom_at"]:
@@ -1062,7 +1065,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
                 spikes.remove(spk)
                 continue
             if (mx - spk["x"]) ** 2 + (my - spk["y"]) ** 2 <= (spk["r"] ** 2):
-                if die(now):
+                if await die(now):
                     return
 
         # ---- red zones update (moet OUTSIDE bombs-if blijven) ----
@@ -1071,7 +1074,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
                 red_zones.remove(rz)
                 continue
             if (mx - rz["x"]) ** 2 + (my - rz["y"]) ** 2 <= (rz["r"] ** 2):
-                if die(now):
+                if await die(now):
                     return
 
 
@@ -1087,7 +1090,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
                 homer_trails.remove(tr)
                 continue
             if dist_point_to_segment(mx, my, tr["ax"], tr["ay"], tr["bx"], tr["by"]) <= tr["th"] / 2:
-                if die(now):
+                if await die(now):
                     return
 
         if trail_dots:
@@ -1132,7 +1135,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
                     continue
                 if now <= d["red_until"]:
                     if (mx - d["x"]) ** 2 + (my - d["y"]) ** 2 <= (d["r"] ** 2):
-                        if die(now):
+                        if await die(now):
                             return
                 else:
                     d["dead"] = True
@@ -1155,7 +1158,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
                     continue
 
                 if dist_point_to_segment(mx, my, ex1, ey1, ex2, ey2) <= ls["th"] / 2:
-                    if die(now):
+                    if await die(now):
                         return
 
             # 4) controller opruimen pas als attack voorbij is én alles echt weg is
@@ -1262,7 +1265,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
                 if abs(dist - a["R"]) <= a["th"] / 2:
                     angm = math.atan2(-(my - a["y"]), (mx - a["x"]))  # of: angm = math.atan2(-dym, dxm)
                     if angle_in_range(angm, a["a0"], a["a1"]):
-                        if die(now):
+                        if await die(now):
                             return
 
             arcs[:] = [arcs[0]] + [a for a in arcs[1:] if not a.get("dead", False)]
@@ -1288,7 +1291,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
                 by2 = ay + sp["ny"] * Lcur
 
                 if dist_point_to_segment(mx, my, ax, ay, bx2, by2) <= sp["th"] / 2:
-                    if die(now):
+                    if await die(now):
                         return
 
         # ============================================================
@@ -1318,7 +1321,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
                     p1 = (x0 - dx * 4000, y0 - dy * 4000)
                     p2 = (x0 + dx * 4000, y0 + dy * 4000)
                     if dist_point_to_segment(mx, my, p1[0], p1[1], p2[0], p2[1]) <= 10:
-                        if die(now):
+                        if await die(now):
                             return
 
 
@@ -1358,7 +1361,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
                 mg_bullets.remove(b)
                 continue
             if (mx - b["x"]) ** 2 + (my - b["y"]) ** 2 <= (b["r"] ** 2):
-                if die(now):
+                if await die(now):
                     return
 
         # ============================================================
@@ -1477,7 +1480,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
                     br = boss_rect()
                     if br.collidepoint(int(green_ball["x"]), int(green_ball["y"])):
                         green_ball = None
-                        if boss_take_damage(now):
+                        if await boss_take_damage(now):
                             return
 
         # ============================================================

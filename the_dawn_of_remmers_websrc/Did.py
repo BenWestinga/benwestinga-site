@@ -824,17 +824,17 @@ async def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_en
         # LETHAL boundaries (outer red walls)
         # ============================================================
         if left_wall.collidepoint(mx, my) or top_wall.collidepoint(mx, my) or bot_wall.collidepoint(mx, my) or right_wall.collidepoint(mx, my):
-            if die(now):
+            if await die(now):
                 return
 
         # left interior is red lethal too
         if left_danger_rect.collidepoint(mx, my):
-            if die(now):
+            if await die(now):
                 return
 
         # purple wall lethal if exists
         if wall_exists and purple_wall_rect.collidepoint(mx, my):
-            if die(now):
+            if await die(now):
                 return
 
         # ============================================================
@@ -893,7 +893,7 @@ async def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_en
                     # hit mouse = death
                     card_rect = pygame.Rect(int(c["x"] - CARD_W / 2), int(c["y"] - CARD_H / 2), CARD_W, CARD_H)
                     if card_rect.collidepoint(mx, my):
-                        if die(now):
+                        if await die(now):
                             return
                     if card_rect.colliderect(safe_cell):
                         safe_flash_until = max(safe_flash_until, now + 140)
@@ -963,13 +963,13 @@ async def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_en
                                 trigger_wall_damage_from_ball(b, now)
                             else:
                                 # ❌ goede bal raakt tijdens bewegen -> damage op speler
-                                if die(now):
+                                if await die(now):
                                     return
                                 reset_stage_loop(now)
                                 continue  # terug naar main loop
                         else:
                             # ❌ verkeerde bal -> damage op speler
-                            if die(now):
+                            if await die(now):
                                 return
                             reset_stage_loop(now)
                             continue  # terug naar main loop
@@ -991,7 +991,7 @@ async def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_en
 
                 # geraakt
                 if abs(wall_damage_ball["x"] - tx) < 12:
-                    if apply_wall_damage(now):
+                    if await apply_wall_damage(now):
                         return "win"
                     continue  # skip rest update
 
@@ -1090,7 +1090,7 @@ async def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_en
                     continue
                 # kill if mouse in explosion
                 if (mx - ex["x"]) ** 2 + (my - ex["y"]) ** 2 <= ex["r"] ** 2:
-                    if die(now):
+                    if await die(now):
                         return
 
         # meteors
@@ -1101,7 +1101,7 @@ async def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_en
             if now >= m["tele_until"]:
                 # danger
                 if (mx - m["x"]) ** 2 + (my - m["y"]) ** 2 <= m["r"] ** 2:
-                    if die(now):
+                    if await die(now):
                         return
 
         # snakes
@@ -1156,7 +1156,7 @@ async def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_en
                 ax, ay = pts[i]["x"], pts[i]["y"]
                 bx2, by2 = pts[i + 1]["x"], pts[i + 1]["y"]
                 if dist_point_to_segment(mx, my, ax, ay, bx2, by2) <= th / 2:
-                    if die(now):
+                    if await die(now):
                         return
                     break
 
@@ -1177,7 +1177,7 @@ async def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_en
                 continue
 
             if (mx - t["x"]) ** 2 + (my - t["y"]) ** 2 <= (t["r"] ** 2):
-                if die(now):
+                if await die(now):
                     return
 
         # ============================================================
@@ -1189,7 +1189,7 @@ async def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_en
                 if i == stage_safe_idx:
                     continue
                 if r.collidepoint(mx, my):
-                    if die(now):
+                    if await die(now):
                         return
                     break
 
@@ -1281,7 +1281,7 @@ async def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_en
                 # boss lethal in chase
                 boss_rect = pygame.Rect(int(boss_x), int(boss_y), boss_size, boss_size)
                 if boss_rect.collidepoint(mx, my):
-                    if die(now):
+                    if await die(now):
                         return
 
                 # na 25s -> blink fase
@@ -1292,7 +1292,7 @@ async def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_en
                 # tijdens blink: touch boss = win (boss niet lethal)
                 boss_rect = pygame.Rect(int(boss_x), int(boss_y), boss_size, boss_size)
                 if boss_rect.collidepoint(mx, my):
-                    end_screen("win")
+                    await end_screen("win")
                     return "win"
 
                 # PURE BOUNCES tijdens blink

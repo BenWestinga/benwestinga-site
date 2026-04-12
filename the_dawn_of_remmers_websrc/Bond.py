@@ -3,10 +3,11 @@ import random
 from pathlib import Path
 import game_settings
 
+import asyncio
 import pygame
 
 
-def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
+async def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     # ============================================================
     # Setup
     # ============================================================
@@ -45,7 +46,7 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
     # ============================================================
     # End screen
     # ============================================================
-    def end_screen(result: str):
+    async def end_screen(result: str):
         if arcade_no_endscreen:
             return
         t0 = pygame.time.get_ticks()
@@ -70,6 +71,7 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
             if pygame.time.get_ticks() - t0 >= 2500:
                 return
             clock.tick(60)
+            await asyncio.sleep(0)
 
     # ============================================================
     # Load Bond image
@@ -233,9 +235,9 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
             return False
         return True
 
-    def die(now):
+    async def die(now):
         if damage_should_kill(now):
-            end_screen("lose")
+            await end_screen("lose")
             return True
         return False
 
@@ -1104,7 +1106,7 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
         else:
             spawn_damage_attack(now, px, py)
 
-    def boss_take_damage(now):
+    async def boss_take_damage(now):
         nonlocal boss_hp, boss_x, boss_y
         nonlocal stage2_active, stage3_active, stage4_active, stage5_active
         nonlocal boss_pause_until, boss_black_until, boss_pending_move
@@ -1121,7 +1123,7 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
         flash_boss(now)
         if boss_hp <= 0:
             boss_hp = 0
-            end_screen("win")
+            await end_screen("win")
             return True
 
         pause_ms = 2000
@@ -1310,6 +1312,7 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
     # ============================================================
     while True:
         dt_ms = clock.tick(60)
+        await asyncio.sleep(0)
         step = dt_ms / 16.6667
         now = pygame.time.get_ticks()
 
@@ -2513,7 +2516,7 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
 
                 if boss_rect().inflate(10, 10).collidepoint(orb["x"], orb["y"]):
                     damage_orbs.remove(orb)
-                    if boss_take_damage(now):
+                    if await boss_take_damage(now):
                         return
                     break
 
@@ -2521,68 +2524,68 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
         # Lethal checks
         # ============================================================
         if not inside_arena(mx, my):
-            if die(now):
+            if await die(now):
                 return
 
         if final_phase_active and final_phase_state == "vulnerable" and boss_rect().collidepoint(mx, my):
-            end_screen("win")
+            await end_screen("win")
             return "win"
 
         if (not (final_phase_active and final_phase_state == "vulnerable")) and now >= boss_black_until and boss_rect().collidepoint(mx, my):
-            if die(now):
+            if await die(now):
                 return
 
         for shot in homing_shots:
             if circle_hits_player(shot["x"], shot["y"], shot["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for ball in ring_balls:
             if circle_hits_player(ball["x"], ball["y"], ball["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for ball in trail_balls:
             if circle_hits_player(ball["x"], ball["y"], ball["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for seg in trail_segments:
             if dist_point_to_segment(mx, my, seg["ax"], seg["ay"], seg["bx"], seg["by"]) <= seg["width"]:
-                if die(now):
+                if await die(now):
                     return
 
         for cluster in gravity_clusters:
             if circle_hits_player(cluster["x"], cluster["y"], cluster["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
             for orb in cluster["orbiters"]:
                 ox = cluster["x"] + math.cos(orb["angle"]) * orb["dist"]
                 oy = cluster["y"] + math.sin(orb["angle"]) * orb["dist"]
                 if circle_hits_player(ox, oy, orb["r"], mx, my):
-                    if die(now):
+                    if await die(now):
                         return
 
         for ball in splitter_balls:
             if circle_hits_player(ball["x"], ball["y"], ball["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for atk in sentry_attackers:
             if now < atk["safe_until"]:
                 continue
             if circle_hits_player(atk["x"], atk["y"], atk["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for shot in sentry_shots:
             if square_hits_player(shot["x"], shot["y"], shot["half"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for anchor in spiral_anchors:
             if now >= anchor["armed_time"] and circle_hits_player(anchor["x"], anchor["y"], anchor["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
             for orb in anchor["orbs"]:
                 if not orb["alive"]:
@@ -2592,41 +2595,41 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
                 ox = anchor["x"] + math.cos(orb["angle"]) * orb["radius"]
                 oy = anchor["y"] + math.sin(orb["angle"]) * orb["radius"]
                 if circle_hits_player(ox, oy, orb["r"], mx, my):
-                    if die(now):
+                    if await die(now):
                         return
 
         for ball in damage_balls:
             if circle_hits_player(ball["x"], ball["y"], ball["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for shot in damage_radial_shots:
             if square_hits_player(shot["x"], shot["y"], shot["half"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for shot in phase2_line_shots:
             if circle_hits_player(shot["x"], shot["y"], shot["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
             ax, ay, bx, by = phase2_line_segment(shot)
             if dist_point_to_segment(mx, my, ax, ay, bx, by) <= (shot["line_width"] * 0.5):
-                if die(now):
+                if await die(now):
                     return
 
         for ball in phase2_stream_balls:
             if circle_hits_player(ball["x"], ball["y"], ball["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for ball in phase2_giant_homing_balls:
             if circle_hits_player(ball["x"], ball["y"], ball["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for line in phase2_bouncy_lines:
             if dist_point_to_segment(mx, my, line["x1"], line["y1"], line["x2"], line["y2"]) <= (line["width"] * 0.5):
-                if die(now):
+                if await die(now):
                     return
 
         for wall in stage3_hole_walls:
@@ -2634,26 +2637,26 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
             wx1 = wall["x"] + wall["thickness"] * 0.5
             in_gap = (wall["gap_y"] - wall["gap_half"]) <= my <= (wall["gap_y"] + wall["gap_half"])
             if wx0 <= mx <= wx1 and not in_gap:
-                if die(now):
+                if await die(now):
                     return
 
         for beam in stage3_laser_beams:
             beam_age = now - beam.get("start_time", now)
             beam_active = beam_age >= 2000
             if beam_active and dist_point_to_segment(mx, my, beam["ax"], beam["ay"], beam["bx"], beam["by"]) <= (beam["width"] * 0.5):
-                if die(now):
+                if await die(now):
                     return
 
         for ball in stage3_laser_balls:
             if circle_hits_player(ball["x"], ball["y"], ball["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for seg in swing_segments:
             if now < seg.get("safe_until", 0):
                 continue
             if dist_point_to_segment(mx, my, seg["ax"], seg["ay"], seg["bx"], seg["by"]) <= (seg["width"] * 0.5):
-                if die(now):
+                if await die(now):
                     return
 
         for ring in stage3_trap_rings:
@@ -2662,107 +2665,107 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
             dist = math.hypot(mx - ring["x"], my - ring["y"])
             lock_r = ring["r"] - ring["thickness"] * 0.5 - 6.0
             if dist > (lock_r + 3.0):
-                if die(now):
+                if await die(now):
                     return
 
         for mb in stage3_minibosses:
             if not miniboss_is_blinking(mb, now) and circle_hits_player(mb["x"], mb["y"], mb["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for gb in stage3_grow_balls:
             if circle_hits_player(gb["x"], gb["y"], gb["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for crater in stage3_craters:
             if circle_hits_player(crater["x"], crater["y"], crater["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for shot in stage4_line_shots:
             if circle_hits_player(shot["x"], shot["y"], shot["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for seg in stage4_line_trails:
             if dist_point_to_segment(mx, my, seg["ax"], seg["ay"], seg["bx"], seg["by"]) <= seg["width"]:
-                if die(now):
+                if await die(now):
                     return
 
         for ball in stage4_bounce_balls:
             if circle_hits_player(ball["x"], ball["y"], ball["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for ball in stage4_small_balls:
             if circle_hits_player(ball["x"], ball["y"], ball["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for tri in stage4_triangles:
             tri_pts = triangle_vertices(tri["x"], tri["y"], tri["vx"], tri["vy"], tri["size"])
             if point_in_triangle(mx, my, tri_pts):
-                if die(now):
+                if await die(now):
                     return
 
         for tr in stage5_a1_trails:
             if circle_hits_player(tr["x"], tr["y"], tr["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for shot in stage5_a1_shots:
             if circle_hits_player(shot["x"], shot["y"], shot["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
         for sq in stage5_a2_big_squares:
             if square_hits_player(sq["x"], sq["y"], sq["half"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for sq in stage5_a2_small_squares:
             if square_hits_player(sq["x"], sq["y"], sq["half"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for c in stage5_a2_small_circles:
             if circle_hits_player(c["x"], c["y"], c["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for tri in stage5_a2_triangles:
             tri_pts = triangle_vertices(tri["x"], tri["y"], tri["vx"], tri["vy"], tri["size"])
             if point_in_triangle(mx, my, tri_pts):
-                if die(now):
+                if await die(now):
                     return
 
         for met in stage5_meteors:
             if met["state"] == "live" and circle_hits_player(met["x"], met["y"], met["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         for sh in stage5_meteor_shards:
             if sh["kind"] == "circle":
                 if circle_hits_player(sh["x"], sh["y"], sh["size"], mx, my):
-                    if die(now):
+                    if await die(now):
                         return
             elif sh["kind"] == "square":
                 if square_hits_player(sh["x"], sh["y"], sh["size"], mx, my):
-                    if die(now):
+                    if await die(now):
                         return
             else:
                 tri_pts = triangle_vertices(sh["x"], sh["y"], sh["vx"], sh["vy"], sh["size"])
                 if point_in_triangle(mx, my, tri_pts):
-                    if die(now):
+                    if await die(now):
                         return
         if final_phase_active and final_phase_state == "beam" and final_phase_beam is not None:
             if dist_point_to_segment(mx, my, final_phase_beam["ax"], final_phase_beam["ay"], final_phase_beam["bx"], final_phase_beam["by"]) <= (final_phase_beam["width"] * 0.5):
-                if die(now):
+                if await die(now):
                     return
 
         for zone in lethal_zones:
             if circle_hits_player(zone["x"], zone["y"], zone["r"], mx, my):
-                if die(now):
+                if await die(now):
                     return
 
         # ============================================================

@@ -1,4 +1,5 @@
 # crazy.py
+import asyncio
 import pygame
 import random
 import math
@@ -6,7 +7,7 @@ from pathlib import Path
 import game_settings
 
 
-def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
+async def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     # ============================================================
     # Setup
     # ============================================================
@@ -39,7 +40,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
     # ============================================================
     # End screen
     # ============================================================
-    def end_screen(result: str):
+    async def end_screen(result: str):
         if arcade_no_endscreen:
             return
         t0 = pygame.time.get_ticks()
@@ -64,6 +65,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
             if pygame.time.get_ticks() - t0 >= 3000:
                 return
             clock.tick(60)
+            await asyncio.sleep(0)
 
     # ============================================================
     # Load crazy face
@@ -178,9 +180,9 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
             return False
         return True
 
-    def die(now):
+    async def die(now):
         if damage_should_kill(now):
-            end_screen("lose")
+            await end_screen("lose")
             return True
         return False
 
@@ -365,7 +367,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
             "th": 7
         })
 
-    def boss_take_damage(now, mx, my, boss_draw_x, boss_draw_y):
+    async def boss_take_damage(now, mx, my, boss_draw_x, boss_draw_y):
         nonlocal boss_hp
         if arcade_hp_one:
             boss_hp = 0
@@ -373,7 +375,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
             boss_hp -= 1
         spawn_ring(now, mx, my, boss_draw_x, boss_draw_y)
         if boss_hp <= 0:
-            end_screen("win")
+            await end_screen("win")
             return True
         return False
 
@@ -708,6 +710,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
     # ============================================================
     while True:
         dt_ms = clock.tick(60)
+        await asyncio.sleep(0)
         step = dt_ms / 16.6667  # 1.0 ~ 60fps
         now = pygame.time.get_ticks()
 
@@ -734,13 +737,13 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
 
         # lethal: buiten oval
         if not inside_arena(mx, my):
-            if die(now):
+            if await die(now):
                 return
 
         # boss touch lethal
         boss_rect = pygame.Rect(int(boss_draw_x), int(boss_draw_y), boss_size, boss_size)
         if boss_rect.collidepoint(mx, my):
-            if die(now):
+            if await die(now):
                 return
 
         # ============================================================
@@ -750,7 +753,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
             if not pending_attacks:
                 pending_attacks = plan_for_hp(boss_hp)
                 if not pending_attacks:
-                    end_screen("win")
+                    await end_screen("win")
                     return "win"
             nxt = pending_attacks.pop(0)
             start_attack(nxt, now)
@@ -844,7 +847,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
             rr = s["r"]
             if ((mx - s["x"]) ** 2 + (my - s["y"]) ** 2) <= (rr * rr):
                 if s["phase"] in ("normal", "yellow"):
-                    if die(now):
+                    if await die(now):
                         return
                 elif s["phase"] == "green":
                     # green is veilig: schiet naar boss
@@ -860,7 +863,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
                 bx = boss_draw_x + boss_size / 2
                 by = boss_draw_y + boss_size / 2
                 if (s["x"] - bx) ** 2 + (s["y"] - by) ** 2 <= (boss_size * 0.42) ** 2:
-                    if boss_take_damage(now, mx, my, boss_draw_x, boss_draw_y):
+                    if await boss_take_damage(now, mx, my, boss_draw_x, boss_draw_y):
                         return
                     shots.remove(s)
                     continue
@@ -885,7 +888,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
 
             # core hit
             if (mx - ob["x"]) ** 2 + (my - ob["y"]) ** 2 <= ORBIT_CORE_R ** 2:
-                if die(now):
+                if await die(now):
                     return
 
             # satellites hit
@@ -894,7 +897,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
                 sx = ob["x"] + ORBIT_RADIUS * math.cos(ang)
                 sy = ob["y"] + ORBIT_RADIUS * math.sin(ang)
                 if (mx - sx) ** 2 + (my - sy) ** 2 <= ORBIT_SAT_R ** 2:
-                    if die(now):
+                    if await die(now):
                         return
 
         # ============================================================
@@ -907,7 +910,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
 
             d = math.hypot(mx - r["x"], my - r["y"])
             if abs(d - r["R"]) <= r["th"] / 2:
-                if die(now):
+                if await die(now):
                     return
 
         # ============================================================
@@ -941,7 +944,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
                 ax, ay = pts[i]
                 bx2, by2 = pts[i + 1]
                 if dist_point_to_segment(mx, my, ax, ay, bx2, by2) <= th / 2:
-                    if die(now):
+                    if await die(now):
                         return
                     break
 
@@ -978,7 +981,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
                 if abs(dx) <= a:
                     yext = b * math.sqrt(max(0.0, 1.0 - (dx * dx) / (a * a)))
                     if abs(mx - xline) <= wl["thick"] / 2 and (cy - yext) <= my <= (cy + yext):
-                        if die(now):
+                        if await die(now):
                             return
             else:
                 yline = wl["pos"]
@@ -986,7 +989,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
                 if abs(dy) <= b:
                     xext = a * math.sqrt(max(0.0, 1.0 - (dy * dy) / (b * b)))
                     if abs(my - yline) <= wl["thick"] / 2 and (cx - xext) <= mx <= (cx + xext):
-                        if die(now):
+                        if await die(now):
                             return
 
         # ============================================================
@@ -997,7 +1000,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
                 a1 = laser_poly[i]
                 a2 = laser_poly[i + 1]
                 if dist_point_to_segment(mx, my, a1[0], a1[1], a2[0], a2[1]) <= 6:
-                    if die(now):
+                    if await die(now):
                         return
                     break
 
