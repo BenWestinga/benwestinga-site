@@ -1,0 +1,62 @@
+{
+  "accounts": {
+    "kkk": {
+      "password_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "settings": {
+        "shield_enabled": false
+      },
+      "achievements": {}
+    },
+    "Bennieboy": {
+      "password_hash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+      "settings": {
+        "shield_enabled": true
+      },
+      "achievements": {}
+    },
+    "kkk-member": {
+      "password_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+      "settings": {
+        "shield_enabled": true
+      },
+      "achievements": {
+        "beat_james_bond": true
+      }
+    },
+    "bennieboy": {
+      "password_hash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+      "settings": {
+        "shield_enabled": true
+      },
+      "achievements": {}
+    },
+    "k": {
+      "password_hash": "8254c329a92850f6d539dd376f4816ee2764517da5e0235514af433164480d7a",
+      "settings": {
+        "shield_enabled": false
+      },
+      "achievements": {}
+    },
+    "l": {
+      "password_hash": "acac86c0e609ca906f632b0e2dacccb2b77d22b0621f20ebece1a4835b93f6f0",
+      "settings": {
+        "shield_enabled": true
+      },
+      "achievements": {}
+    },
+    "h": {
+      "password_hash": "aaa9402664f1a41f40ebbc52c9993eb66aeb366602958fdfaa283b71e64db123",
+      "settings": {
+        "shield_enabled": true
+      },
+      "achievements": {}
+    },
+    "j": {
+      "password_hash": "189f40034be7a199f1fa9891668ee3ab6049f82d38c68be70f596eab2e1857b7",
+      "settings": {
+        "shield_enabled": true
+      },
+      "achievements": {}
+    }
+  }
+}
