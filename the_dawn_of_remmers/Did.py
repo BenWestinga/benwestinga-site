@@ -1,3 +1,4 @@
+import asyncio
 # Did.py
 import pygame
 import random
@@ -5,7 +6,7 @@ import math
 from pathlib import Path
 import game_settings
 
-def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
+async def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     # ============================================================
     # Setup
     # ============================================================
@@ -305,7 +306,7 @@ def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
     # ============================================================
     # End screen
     # ============================================================
-    def end_screen(result: str):
+    async def end_screen(result: str):
         if arcade_no_endscreen:
             return
         t0 = pygame.time.get_ticks()
@@ -313,6 +314,7 @@ def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
         font_small = pygame.font.SysFont(None, 42)
 
         while True:
+            await asyncio.sleep(0)
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     return
@@ -620,7 +622,7 @@ def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
         nonlocal boss_size, boss_x, boss_y
 
         if arcade_hp_one:
-            end_screen("win")
+            await end_screen("win")
             return True
 
         # hit -> wall_hp--
@@ -792,13 +794,14 @@ def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
     # ============================================================
     def die(now):
         if damage_should_kill(now):
-            end_screen("lose")
+            await end_screen("lose")
             return True
         return False
     # ============================================================
     # Main loop
     # ============================================================
     while True:
+        await asyncio.sleep(0)
         now = pygame.time.get_ticks()
 
         for e in pygame.event.get():
@@ -1290,7 +1293,7 @@ def bossfight_Did(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
                 # tijdens blink: touch boss = win (boss niet lethal)
                 boss_rect = pygame.Rect(int(boss_x), int(boss_y), boss_size, boss_size)
                 if boss_rect.collidepoint(mx, my):
-                    end_screen("win")
+                    await end_screen("win")
                     return "win"
 
                 # PURE BOUNCES tijdens blink

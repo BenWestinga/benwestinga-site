@@ -1,3 +1,4 @@
+import asyncio
 import math
 import random
 from pathlib import Path
@@ -5,7 +6,7 @@ from pathlib import Path
 import pygame
 
 
-def bossfight_Bond(screen):
+async def bossfight_Bond(screen):
     # ============================================================
     # Setup
     # ============================================================
@@ -38,12 +39,13 @@ def bossfight_Bond(screen):
     # ============================================================
     # End screen
     # ============================================================
-    def end_screen(result: str):
+    async def end_screen(result: str):
         t0 = pygame.time.get_ticks()
         font_big = pygame.font.SysFont(None, 90)
         font_small = pygame.font.SysFont(None, 42)
 
         while True:
+            await asyncio.sleep(0)
             dt_ms = clock.tick(60)
             step = dt_ms / 16.6667
             now = pygame.time.get_ticks()

@@ -1,3 +1,4 @@
+import asyncio
 # crazy.py
 import pygame
 import random
@@ -6,7 +7,7 @@ from pathlib import Path
 import game_settings
 
 
-def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
+async def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     # ============================================================
     # Setup
     # ============================================================
@@ -39,7 +40,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
     # ============================================================
     # End screen
     # ============================================================
-    def end_screen(result: str):
+    async def end_screen(result: str):
         if arcade_no_endscreen:
             return
         t0 = pygame.time.get_ticks()
@@ -47,6 +48,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
         font_small = pygame.font.SysFont(None, 42)
 
         while True:
+            await asyncio.sleep(0)
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     return
@@ -180,7 +182,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
 
     def die(now):
         if damage_should_kill(now):
-            end_screen("lose")
+            await end_screen("lose")
             return True
         return False
 
@@ -373,7 +375,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
             boss_hp -= 1
         spawn_ring(now, mx, my, boss_draw_x, boss_draw_y)
         if boss_hp <= 0:
-            end_screen("win")
+            await end_screen("win")
             return True
         return False
 
@@ -707,6 +709,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
     # Main loop
     # ============================================================
     while True:
+        await asyncio.sleep(0)
         dt_ms = clock.tick(60)
         step = dt_ms / 16.6667  # 1.0 ~ 60fps
         now = pygame.time.get_ticks()
@@ -750,7 +753,7 @@ def bossfight_crazy(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
             if not pending_attacks:
                 pending_attacks = plan_for_hp(boss_hp)
                 if not pending_attacks:
-                    end_screen("win")
+                    await end_screen("win")
                     return "win"
             nxt = pending_attacks.pop(0)
             start_attack(nxt, now)

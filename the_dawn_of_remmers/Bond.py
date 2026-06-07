@@ -1,3 +1,4 @@
+import asyncio
 import math
 import random
 from pathlib import Path
@@ -6,7 +7,7 @@ import game_settings
 import pygame
 
 
-def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
+async def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     # ============================================================
     # Setup
     # ============================================================
@@ -45,7 +46,7 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
     # ============================================================
     # End screen
     # ============================================================
-    def end_screen(result: str):
+    async def end_screen(result: str):
         if arcade_no_endscreen:
             return
         t0 = pygame.time.get_ticks()
@@ -53,6 +54,7 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
         font_small = pygame.font.SysFont(None, 42)
 
         while True:
+            await asyncio.sleep(0)
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     return
@@ -235,7 +237,7 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
 
     def die(now):
         if damage_should_kill(now):
-            end_screen("lose")
+            await end_screen("lose")
             return True
         return False
 
@@ -1121,7 +1123,7 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
         flash_boss(now)
         if boss_hp <= 0:
             boss_hp = 0
-            end_screen("win")
+            await end_screen("win")
             return True
 
         pause_ms = 2000
@@ -1309,6 +1311,7 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
     # Main loop
     # ============================================================
     while True:
+        await asyncio.sleep(0)
         dt_ms = clock.tick(60)
         step = dt_ms / 16.6667
         now = pygame.time.get_ticks()
@@ -2525,7 +2528,7 @@ def bossfight_Bond(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscre
                 return
 
         if final_phase_active and final_phase_state == "vulnerable" and boss_rect().collidepoint(mx, my):
-            end_screen("win")
+            await end_screen("win")
             return "win"
 
         if (not (final_phase_active and final_phase_state == "vulnerable")) and now >= boss_black_until and boss_rect().collidepoint(mx, my):

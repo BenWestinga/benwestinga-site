@@ -1,3 +1,4 @@
+import asyncio
 # beast.py
 import pygame
 import random
@@ -5,7 +6,7 @@ import math
 from pathlib import Path
 import game_settings
 
-def bossfight_beast(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
+async def bossfight_beast(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     w, h = screen.get_size()
     clock = pygame.time.Clock()
     pygame.mouse.set_pos(w // 2, h // 2)
@@ -23,7 +24,7 @@ def bossfight_beast(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
         rect = surf.get_rect(center=(w // 2, y))
         screen.blit(surf, rect)
 
-    def end_screen(result: str):
+    async def end_screen(result: str):
         if arcade_no_endscreen:
             return
         t0 = pygame.time.get_ticks()
@@ -31,6 +32,7 @@ def bossfight_beast(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
         font_small = pygame.font.SysFont(None, 42)
 
         while True:
+            await asyncio.sleep(0)
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     return
@@ -432,6 +434,7 @@ def bossfight_beast(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
     # Main loop
     # ============================================================
     while True:
+        await asyncio.sleep(0)
         now = pygame.time.get_ticks()
 
         for e in pygame.event.get():
@@ -611,7 +614,7 @@ def bossfight_beast(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
                 land_rect = pygame.Rect(int(tx - ROCK_SIZE_SMALL / 2), int(ty - ROCK_SIZE_SMALL / 2), ROCK_SIZE_SMALL, ROCK_SIZE_SMALL)
                 if land_rect.collidepoint(mx, my):
                     if damage_should_kill(now):
-                        end_screen("lose")
+                        await end_screen("lose")
                         return "lose"
 
                 # stun
@@ -666,7 +669,7 @@ def bossfight_beast(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
                         reflected_count = 0
 
                         if boss_hp <= 0:
-                            end_screen("win")
+                            await end_screen("win")
                             return "win"
 
                         apply_post_hit_scaling()
@@ -694,7 +697,7 @@ def bossfight_beast(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
                 # hit mouse
                 if (mx - g["x"]) ** 2 + (my - g["y"]) ** 2 <= (GREEN_R + 3) ** 2:
                     if damage_should_kill(now):
-                        end_screen("lose")
+                        await end_screen("lose")
                         return "lose"
 
                 # end reflect -> wordt groen OP DEZELFDE PLEK
@@ -711,13 +714,13 @@ def bossfight_beast(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
         # Walls lethal
         if left_wall.collidepoint(mx, my) or top_wall.collidepoint(mx, my) or bot_wall.collidepoint(mx, my) or right_wall.collidepoint(mx, my):
             if damage_should_kill(now):
-                end_screen("lose")
+                await end_screen("lose")
                 return "lose"
 
         # Boss touch lethal
         if boss_rect.collidepoint(mx, my):
             if damage_should_kill(now):
-                end_screen("lose")
+                await end_screen("lose")
                 return "lose"
 
         # Storm rocks lethal
@@ -727,7 +730,7 @@ def bossfight_beast(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
                 dy = my - r["y"]
                 if dx * dx + dy * dy <= (r["r"] + 3) ** 2:
                     if damage_should_kill(now):
-                        end_screen("lose")
+                        await end_screen("lose")
                         return "lose"
                     break
 
@@ -738,7 +741,7 @@ def bossfight_beast(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
                 dy = my - py
                 if dx * dx + dy * dy <= (ARC_BEAD_SIZE * 0.45) ** 2:
                     if damage_should_kill(now):
-                        end_screen("lose")
+                        await end_screen("lose")
                         return "lose"
                     break
 
@@ -748,7 +751,7 @@ def bossfight_beast(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscr
             dy = my - s["y"]
             if dx * dx + dy * dy <= (s["r"] + 2) ** 2:
                 if damage_should_kill(now):
-                    end_screen("lose")
+                    await end_screen("lose")
                     return "lose"
                 break
 

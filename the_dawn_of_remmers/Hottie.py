@@ -1,3 +1,4 @@
+import asyncio
 # Hottie.py
 import pygame
 import random
@@ -6,7 +7,7 @@ from pathlib import Path
 import game_settings
 
 
-def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
+async def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     # ============================================================
     # Setup
     # ============================================================
@@ -39,7 +40,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
     # ============================================================
     # End screen
     # ============================================================
-    def end_screen(result: str):
+    async def end_screen(result: str):
         if arcade_no_endscreen:
             return
         t0 = pygame.time.get_ticks()
@@ -47,6 +48,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
         font_small = pygame.font.SysFont(None, 42)
 
         while True:
+            await asyncio.sleep(0)
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     return
@@ -228,7 +230,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
 
     def die(now):
         if damage_should_kill(now):
-            end_screen("lose")
+            await end_screen("lose")
             return True
         return False
 
@@ -409,7 +411,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
         else:
             boss_hp -= 1
         if boss_hp <= 0:
-            end_screen("win")
+            await end_screen("win")
             return True
 
         # ✅ alles weg meteen
@@ -636,7 +638,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
         else:
             boss_hp -= 1
         if boss_hp <= 0:
-            end_screen("win")
+            await end_screen("win")
             return True
 
         # ✅ alles weg meteen
@@ -663,6 +665,7 @@ def bossfight_Hottie(screen, start_stage=1, arcade_hp_one=False, arcade_no_endsc
     # Main loop
     # ============================================================
     while True:
+        await asyncio.sleep(0)
         dt_ms = clock.tick(60)
         step = dt_ms / 16.6667
         now = pygame.time.get_ticks()

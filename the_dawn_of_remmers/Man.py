@@ -1,3 +1,4 @@
+import asyncio
 # Man.py
 import pygame
 import random
@@ -5,7 +6,7 @@ import math
 from pathlib import Path
 import game_settings
 
-def bossfight_Man(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
+async def bossfight_Man(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     w, h = screen.get_size()
     clock = pygame.time.Clock()
     pygame.mouse.set_pos(w // 2, h // 2)
@@ -22,7 +23,7 @@ def bossfight_Man(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
         rect = surf.get_rect(center=(w // 2, y))
         screen.blit(surf, rect)
 
-    def end_screen(result: str):
+    async def end_screen(result: str):
         if arcade_no_endscreen:
             return
         t0 = pygame.time.get_ticks()
@@ -30,6 +31,7 @@ def bossfight_Man(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
         font_small = pygame.font.SysFont(None, 42)
 
         while True:
+            await asyncio.sleep(0)
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     return
@@ -674,6 +676,7 @@ def bossfight_Man(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
     # Main loop
     # ============================================================
     while True:
+        await asyncio.sleep(0)
         now = pygame.time.get_ticks()
 
         for e in pygame.event.get():
@@ -948,7 +951,7 @@ def bossfight_Man(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
         # Walls lethal
         if left_wall.collidepoint(mx, my) or top_wall.collidepoint(mx, my) or bot_wall.collidepoint(mx, my) or right_wall.collidepoint(mx, my):
             if damage_should_kill(now):
-                end_screen("lose")
+                await end_screen("lose")
                 return "lose"
 
         # Boss collision lethal EXCEPT during yellow stun (then mouse can hit once)
@@ -963,11 +966,11 @@ def bossfight_Man(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
                     special_hit_used = True
                     boss_invuln_until = now + BOSS_INVULN_AFTER_HIT_MS
                     if boss_hp <= 0:
-                        end_screen("win")
+                        await end_screen("win")
                         return "win"
             else:
                 if damage_should_kill(now):
-                    end_screen("lose")
+                    await end_screen("lose")
                     return "lose"
 
         # Raygun lethal
@@ -975,7 +978,7 @@ def bossfight_Man(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
             for (ax, ay, bx2, by2) in ray_segments:
                 if dist_point_to_segment(mx, my, ax, ay, bx2, by2) <= RAY_THICKNESS / 2:
                     if damage_should_kill(now):
-                        end_screen("lose")
+                        await end_screen("lose")
                         return "lose"
                     break
 
@@ -983,20 +986,20 @@ def bossfight_Man(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
         for r in rings:
             if ring_hits_mouse(r, mx, my):
                 if damage_should_kill(now):
-                    end_screen("lose")
+                    await end_screen("lose")
                     return "lose"
                 break
 
         if special_ring is not None and ring_hits_mouse(special_ring, mx, my):
             if damage_should_kill(now):
-                end_screen("lose")
+                await end_screen("lose")
                 return "lose"
 
         # Squares lethal
         for s in squares:
             if square_hits_mouse(s, mx, my):
                 if damage_should_kill(now):
-                    end_screen("lose")
+                    await end_screen("lose")
                     return "lose"
                 break
 

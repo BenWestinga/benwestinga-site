@@ -1,10 +1,11 @@
+import asyncio
 # Joe.py
 import pygame
 import random
 from pathlib import Path
 import game_settings
 
-def bossfight_Joe(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
+async def bossfight_Joe(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscreen=False):
     """
     Runs the Joe bossfight on the given screen.
     Returns to caller after showing a WIN/LOSE screen for 3 seconds.
@@ -17,12 +18,13 @@ def bossfight_Joe(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
         rect = surf.get_rect(center=(w // 2, y))
         screen.blit(surf, rect)
 
-    def end_screen(result: str):
+    async def end_screen(result: str):
         if arcade_no_endscreen:
             return
         """result: 'win' or 'lose'"""
         t0 = pygame.time.get_ticks()
         while True:
+            await asyncio.sleep(0)
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     return
@@ -192,6 +194,7 @@ def bossfight_Joe(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
 
     # ---------- main fight loop ----------
     while True:
+        await asyncio.sleep(0)
         # ----- events -----
         now = pygame.time.get_ticks()
         for e in pygame.event.get():
@@ -334,7 +337,7 @@ def bossfight_Joe(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
                 # only kill when active
                 if ((mx - c["x"]) ** 2 + (my - c["y"]) ** 2) ** 0.5 <= circle_radius:
                     if damage_should_kill(now):
-                        end_screen("lose")
+                        await end_screen("lose")
                         return "lose"
 
             c["timer"] -= 1
@@ -371,7 +374,7 @@ def bossfight_Joe(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
 
             if pygame.Rect(int(b["x"]), int(b["y"]), bullet_size, bullet_size).collidepoint(mx, my):
                 if damage_should_kill(now):
-                    end_screen("lose")
+                    await end_screen("lose")
                     return "lose"
 
         # ----- green orb (max 1) update/draw -----
@@ -414,7 +417,7 @@ def bossfight_Joe(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
                 green_orb = None
 
                 if stefan_hp <= 0:
-                    end_screen("win")
+                    await end_screen("win")
                     return "win"
                 update_difficulty()
 
@@ -438,7 +441,7 @@ def bossfight_Joe(screen, start_stage=1, arcade_hp_one=False, arcade_no_endscree
         y = my
         if screen.get_at((x, y))[:3] == (255, 0, 0):
             if damage_should_kill(now):
-                end_screen("lose")
+                await end_screen("lose")
                 return "lose"
         
         draw_shield_pickup()
