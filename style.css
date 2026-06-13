@@ -156,7 +156,7 @@ body::before {
   aspect-ratio: 1;
   transform: translateY(-50%);
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #8cff9b 0%, #2cbf4b 55%, #16913a 100%);
+  background: radial-gradient(circle at 30% 30%, #ff8c8c 0%, #d62828 55%, #8b0000 100%);
   box-shadow: 0 10px 24px rgba(22, 145, 58, 0.35);
   pointer-events: none;
 }
