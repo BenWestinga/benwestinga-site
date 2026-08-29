@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -22,20 +23,15 @@
         #game {
             width: 100vw;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
-        #menu,
-        #gameScreen {
+        /* MAIN MENU */
+        #menu {
             width: 100%;
             height: 100%;
             border: 8px solid black;
             background: white;
-        }
 
-        #menu {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -45,7 +41,10 @@
             font-size: clamp(30px, 6vw, 70px);
             font-weight: bold;
             padding: 20px 60px;
+
             background: white;
+            color: black;
+
             border: 6px solid black;
             cursor: pointer;
         }
@@ -55,31 +54,58 @@
             color: white;
         }
 
+        /* GAME */
         #gameScreen {
             display: none;
             position: relative;
+
+            width: 100%;
+            height: 100%;
+
+            border: 8px solid black;
+            background: white;
+
+            overflow: hidden;
+        }
+
+        /* Everything inside this area is guaranteed to stay
+           inside the black border. */
+        #playArea {
+            position: absolute;
+
+            left: 0;
+            top: 0;
+
+            width: 100%;
+            height: 100%;
+
             overflow: hidden;
         }
 
         .dot {
             position: absolute;
-            width: clamp(25px, 4vw, 50px);
-            height: clamp(25px, 4vw, 50px);
+
             border-radius: 50%;
+
+            transform: translate(-50%, -50%);
+
+            pointer-events: none;
         }
 
+        /* PLAYER */
         #player {
+            width: 28px;
+            height: 28px;
+
             background: red;
-            left: 20%;
-            top: 50%;
-            transform: translate(-50%, -50%);
         }
 
+        /* ENEMY */
         #blueDot {
+            width: 36px;
+            height: 36px;
+
             background: blue;
-            left: 70%;
-            top: 30%;
-            transform: translate(-50%, -50%);
         }
     </style>
 </head>
@@ -95,8 +121,12 @@
 
     <!-- GAME -->
     <div id="gameScreen">
-        <div id="player" class="dot"></div>
-        <div id="blueDot" class="dot"></div>
+
+        <div id="playArea">
+            <div id="player" class="dot"></div>
+            <div id="blueDot" class="dot"></div>
+        </div>
+
     </div>
 
 </div>
@@ -104,6 +134,8 @@
 <script>
     const menu = document.getElementById("menu");
     const gameScreen = document.getElementById("gameScreen");
+    const playArea = document.getElementById("playArea");
+
     const playButton = document.getElementById("playButton");
 
     const player = document.getElementById("player");
@@ -116,56 +148,111 @@
         ArrowRight: false
     };
 
-    let playerX;
-    let playerY;
+    let playerX = 0;
+    let playerY = 0;
 
-    let blueX;
-    let blueY;
+    let blueX = 0;
+    let blueY = 0;
 
-    let blueVX;
-    let blueVY;
+    let blueVX = 0;
+    let blueVY = 0;
 
-    let animationFrame;
+    let animationFrame = null;
 
-    const playerSpeed = 1.50;
-    const blueSpeed = 2.35;
+    /*
+        SPEEDS
+        These values are pixels per frame.
+    */
+    const playerSpeed = 4;
+    const blueSpeed = 3;
 
     function startGame() {
+
         menu.style.display = "none";
         gameScreen.style.display = "block";
 
-        const rect = gameScreen.getBoundingClientRect();
+        const width = playArea.clientWidth;
+        const height = playArea.clientHeight;
 
-        playerX = rect.width * 0.25;
-        playerY = rect.height * 0.5;
+        const playerRadius = player.offsetWidth / 2;
+        const blueRadius = blueDot.offsetWidth / 2;
 
-        blueX = rect.width * 0.7;
-        blueY = rect.height * 0.3;
+        // Starting positions
+        playerX = width * 0.25;
+        playerY = height * 0.5;
 
-        // Random direction, but constant speed
+        blueX = width * 0.70;
+        blueY = height * 0.30;
+
+        // Random direction for blue ball
         const angle = Math.random() * Math.PI * 2;
 
         blueVX = Math.cos(angle) * blueSpeed;
         blueVY = Math.sin(angle) * blueSpeed;
 
+        // Make absolutely sure both balls start inside
+        playerX = clamp(
+            playerX,
+            playerRadius,
+            width - playerRadius
+        );
+
+        playerY = clamp(
+            playerY,
+            playerRadius,
+            height - playerRadius
+        );
+
+        blueX = clamp(
+            blueX,
+            blueRadius,
+            width - blueRadius
+        );
+
+        blueY = clamp(
+            blueY,
+            blueRadius,
+            height - blueRadius
+        );
+
         cancelAnimationFrame(animationFrame);
+
         gameLoop();
     }
 
     function endGame() {
+
         cancelAnimationFrame(animationFrame);
 
+        animationFrame = null;
+
+        // Return to menu
         gameScreen.style.display = "none";
         menu.style.display = "flex";
     }
 
+    function clamp(value, minimum, maximum) {
+
+        return Math.max(
+            minimum,
+            Math.min(maximum, value)
+        );
+    }
+
     function gameLoop() {
-        const rect = gameScreen.getBoundingClientRect();
+
+        const width = playArea.clientWidth;
+        const height = playArea.clientHeight;
 
         const playerRadius = player.offsetWidth / 2;
         const blueRadius = blueDot.offsetWidth / 2;
 
-        // PLAYER MOVEMENT
+        /*
+            =========================
+            PLAYER MOVEMENT
+            =========================
+        */
+
         if (keys.ArrowUp) {
             playerY -= playerSpeed;
         }
@@ -182,98 +269,192 @@
             playerX += playerSpeed;
         }
 
-        // Keep player inside the screen
-        playerX = Math.max(
+        /*
+            Keep the ENTIRE red ball inside.
+        */
+
+        playerX = clamp(
+            playerX,
             playerRadius,
-            Math.min(rect.width - playerRadius, playerX)
+            width - playerRadius
         );
 
-        playerY = Math.max(
+        playerY = clamp(
+            playerY,
             playerRadius,
-            Math.min(rect.height - playerRadius, playerY)
+            height - playerRadius
         );
 
-        // BLUE DOT MOVEMENT
+        /*
+            =========================
+            BLUE BALL MOVEMENT
+            =========================
+        */
+
         blueX += blueVX;
         blueY += blueVY;
 
-        // Bounce off left/right walls
+        /*
+            LEFT WALL
+        */
+
         if (blueX - blueRadius <= 0) {
+
             blueX = blueRadius;
-            blueVX *= -1;
+
+            blueVX = Math.abs(blueVX);
         }
 
-        if (blueX + blueRadius >= rect.width) {
-            blueX = rect.width - blueRadius;
-            blueVX *= -1;
+        /*
+            RIGHT WALL
+        */
+
+        if (blueX + blueRadius >= width) {
+
+            blueX = width - blueRadius;
+
+            blueVX = -Math.abs(blueVX);
         }
 
-        // Bounce off top/bottom walls
+        /*
+            TOP WALL
+        */
+
         if (blueY - blueRadius <= 0) {
+
             blueY = blueRadius;
-            blueVY *= -1;
+
+            blueVY = Math.abs(blueVY);
         }
 
-        if (blueY + blueRadius >= rect.height) {
-            blueY = rect.height - blueRadius;
-            blueVY *= -1;
+        /*
+            BOTTOM WALL
+        */
+
+        if (blueY + blueRadius >= height) {
+
+            blueY = height - blueRadius;
+
+            blueVY = -Math.abs(blueVY);
         }
 
-        // Draw player
+        /*
+            =========================
+            DRAW
+            =========================
+        */
+
         player.style.left = playerX + "px";
         player.style.top = playerY + "px";
 
-        // Draw blue dot
         blueDot.style.left = blueX + "px";
         blueDot.style.top = blueY + "px";
 
-        // COLLISION
+        /*
+            =========================
+            COLLISION
+            =========================
+        */
+
+        const dx = playerX - blueX;
+        const dy = playerY - blueY;
+
         const distance = Math.sqrt(
-            Math.pow(playerX - blueX, 2) +
-            Math.pow(playerY - blueY, 2)
+            dx * dx + dy * dy
         );
 
         if (distance <= playerRadius + blueRadius) {
+
             endGame();
+
             return;
         }
 
         animationFrame = requestAnimationFrame(gameLoop);
     }
 
-    // KEYBOARD
-    document.addEventListener("keydown", (event) => {
+    /*
+        =========================
+        KEYBOARD CONTROLS
+        =========================
+    */
+
+    document.addEventListener("keydown", function(event) {
+
         if (event.key in keys) {
+
             keys[event.key] = true;
+
             event.preventDefault();
         }
     });
 
-    document.addEventListener("keyup", (event) => {
+    document.addEventListener("keyup", function(event) {
+
         if (event.key in keys) {
+
             keys[event.key] = false;
+
             event.preventDefault();
         }
     });
 
-    // START GAME
-    playButton.addEventListener("click", startGame);
+    /*
+        =========================
+        PLAY BUTTON
+        =========================
+    */
 
-    // Reset positions when screen size changes
-    window.addEventListener("resize", () => {
-        if (gameScreen.style.display !== "none") {
-            const rect = gameScreen.getBoundingClientRect();
+    playButton.addEventListener("click", function() {
 
-            playerX = Math.max(
-                player.offsetWidth / 2,
-                Math.min(rect.width - player.offsetWidth / 2, playerX)
-            );
+        startGame();
 
-            playerY = Math.max(
-                player.offsetHeight / 2,
-                Math.min(rect.height - player.offsetHeight / 2, playerY)
-            );
+    });
+
+    /*
+        =========================
+        WINDOW RESIZE
+        =========================
+    */
+
+    window.addEventListener("resize", function() {
+
+        if (gameScreen.style.display === "none") {
+            return;
         }
+
+        const width = playArea.clientWidth;
+        const height = playArea.clientHeight;
+
+        const playerRadius = player.offsetWidth / 2;
+        const blueRadius = blueDot.offsetWidth / 2;
+
+        // Keep player inside after resizing
+        playerX = clamp(
+            playerX,
+            playerRadius,
+            width - playerRadius
+        );
+
+        playerY = clamp(
+            playerY,
+            playerRadius,
+            height - playerRadius
+        );
+
+        // Keep blue ball inside after resizing
+        blueX = clamp(
+            blueX,
+            blueRadius,
+            width - blueRadius
+        );
+
+        blueY = clamp(
+            blueY,
+            blueRadius,
+            height - blueRadius
+        );
+
     });
 </script>
 
