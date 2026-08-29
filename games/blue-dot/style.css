@@ -1,0 +1,202 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: white;
+    font-family: Arial, sans-serif;
+}
+
+/* =========================
+   ALGEMENE SCHERMEN
+   ========================= */
+
+.screen {
+    position: fixed;
+    inset: 0;
+
+    border: 8px solid black;
+    background: white;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    gap: 20px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.screen h1 {
+    margin: 0 0 20px;
+
+    font-size: clamp(40px, 8vw, 90px);
+}
+
+/* =========================
+   KNOPPEN
+   ========================= */
+
+button {
+    padding: 16px 45px;
+
+    background: white;
+    color: black;
+
+    border: 5px solid black;
+
+    font-size: clamp(20px, 4vw, 35px);
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+button:hover {
+    background: black;
+    color: white;
+}
+
+/* =========================
+   NAAM
+   ========================= */
+
+#nameInput {
+    width: min(500px, 80vw);
+
+    padding: 15px;
+
+    border: 4px solid black;
+
+    font-size: 25px;
+
+    text-align: center;
+
+    outline: none;
+}
+
+#nameInput:focus {
+    border-width: 5px;
+}
+
+/* =========================
+   GAME
+   ========================= */
+
+#gameScreen {
+    display: none;
+
+    position: fixed;
+    inset: 0;
+
+    border: 8px solid black;
+
+    background: white;
+
+    overflow: hidden;
+
+    cursor: crosshair;
+}
+
+#playArea {
+    position: absolute;
+
+    inset: 0;
+
+    overflow: hidden;
+}
+
+canvas {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+}
+
+/* =========================
+   TIMER
+   ========================= */
+
+#timer {
+    position: absolute;
+
+    top: 15px;
+    left: 20px;
+
+    color: rgba(0, 0, 0, 0.3);
+
+    font-size: clamp(18px, 3vw, 30px);
+
+    font-variant-numeric: tabular-nums;
+
+    pointer-events: none;
+}
+
+/* =========================
+   GAME OVER
+   ========================= */
+
+#gameOverScreen p {
+    margin: 0;
+
+    font-size: clamp(20px, 4vw, 35px);
+
+    color: rgba(0, 0, 0, 0.65);
+}
+
+/* =========================
+   LEADERBOARD
+   ========================= */
+
+#leaderboard {
+    width: min(600px, 85vw);
+
+    min-height: 250px;
+
+    border: 4px solid black;
+
+    padding: 15px;
+
+    font-size: clamp(18px, 3vw, 28px);
+}
+
+.leaderboardRow {
+    display: grid;
+
+    grid-template-columns: 50px 1fr 120px;
+
+    gap: 10px;
+
+    padding: 10px 5px;
+
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.leaderboardRow:last-child {
+    border-bottom: none;
+}
+
+.leaderboardRank {
+    font-weight: bold;
+}
+
+.leaderboardName {
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+.leaderboardScore {
+    text-align: right;
+
+    font-variant-numeric: tabular-nums;
+}
