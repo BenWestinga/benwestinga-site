@@ -1,4 +1,4 @@
-```javascript
+
 const gameScreen =
     document.getElementById("gameScreen");
 
@@ -988,4 +988,3 @@ backFromLeaderboardButton.addEventListener(
             "flex";
     }
 );
-```
