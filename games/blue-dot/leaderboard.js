@@ -1,21 +1,5 @@
 ```javascript
-/*
-    =========================
-    BLUE DOT LEADERBOARD
-    =========================
-
-    Dit bestand communiceert met
-    de Blue Dot server.
-
-    Later komt hier bijvoorbeeld:
-
-    GET  /api/blue-dot/scores
-    POST /api/blue-dot/score
-*/
-
-
-const API_URL =
-    "/api/blue-dot";
+const API_URL = "/api/blue-dot";
 
 
 /* =========================
@@ -26,42 +10,28 @@ async function submitScore(name, time) {
 
     try {
 
-        const response =
-            await fetch(
-                API_URL + "/score",
-                {
-                    method: "POST",
+        const response = await fetch(
+            API_URL + "/score",
+            {
+                method: "POST",
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-                    body: JSON.stringify({
-                        name: name,
-                        time: Number(
-                            time.toFixed(2)
-                        )
-                    })
-                }
-            );
-
+                body: JSON.stringify({
+                    name: name,
+                    time: Number(time.toFixed(2))
+                })
+            }
+        );
 
         if (!response.ok) {
-
-            console.error(
-                "Score kon niet worden opgeslagen."
-            );
-
+            console.error("Score kon niet worden opgeslagen.");
             return null;
         }
 
-
-        const data =
-            await response.json();
-
-
-        return data;
+        return await response.json();
 
     } catch (error) {
 
@@ -82,46 +52,81 @@ async function submitScore(name, time) {
 async function loadLeaderboard() {
 
     const leaderboard =
-        document.getElementById(
-            "leaderboard"
-        );
+        document.getElementById("leaderboard");
 
-
-    leaderboard.innerHTML =
-        "Laden...";
-
+    leaderboard.innerHTML = "Laden...";
 
     try {
 
         const response =
             await fetch(
-                API_URL + "/scores"
+                API_URL + "/scores",
+                {
+                    cache: "no-store"
+                }
             );
-
 
         if (!response.ok) {
-
-            throw new Error(
-                "Server error"
-            );
+            throw new Error("Server error");
         }
-
 
         const scores =
             await response.json();
 
 
+        /* =========================
+           BESTE SCORE PER NAAM
+           ========================= */
+
+        const bestScores = {};
+
+        scores.forEach(function(score) {
+
+            const name =
+                String(score.name || "").trim();
+
+            const time =
+                Number(score.time);
+
+            if (!name || !Number.isFinite(time)) {
+                return;
+            }
+
+            /*
+                Alleen de beste score
+                van iedere naam bewaren.
+            */
+
+            if (
+                !bestScores[name] ||
+                time > bestScores[name].time
+            ) {
+
+                bestScores[name] = {
+                    name: name,
+                    time: time
+                };
+            }
+        });
+
+
         /*
-            Maak leaderboard leeg.
+            Omzetten naar array
+            en beste tijden bovenaan.
         */
+
+        const topFive =
+            Object.values(bestScores)
+                .sort(function(a, b) {
+                    return b.time - a.time;
+                })
+                .slice(0, 5);
+
 
         leaderboard.innerHTML = "";
 
 
-        if (
-            !Array.isArray(scores) ||
-            scores.length === 0
-        ) {
+        if (topFive.length === 0) {
 
             leaderboard.innerHTML =
                 "Nog geen scores.";
@@ -130,30 +135,22 @@ async function loadLeaderboard() {
         }
 
 
-        /*
-            Alleen beste 5.
-        */
-
-        const topFive =
-            scores.slice(0, 5);
-
+        /* =========================
+           WEERGAVE
+           ========================= */
 
         topFive.forEach(
             function(score, index) {
 
                 const row =
-                    document.createElement(
-                        "div"
-                    );
+                    document.createElement("div");
 
                 row.className =
                     "leaderboardRow";
 
 
                 const rank =
-                    document.createElement(
-                        "div"
-                    );
+                    document.createElement("div");
 
                 rank.className =
                     "leaderboardRank";
@@ -163,9 +160,7 @@ async function loadLeaderboard() {
 
 
                 const name =
-                    document.createElement(
-                        "div"
-                    );
+                    document.createElement("div");
 
                 name.className =
                     "leaderboardName";
@@ -175,26 +170,18 @@ async function loadLeaderboard() {
 
 
                 const time =
-                    document.createElement(
-                        "div"
-                    );
+                    document.createElement("div");
 
                 time.className =
                     "leaderboardScore";
 
                 time.textContent =
-                    Number(
-                        score.time
-                    ).toFixed(2) +
-                    "s";
+                    score.time.toFixed(2) + "s";
 
 
                 row.appendChild(rank);
-
                 row.appendChild(name);
-
                 row.appendChild(time);
-
 
                 leaderboard.appendChild(row);
             }
@@ -202,7 +189,10 @@ async function loadLeaderboard() {
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Leaderboard fout:",
+            error
+        );
 
         leaderboard.innerHTML =
             "Leaderboard tijdelijk niet beschikbaar.";
