@@ -22,10 +22,10 @@
         }
 
         /* =========================
-           MAIN MENU
+           START / GAME OVER MENU
            ========================= */
 
-        #menu {
+        .menu {
             position: fixed;
             inset: 0;
 
@@ -33,11 +33,26 @@
             background: white;
 
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
         }
 
-        #playButton {
+        .menu h1 {
+            margin: 0 0 30px 0;
+
+            font-size: clamp(40px, 8vw, 90px);
+        }
+
+        .menu p {
+            margin: 0 0 30px 0;
+
+            font-size: clamp(22px, 4vw, 40px);
+
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        .menu button {
             padding: 20px 60px;
 
             background: white;
@@ -45,19 +60,19 @@
 
             border: 6px solid black;
 
-            font-size: clamp(30px, 6vw, 70px);
+            font-size: clamp(25px, 5vw, 55px);
             font-weight: bold;
 
             cursor: pointer;
         }
 
-        #playButton:hover {
+        .menu button:hover {
             background: black;
             color: white;
         }
 
         /* =========================
-           GAME SCREEN
+           GAME
            ========================= */
 
         #gameScreen {
@@ -73,11 +88,6 @@
 
             cursor: crosshair;
         }
-
-        /*
-            Dit is het daadwerkelijke speelveld.
-            Het begint NA de zwarte rand.
-        */
 
         #playArea {
             position: absolute;
@@ -96,17 +106,44 @@
             width: 100%;
             height: 100%;
         }
+
+        /* =========================
+           TIMER
+           ========================= */
+
+        #timer {
+            position: absolute;
+
+            top: 15px;
+            left: 20px;
+
+            z-index: 10;
+
+            font-size: clamp(18px, 3vw, 30px);
+
+            color: rgba(0, 0, 0, 0.35);
+
+            pointer-events: none;
+
+            font-variant-numeric: tabular-nums;
+        }
     </style>
 </head>
 
 <body>
 
     <!-- =========================
-         MENU
+         START SCREEN
          ========================= -->
 
-    <div id="menu">
-        <button id="playButton">SPEEL</button>
+    <div id="startScreen" class="menu">
+
+        <h1>BLUE DOT</h1>
+
+        <button id="playButton">
+            SPEEL
+        </button>
+
     </div>
 
 
@@ -117,21 +154,72 @@
     <div id="gameScreen">
 
         <div id="playArea">
+
             <canvas id="gameCanvas"></canvas>
+
+            <div id="timer">
+                0.00
+            </div>
+
         </div>
+
+    </div>
+
+
+    <!-- =========================
+         GAME OVER SCREEN
+         ========================= -->
+
+    <div
+        id="gameOverScreen"
+        class="menu"
+        style="display: none;"
+    >
+
+        <h1>GAME OVER</h1>
+
+        <p>
+            Tijd: <span id="survivalTime">0.00</span> seconden
+        </p>
+
+        <button id="continueButton">
+            VERDER
+        </button>
 
     </div>
 
 
     <script>
 
-        const menu = document.getElementById("menu");
-        const gameScreen = document.getElementById("gameScreen");
-        const playArea = document.getElementById("playArea");
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
+        const startScreen =
+            document.getElementById("startScreen");
 
-        const playButton = document.getElementById("playButton");
+        const gameScreen =
+            document.getElementById("gameScreen");
+
+        const gameOverScreen =
+            document.getElementById("gameOverScreen");
+
+        const playArea =
+            document.getElementById("playArea");
+
+        const canvas =
+            document.getElementById("gameCanvas");
+
+        const ctx =
+            canvas.getContext("2d");
+
+        const playButton =
+            document.getElementById("playButton");
+
+        const continueButton =
+            document.getElementById("continueButton");
+
+        const timerElement =
+            document.getElementById("timer");
+
+        const survivalTimeElement =
+            document.getElementById("survivalTime");
 
 
         /* =========================
@@ -147,8 +235,10 @@
            ========================= */
 
         const player = {
+
             x: 0,
             y: 0,
+
             radius: 11
         };
 
@@ -161,12 +251,6 @@
 
         const enemyRadius = 16;
 
-
-        /*
-            Hoe dicht een enemy maximaal bij
-            de speler mag spawnen.
-        */
-
         const safeSpawnRadius = 150;
 
 
@@ -177,6 +261,7 @@
         let bullets = [];
 
         const bulletRadius = 4;
+
         const bulletSpeed = 6;
 
         const shotDelay = 180;
@@ -185,13 +270,15 @@
 
 
         /* =========================
-           GAME LOOP
+           GAME STATE
            ========================= */
 
-        let animationFrame = null;
         let gameRunning = false;
 
+        let animationFrame = null;
+
         let startTime = 0;
+
         let lastSpawn = 0;
 
 
@@ -209,18 +296,30 @@
 
         function resizeCanvas() {
 
-            const rect = playArea.getBoundingClientRect();
+            const rect =
+                playArea.getBoundingClientRect();
 
             width = rect.width;
             height = rect.height;
 
-            const dpr = window.devicePixelRatio || 1;
 
-            canvas.width = Math.round(width * dpr);
-            canvas.height = Math.round(height * dpr);
+            const dpr =
+                window.devicePixelRatio || 1;
 
-            canvas.style.width = width + "px";
-            canvas.style.height = height + "px";
+
+            canvas.width =
+                Math.round(width * dpr);
+
+            canvas.height =
+                Math.round(height * dpr);
+
+
+            canvas.style.width =
+                width + "px";
+
+            canvas.style.height =
+                height + "px";
+
 
             ctx.setTransform(
                 dpr,
@@ -233,7 +332,8 @@
 
 
             /*
-                Houd speler volledig binnen het veld.
+                Zorg dat de speler altijd
+                volledig binnen het speelveld blijft.
             */
 
             player.x = clamp(
@@ -250,7 +350,8 @@
 
 
             /*
-                Houd enemies volledig binnen het veld.
+                Zorg dat enemies ook volledig
+                binnen het speelveld blijven.
             */
 
             for (const enemy of enemies) {
@@ -290,7 +391,7 @@
 
 
         /* =========================
-           MOUSE MOVEMENT
+           MOUSE
            ========================= */
 
         canvas.addEventListener(
@@ -300,6 +401,7 @@
                 const rect =
                     canvas.getBoundingClientRect();
 
+
                 mouseX =
                     event.clientX - rect.left;
 
@@ -308,8 +410,8 @@
 
 
                 /*
-                    Speler volgt cursor,
-                    maar blijft volledig binnen.
+                    Speler kan nooit buiten
+                    het speelveld komen.
                 */
 
                 player.x = clamp(
@@ -364,12 +466,16 @@
 
             let valid = false;
 
+
             /*
-                Probeer maximaal 100 keer
-                een veilige positie te vinden.
+                Probeer maximaal 100 posities.
             */
 
-            for (let attempt = 0; attempt < 100; attempt++) {
+            for (
+                let attempt = 0;
+                attempt < 100;
+                attempt++
+            ) {
 
                 x =
                     enemyRadius +
@@ -388,6 +494,7 @@
                 const dy =
                     y - player.y;
 
+
                 const distance =
                     Math.sqrt(
                         dx * dx +
@@ -395,7 +502,10 @@
                     );
 
 
-                if (distance >= safeSpawnRadius) {
+                if (
+                    distance >=
+                    safeSpawnRadius
+                ) {
 
                     valid = true;
 
@@ -410,7 +520,7 @@
 
 
             /*
-                Random bewegingsrichting.
+                Random richting.
             */
 
             const angle =
@@ -420,8 +530,7 @@
 
 
             /*
-                Verschillende snelheden zijn mogelijk,
-                maar de bal blijft constant bewegen.
+                Random snelheid.
             */
 
             const speed =
@@ -436,8 +545,13 @@
 
                 radius: enemyRadius,
 
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed
+                vx:
+                    Math.cos(angle) *
+                    speed,
+
+                vy:
+                    Math.sin(angle) *
+                    speed
             });
         }
 
@@ -451,15 +565,17 @@
             for (const enemy of enemies) {
 
                 enemy.x += enemy.vx;
+
                 enemy.y += enemy.vy;
 
 
                 /*
-                    Linkerkant
+                    Links
                 */
 
                 if (
-                    enemy.x - enemy.radius <= 0
+                    enemy.x -
+                    enemy.radius <= 0
                 ) {
 
                     enemy.x =
@@ -471,15 +587,17 @@
 
 
                 /*
-                    Rechterkant
+                    Rechts
                 */
 
                 if (
-                    enemy.x + enemy.radius >= width
+                    enemy.x +
+                    enemy.radius >= width
                 ) {
 
                     enemy.x =
-                        width - enemy.radius;
+                        width -
+                        enemy.radius;
 
                     enemy.vx =
                         -Math.abs(enemy.vx);
@@ -487,11 +605,12 @@
 
 
                 /*
-                    Bovenkant
+                    Boven
                 */
 
                 if (
-                    enemy.y - enemy.radius <= 0
+                    enemy.y -
+                    enemy.radius <= 0
                 ) {
 
                     enemy.y =
@@ -503,15 +622,17 @@
 
 
                 /*
-                    Onderkant
+                    Onder
                 */
 
                 if (
-                    enemy.y + enemy.radius >= height
+                    enemy.y +
+                    enemy.radius >= height
                 ) {
 
                     enemy.y =
-                        height - enemy.radius;
+                        height -
+                        enemy.radius;
 
                     enemy.vy =
                         -Math.abs(enemy.vy);
@@ -538,15 +659,16 @@
 
 
             /*
-                Links van de middenlijn:
-                schiet naar rechts.
+                Links van midden:
+                naar rechts.
 
-                Rechts van de middenlijn:
-                schiet naar links.
+                Rechts van midden:
+                naar links.
             */
 
             const direction =
-                player.x < width / 2
+                player.x <
+                width / 2
                     ? 1
                     : -1;
 
@@ -583,11 +705,12 @@
                     bullets[i];
 
 
-                bullet.x += bullet.vx;
+                bullet.x +=
+                    bullet.vx;
 
 
                 /*
-                    Kogel buiten scherm?
+                    Buiten scherm?
                 */
 
                 if (
@@ -595,7 +718,8 @@
                         -bullet.radius ||
 
                     bullet.x >
-                        width + bullet.radius
+                        width +
+                        bullet.radius
                 ) {
 
                     bullets.splice(i, 1);
@@ -611,11 +735,12 @@
         function checkCollisions() {
 
             /*
-                KOGELS → BLAUWE BALLEN
+                KOGELS → ENEMIES
             */
 
             for (
-                let i = enemies.length - 1;
+                let i =
+                    enemies.length - 1;
                 i >= 0;
                 i--
             ) {
@@ -625,7 +750,8 @@
 
 
                 for (
-                    let j = bullets.length - 1;
+                    let j =
+                        bullets.length - 1;
                     j >= 0;
                     j--
                 ) {
@@ -667,7 +793,7 @@
 
 
             /*
-                SPELER → BLAUWE BAL
+                SPELER → ENEMY
             */
 
             for (const enemy of enemies) {
@@ -712,7 +838,8 @@
                 WITTE ACHTERGROND
             */
 
-            ctx.fillStyle = "white";
+            ctx.fillStyle =
+                "white";
 
             ctx.fillRect(
                 0,
@@ -724,8 +851,6 @@
 
             /*
                 MIDDENLIJN
-
-                Licht transparant.
             */
 
             ctx.beginPath();
@@ -762,7 +887,8 @@
                 Math.PI * 2
             );
 
-            ctx.fillStyle = "red";
+            ctx.fillStyle =
+                "red";
 
             ctx.fill();
 
@@ -783,7 +909,8 @@
                     Math.PI * 2
                 );
 
-                ctx.fillStyle = "blue";
+                ctx.fillStyle =
+                    "blue";
 
                 ctx.fill();
             }
@@ -805,10 +932,26 @@
                     Math.PI * 2
                 );
 
-                ctx.fillStyle = "black";
+                ctx.fillStyle =
+                    "black";
 
                 ctx.fill();
             }
+        }
+
+
+        /* =========================
+           TIMER
+           ========================= */
+
+        function updateTimer(time) {
+
+            const elapsed =
+                (time - startTime) / 1000;
+
+
+            timerElement.textContent =
+                elapsed.toFixed(2);
         }
 
 
@@ -824,7 +967,14 @@
 
 
             /*
-                Nieuwe spawn rate berekenen.
+                TIMER
+            */
+
+            updateTimer(time);
+
+
+            /*
+                SPAWN RATE
             */
 
             const spawnRate =
@@ -832,7 +982,7 @@
 
 
             /*
-                Nieuwe blauwe bal.
+                SPAWN
             */
 
             if (
@@ -847,14 +997,14 @@
 
 
             /*
-                Automatisch schieten.
+                SCHIETEN
             */
 
             shoot(time);
 
 
             /*
-                Beweging.
+                BEWEGEN
             */
 
             updateEnemies();
@@ -863,14 +1013,19 @@
 
 
             /*
-                Botsingen.
+                COLLISIONS
             */
 
             checkCollisions();
 
 
+            if (!gameRunning) {
+                return;
+            }
+
+
             /*
-                Tekenen.
+                TEKENEN
             */
 
             draw();
@@ -884,12 +1039,19 @@
 
 
         /* =========================
-           START
+           START GAME
            ========================= */
 
         function startGame() {
 
-            menu.style.display =
+            /*
+                Schermen
+            */
+
+            startScreen.style.display =
+                "none";
+
+            gameOverScreen.style.display =
                 "none";
 
             gameScreen.style.display =
@@ -897,14 +1059,14 @@
 
 
             /*
-                Canvas eerst goed meten.
+                Canvas afmetingen
             */
 
             resizeCanvas();
 
 
             /*
-                Alles resetten.
+                Reset
             */
 
             enemies = [];
@@ -913,7 +1075,7 @@
 
 
             /*
-                Speler midden.
+                Speler in midden
             */
 
             player.x =
@@ -931,7 +1093,7 @@
 
 
             /*
-                Timers resetten.
+                Timer reset
             */
 
             startTime =
@@ -943,6 +1105,14 @@
             lastShot =
                 startTime;
 
+
+            timerElement.textContent =
+                "0.00";
+
+
+            /*
+                Start
+            */
 
             gameRunning = true;
 
@@ -965,6 +1135,28 @@
 
         function endGame() {
 
+            if (!gameRunning) {
+                return;
+            }
+
+
+            /*
+                Exacte overlevingstijd
+            */
+
+            const endTime =
+                performance.now();
+
+
+            const elapsed =
+                (endTime - startTime) /
+                1000;
+
+
+            /*
+                Stop game
+            */
+
             gameRunning = false;
 
 
@@ -973,30 +1165,63 @@
             );
 
 
+            /*
+                Toon eindtijd
+            */
+
+            survivalTimeElement.textContent =
+                elapsed.toFixed(2);
+
+            timerElement.textContent =
+                elapsed.toFixed(2);
+
+
+            /*
+                Leeg game
+            */
+
             enemies = [];
 
             bullets = [];
 
 
             /*
-                Terug naar menu.
+                Game scherm weg
             */
 
             gameScreen.style.display =
                 "none";
 
-            menu.style.display =
+
+            /*
+                Game-over scherm
+            */
+
+            gameOverScreen.style.display =
                 "flex";
         }
 
 
         /* =========================
-           PLAY BUTTON
+           BUTTONS
            ========================= */
 
         playButton.addEventListener(
             "click",
             startGame
+        );
+
+
+        continueButton.addEventListener(
+            "click",
+            function() {
+
+                gameOverScreen.style.display =
+                    "none";
+
+                startScreen.style.display =
+                    "flex";
+            }
         );
 
     </script>
