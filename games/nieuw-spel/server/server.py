@@ -1,16 +1,24 @@
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.cookies import SimpleCookie
+
 import json
 import sqlite3
 import hashlib
 import os
 import base64
 import hmac
+import secrets
+import time
+
 
 PORT = 8091
 DATABASE = "/data/accounts.db"
 
+SESSION_DURATION = 60 * 60 * 24 * 30  # 30 dagen
+
 
 def setup_database():
+
     db = sqlite3.connect(DATABASE)
 
     db.execute("""
@@ -22,11 +30,22 @@ def setup_database():
         )
     """)
 
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            token_hash TEXT NOT NULL UNIQUE,
+            expires_at INTEGER NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+
     db.commit()
     db.close()
 
 
 def hash_password(password):
+
     salt = os.urandom(16)
 
     password_hash = hashlib.scrypt(
@@ -44,6 +63,7 @@ def hash_password(password):
 
 
 def verify_password(password, stored_hash, stored_salt):
+
     salt = base64.b64decode(stored_salt)
 
     password_hash = hashlib.scrypt(
@@ -64,23 +84,81 @@ def verify_password(password, stored_hash, stored_salt):
     )
 
 
+def hash_token(token):
+
+    return hashlib.sha256(
+        token.encode()
+    ).hexdigest()
+
+
+def create_session(db, user_id):
+
+    token = secrets.token_urlsafe(32)
+
+    expires_at = (
+        int(time.time()) +
+        SESSION_DURATION
+    )
+
+    db.execute(
+        """
+        INSERT INTO sessions (
+            user_id,
+            token_hash,
+            expires_at
+        )
+        VALUES (?, ?, ?)
+        """,
+        (
+            user_id,
+            hash_token(token),
+            expires_at
+        )
+    )
+
+    db.commit()
+
+    return token
+
+
 class Handler(BaseHTTPRequestHandler):
 
-    def send_json(self, status, data):
+    def send_json(
+        self,
+        status,
+        data,
+        cookie=None
+    ):
+
         body = json.dumps(data).encode()
 
         self.send_response(status)
+
         self.send_header(
             "Content-Type",
             "application/json"
         )
+
+        self.send_header(
+            "Cache-Control",
+            "no-store"
+        )
+
+        if cookie:
+            self.send_header(
+                "Set-Cookie",
+                cookie
+            )
+
         self.end_headers()
 
         self.wfile.write(body)
 
 
     def read_json(self):
+
         try:
+
             length = int(
                 self.headers.get(
                     "Content-Length",
@@ -96,19 +174,112 @@ class Handler(BaseHTTPRequestHandler):
             return None
 
 
+    def get_session_token(self):
+
+        cookie_header = self.headers.get(
+            "Cookie"
+        )
+
+        if not cookie_header:
+            return None
+
+        cookie = SimpleCookie()
+
+        try:
+            cookie.load(cookie_header)
+        except:
+            return None
+
+        if "session" not in cookie:
+            return None
+
+        return cookie["session"].value
+
+
+    def get_logged_in_user(self, db):
+
+        token = self.get_session_token()
+
+        if not token:
+            return None
+
+        token_hash = hash_token(token)
+
+        now = int(time.time())
+
+        user = db.execute(
+            """
+            SELECT
+                users.id,
+                users.username
+            FROM sessions
+            JOIN users
+            ON users.id = sessions.user_id
+            WHERE sessions.token_hash = ?
+            AND sessions.expires_at > ?
+            """,
+            (
+                token_hash,
+                now
+            )
+        ).fetchone()
+
+        if not user:
+            return None
+
+        # Iedere keer dat de speler actief is,
+        # begint de 30 dagen opnieuw.
+        new_expiry = (
+            now +
+            SESSION_DURATION
+        )
+
+        db.execute(
+            """
+            UPDATE sessions
+            SET expires_at = ?
+            WHERE token_hash = ?
+            """,
+            (
+                new_expiry,
+                token_hash
+            )
+        )
+
+        db.commit()
+
+        return user
+
+
+    def session_cookie(self, token):
+
+        return (
+            f"session={token}; "
+            f"Path=/; "
+            f"HttpOnly; "
+            f"Secure; "
+            f"SameSite=Lax; "
+            f"Max-Age={SESSION_DURATION}"
+        )
+
+
     def do_GET(self):
 
         if self.path == "/test":
+
             self.send_json(
                 200,
                 {
-                    "message": "New Game API works!"
+                    "message":
+                    "New Game API works!"
                 }
             )
+
             return
 
 
         if self.path == "/test-db":
+
             db = sqlite3.connect(DATABASE)
 
             amount = db.execute(
@@ -124,6 +295,38 @@ class Handler(BaseHTTPRequestHandler):
                     "accounts": amount
                 }
             )
+
+            return
+
+
+        if self.path == "/me":
+
+            db = sqlite3.connect(DATABASE)
+
+            user = self.get_logged_in_user(db)
+
+            db.close()
+
+            if not user:
+
+                self.send_json(
+                    401,
+                    {
+                        "error":
+                        "Not logged in."
+                    }
+                )
+
+                return
+
+
+            self.send_json(
+                200,
+                {
+                    "username": user[1]
+                }
+            )
+
             return
 
 
@@ -142,30 +345,35 @@ class Handler(BaseHTTPRequestHandler):
             data = self.read_json()
 
             if not data:
+
                 self.send_json(
                     400,
                     {
-                        "error": "Invalid request."
+                        "error":
+                        "Invalid request."
                     }
                 )
+
                 return
 
 
-            username = data.get("username", "")
-            password = data.get("password", "")
+            username = data.get(
+                "username",
+                ""
+            )
+
+            password = data.get(
+                "password",
+                ""
+            )
 
 
-            if not isinstance(username, str):
-                self.send_json(
-                    400,
-                    {
-                        "error": "Invalid username."
-                    }
-                )
-                return
+            if (
+                not isinstance(username, str)
+                or len(username) < 5
+                or len(username) > 25
+            ):
 
-
-            if len(username) < 5 or len(username) > 25:
                 self.send_json(
                     400,
                     {
@@ -173,10 +381,15 @@ class Handler(BaseHTTPRequestHandler):
                         "Username must be between 5 and 25 characters."
                     }
                 )
+
                 return
 
 
-            if not isinstance(password, str) or len(password) < 8:
+            if (
+                not isinstance(password, str)
+                or len(password) < 8
+            ):
+
                 self.send_json(
                     400,
                     {
@@ -184,17 +397,19 @@ class Handler(BaseHTTPRequestHandler):
                         "Password must contain at least 8 characters."
                     }
                 )
+
                 return
 
 
-            password_hash, password_salt = hash_password(
-                password
+            password_hash, password_salt = (
+                hash_password(password)
             )
 
             db = sqlite3.connect(DATABASE)
 
             try:
-                db.execute(
+
+                cursor = db.execute(
                     """
                     INSERT INTO users (
                         username,
@@ -213,6 +428,7 @@ class Handler(BaseHTTPRequestHandler):
                 db.commit()
 
             except sqlite3.IntegrityError:
+
                 db.close()
 
                 self.send_json(
@@ -222,19 +438,29 @@ class Handler(BaseHTTPRequestHandler):
                         "This username already exists."
                     }
                 )
+
                 return
 
 
+            token = create_session(
+                db,
+                cursor.lastrowid
+            )
+
             db.close()
+
 
             self.send_json(
                 201,
                 {
                     "message":
                     "Account created successfully.",
-                    "username": username
-                }
+                    "username":
+                    username
+                },
+                self.session_cookie(token)
             )
+
             return
 
 
@@ -243,23 +469,35 @@ class Handler(BaseHTTPRequestHandler):
             data = self.read_json()
 
             if not data:
+
                 self.send_json(
                     400,
                     {
-                        "error": "Invalid request."
+                        "error":
+                        "Invalid request."
                     }
                 )
+
                 return
 
 
-            username = data.get("username", "")
-            password = data.get("password", "")
+            username = data.get(
+                "username",
+                ""
+            )
+
+            password = data.get(
+                "password",
+                ""
+            )
+
 
             db = sqlite3.connect(DATABASE)
 
             user = db.execute(
                 """
                 SELECT
+                    id,
                     username,
                     password_hash,
                     password_salt
@@ -269,10 +507,11 @@ class Handler(BaseHTTPRequestHandler):
                 (username,)
             ).fetchone()
 
-            db.close()
-
 
             if not user:
+
+                db.close()
+
                 self.send_json(
                     404,
                     {
@@ -280,14 +519,18 @@ class Handler(BaseHTTPRequestHandler):
                         "Account does not exist."
                     }
                 )
+
                 return
 
 
             if not verify_password(
                 password,
-                user[1],
-                user[2]
+                user[2],
+                user[3]
             ):
+
+                db.close()
+
                 self.send_json(
                     401,
                     {
@@ -295,7 +538,16 @@ class Handler(BaseHTTPRequestHandler):
                         "Incorrect password."
                     }
                 )
+
                 return
+
+
+            token = create_session(
+                db,
+                user[0]
+            )
+
+            db.close()
 
 
             self.send_json(
@@ -304,9 +556,55 @@ class Handler(BaseHTTPRequestHandler):
                     "message":
                     "Login successful.",
                     "username":
-                    user[0]
-                }
+                    user[1]
+                },
+                self.session_cookie(token)
             )
+
+            return
+
+
+        if self.path == "/logout":
+
+            token = self.get_session_token()
+
+            if token:
+
+                db = sqlite3.connect(DATABASE)
+
+                db.execute(
+                    """
+                    DELETE FROM sessions
+                    WHERE token_hash = ?
+                    """,
+                    (
+                        hash_token(token),
+                    )
+                )
+
+                db.commit()
+                db.close()
+
+
+            delete_cookie = (
+                "session=; "
+                "Path=/; "
+                "HttpOnly; "
+                "Secure; "
+                "SameSite=Lax; "
+                "Max-Age=0"
+            )
+
+
+            self.send_json(
+                200,
+                {
+                    "message":
+                    "Logged out successfully."
+                },
+                delete_cookie
+            )
+
             return
 
 
