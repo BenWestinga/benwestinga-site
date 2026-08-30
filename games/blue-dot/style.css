@@ -12,6 +12,19 @@ body {
     font-family: Arial, sans-serif;
 }
 
+.game-button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.game-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
 /* =========================
    ALGEMENE SCHERMEN
    ========================= */
