@@ -1,21 +1,26 @@
-const levelScreen =
+const engineLevelScreen =
     document.getElementById("level-screen");
 
-const levelCanvas =
+const engineLevelCanvas =
     document.getElementById("level-canvas");
 
-const levelCtx =
-    levelCanvas.getContext("2d");
+const engineLevelCtx =
+    engineLevelCanvas.getContext("2d");
 
 
-let levelActive = false;
-let currentLevel = null;
+window.levelActive = false;
+window.currentLevel = null;
+
+let nextEnemySpawn = 0;
 
 
 function resizeLevelCanvas() {
 
-    levelCanvas.width = window.innerWidth;
-    levelCanvas.height = window.innerHeight;
+    engineLevelCanvas.width =
+        window.innerWidth;
+
+    engineLevelCanvas.height =
+        window.innerHeight;
 }
 
 
@@ -25,37 +30,48 @@ window.addEventListener(
 );
 
 
-levelCanvas.addEventListener(
+engineLevelCanvas.addEventListener(
     "pointermove",
     movePlayerToPointer
-);
-
-
-// Voor nu klik/tap om een schot te testen
-levelCanvas.addEventListener(
-    "pointerdown",
-    () => {
-        shootBullet();
-    }
 );
 
 
 function startLevel(levelData) {
 
     currentLevel = levelData;
+    levelActive = true;
+
+    window.gamePaused = false;
 
     storyMap.hidden = true;
-    levelScreen.hidden = false;
+    engineLevelScreen.hidden = false;
 
-    levelActive = true;
-    gamePaused = false;
+    document.body.classList.add(
+        "game-active"
+    );
+
+    const menuButton =
+        document.getElementById("menu-button");
+
     menuButton.hidden = false;
 
-    resizeLevelCanvas();
-    resetPlayer();
-    clearBullets();
 
-    requestAnimationFrame(levelLoop);
+    resizeLevelCanvas();
+
+    clearBullets();
+    clearEnemies();
+
+    resetPlayer();
+    resetShootingTimer();
+
+
+    nextEnemySpawn =
+        performance.now() + 700;
+
+
+    requestAnimationFrame(
+        levelLoop
+    );
 }
 
 
@@ -65,73 +81,110 @@ function leaveCurrentLevel() {
     currentLevel = null;
 
     clearBullets();
+    clearEnemies();
 
-    levelScreen.hidden = true;
+    engineLevelScreen.hidden = true;
+
     storyMap.hidden = false;
 
-    requestAnimationFrame(gameLoop);
+    window.gamePaused = false;
+
+
+    document
+        .getElementById("menu-button")
+        .hidden = false;
+
+
+    requestAnimationFrame(
+        gameLoop
+    );
+}
+
+
+function updateLevel(time) {
+
+    updateAutomaticShooting(time);
+
+    updateBullets();
+
+    updateEnemy1s();
+
+
+    if (
+        currentLevel &&
+        currentLevel.enemySpawnInterval
+    ) {
+
+        if (
+            time >= nextEnemySpawn &&
+            enemies.length <
+            currentLevel.maxEnemies
+        ) {
+
+            spawnEnemy1();
+
+            nextEnemySpawn =
+                time +
+                currentLevel.enemySpawnInterval;
+        }
+    }
 }
 
 
 function drawLevel() {
 
-    // Voorlopige achtergrond
-    levelCtx.fillStyle = "#eeeeee";
+    // Achtergrond
+    engineLevelCtx.fillStyle =
+        "#eeeeee";
 
-    levelCtx.fillRect(
+    engineLevelCtx.fillRect(
         0,
         0,
-        levelCanvas.width,
-        levelCanvas.height
+        engineLevelCanvas.width,
+        engineLevelCanvas.height
     );
 
 
     // MIDDENLIJN
-    levelCtx.strokeStyle =
-        "rgba(0, 0, 0, 0.25)";
+    engineLevelCtx.strokeStyle =
+        "rgba(0, 0, 0, 0.55)";
 
-    levelCtx.lineWidth = 3;
+    engineLevelCtx.lineWidth = 4;
 
-    levelCtx.beginPath();
+    engineLevelCtx.beginPath();
 
-    levelCtx.moveTo(
-        levelCanvas.width / 2,
+    engineLevelCtx.moveTo(
+        engineLevelCanvas.width / 2,
         0
     );
 
-    levelCtx.lineTo(
-        levelCanvas.width / 2,
-        levelCanvas.height
+    engineLevelCtx.lineTo(
+        engineLevelCanvas.width / 2,
+        engineLevelCanvas.height
     );
 
-    levelCtx.stroke();
+    engineLevelCtx.stroke();
+
+
+    // ENEMIES
+    drawEnemy1s(
+        engineLevelCtx
+    );
 
 
     // BULLETS
-    levelCtx.fillStyle = "black";
-
-    for (const bullet of bullets) {
-
-        levelCtx.beginPath();
-
-        levelCtx.arc(
-            bullet.x,
-            bullet.y,
-            6,
-            0,
-            Math.PI * 2
-        );
-
-        levelCtx.fill();
-    }
+    drawBullets(
+        engineLevelCtx
+    );
 
 
     // PLAYER
-    levelCtx.fillStyle = "blue";
+    engineLevelCtx.fillStyle =
+        "blue";
 
-    levelCtx.beginPath();
+    engineLevelCtx.beginPath();
 
-    levelCtx.arc(
+    engineLevelCtx.arc(
         levelPlayer.x,
         levelPlayer.y,
         levelPlayer.radius,
@@ -139,21 +192,23 @@ function drawLevel() {
         Math.PI * 2
     );
 
-    levelCtx.fill();
+    engineLevelCtx.fill();
 }
 
 
-function levelLoop() {
+function levelLoop(time) {
 
     if (!levelActive) {
         return;
     }
 
-    if (!gamePaused) {
-        updateBullets();
+    if (!window.gamePaused) {
+        updateLevel(time);
     }
 
     drawLevel();
 
-    requestAnimationFrame(levelLoop);
+    requestAnimationFrame(
+        levelLoop
+    );
 }

@@ -1,4 +1,4 @@
-const menuButton =
+const pauseMenuButton =
     document.getElementById("menu-button");
 
 const pauseMenu =
@@ -14,77 +14,111 @@ const leaveStoryButton =
     document.getElementById("leave-story-button");
 
 
-let gamePaused = false;
+window.gamePaused = false;
 
 
-// MENU OPENEN
-menuButton.addEventListener("click", () => {
+pauseMenuButton.addEventListener(
+    "click",
+    () => {
 
-    gamePaused = true;
+        const onMap =
+            !storyMap.hidden;
 
-    pauseMenu.hidden = false;
-    menuButton.hidden = true;
-
-    // Alleen zichtbaar als we echt in een level zitten
-    leaveLevelButton.hidden = !levelActive;
-});
+        const inLevel =
+            window.levelActive === true;
 
 
-// CONTINUE
-continueButton.addEventListener("click", () => {
+        // Niet in Story Mode?
+        if (!onMap && !inLevel) {
 
-    pauseMenu.hidden = true;
-    menuButton.hidden = false;
+            pauseMenuButton.hidden = true;
 
-    gamePaused = false;
-});
-
-
-// LEVEL VERLATEN
-leaveLevelButton.addEventListener("click", () => {
-
-    pauseMenu.hidden = true;
-
-    gamePaused = false;
-
-    leaveCurrentLevel();
-
-    menuButton.hidden = false;
-});
+            return;
+        }
 
 
-// STORY MODE VERLATEN
-leaveStoryButton.addEventListener("click", async () => {
+        window.gamePaused = true;
 
-    pauseMenu.hidden = true;
-    menuButton.hidden = true;
+        pauseMenu.hidden = false;
 
-    gamePaused = false;
+        pauseMenuButton.hidden = true;
 
 
-    // Als speler in een level zit
-    if (levelActive) {
-
-        levelActive = false;
-        currentLevel = null;
-
-        clearBullets();
-
-        levelScreen.hidden = true;
+        leaveLevelButton.hidden =
+            !inLevel;
     }
+);
 
 
-    // Map afsluiten
-    storyMap.hidden = true;
+continueButton.addEventListener(
+    "click",
+    () => {
 
-    mapGameMenu.hidden = false;
+        pauseMenu.hidden = true;
 
+        window.gamePaused = false;
 
-    // Fullscreen afsluiten
-    if (document.fullscreenElement) {
-
-        try {
-            await document.exitFullscreen();
-        } catch {}
+        pauseMenuButton.hidden = false;
     }
-});
+);
+
+
+leaveLevelButton.addEventListener(
+    "click",
+    () => {
+
+        if (!window.levelActive) {
+            return;
+        }
+
+        pauseMenu.hidden = true;
+
+        window.gamePaused = false;
+
+        leaveCurrentLevel();
+    }
+);
+
+
+leaveStoryButton.addEventListener(
+    "click",
+    async () => {
+
+        pauseMenu.hidden = true;
+
+        pauseMenuButton.hidden = true;
+
+        window.gamePaused = false;
+
+
+        if (window.levelActive) {
+
+            window.levelActive = false;
+            window.currentLevel = null;
+
+            clearBullets();
+            clearEnemies();
+
+            document
+                .getElementById("level-screen")
+                .hidden = true;
+        }
+
+
+        storyMap.hidden = true;
+
+        mapGameMenu.hidden = false;
+
+        document.body.classList.remove(
+            "game-active"
+        );
+
+
+        if (document.fullscreenElement) {
+
+            try {
+                await document.exitFullscreen();
+            } catch {}
+        }
+    }
+);

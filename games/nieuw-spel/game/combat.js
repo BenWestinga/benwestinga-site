@@ -1,32 +1,38 @@
-const bullets = [];
+window.bullets = [];
 
 
-/*
-    Later komen deze gegevens uit:
-    - gekozen wapen
-    - upgrades
-    - account progressie
+// Alleen tijdelijke testwaarden.
+// Later komen deze uit het gekozen wapen + upgrades.
+const TEST_BULLET_SPEED = 12;
+const TEST_FIRE_INTERVAL = 250;
 
-    Dus NIET uit level-01.js.
-*/
+let lastShotTime = 0;
+
 
 function shootBullet() {
 
-    if (!levelActive || gamePaused) {
+    if (
+        !window.levelActive ||
+        window.gamePaused
+    ) {
         return;
     }
 
-    const middle = levelCanvas.width / 2;
+    const canvas =
+        document.getElementById("level-canvas");
+
+    const middle =
+        canvas.width / 2;
 
     let direction;
 
 
-    // Speler links -> schiet rechts
+    // Links staan = rechts schieten
     if (levelPlayer.x < middle) {
         direction = 1;
     }
 
-    // Speler rechts -> schiet links
+    // Rechts staan = links schieten
     else if (levelPlayer.x > middle) {
         direction = -1;
     }
@@ -40,30 +46,49 @@ function shootBullet() {
         x: levelPlayer.x,
         y: levelPlayer.y,
 
-        direction: direction
+        radius: 6,
+
+        vx:
+            TEST_BULLET_SPEED *
+            direction
     });
+}
+
+
+function updateAutomaticShooting(time) {
+
+    if (
+        time - lastShotTime <
+        TEST_FIRE_INTERVAL
+    ) {
+        return;
+    }
+
+    shootBullet();
+
+    lastShotTime = time;
 }
 
 
 function updateBullets() {
 
-    for (let i = bullets.length - 1; i >= 0; i--) {
+    const canvas =
+        document.getElementById("level-canvas");
+
+    for (
+        let i = bullets.length - 1;
+        i >= 0;
+        i--
+    ) {
 
         const bullet = bullets[i];
 
-        /*
-            Tijdelijke beweging.
-
-            Later wordt dit:
-            bullet.x += weapon.bulletSpeed * bullet.direction
-        */
-
-        bullet.x += 10 * bullet.direction;
+        bullet.x += bullet.vx;
 
 
         if (
             bullet.x < -100 ||
-            bullet.x > levelCanvas.width + 100
+            bullet.x > canvas.width + 100
         ) {
             bullets.splice(i, 1);
         }
@@ -71,6 +96,32 @@ function updateBullets() {
 }
 
 
+function drawBullets(ctx) {
+
+    ctx.fillStyle = "black";
+
+    for (const bullet of bullets) {
+
+        ctx.beginPath();
+
+        ctx.arc(
+            bullet.x,
+            bullet.y,
+            bullet.radius,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+    }
+}
+
+
 function clearBullets() {
     bullets.length = 0;
+}
+
+
+function resetShootingTimer() {
+    lastShotTime = performance.now();
 }

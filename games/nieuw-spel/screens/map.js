@@ -1,12 +1,22 @@
-const storyButton = document.getElementById("story-button");
-const leaveMapButton = document.getElementById("leave-map-button");
+const storyButton =
+    document.getElementById("story-button");
 
-const mapGameMenu = document.getElementById("game-menu");
-const storyMap = document.getElementById("story-map");
+const mapGameMenu =
+    document.getElementById("game-menu");
 
-const canvas = document.getElementById("map-canvas");
-const ctx = canvas.getContext("2d");
+const storyMap =
+    document.getElementById("story-map");
 
+const canvas =
+    document.getElementById("map-canvas");
+
+const ctx =
+    canvas.getContext("2d");
+
+
+// ===============================
+// CANVAS
+// ===============================
 
 function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -15,12 +25,23 @@ function resizeCanvas() {
 
 resizeCanvas();
 
-window.addEventListener("resize", resizeCanvas);
+window.addEventListener(
+    "resize",
+    resizeCanvas
+);
 
+
+// ===============================
+// WORLD
+// ===============================
 
 const WORLD_WIDTH = 3000;
 const WORLD_HEIGHT = 1800;
 
+
+// ===============================
+// MAP PLAYER
+// ===============================
 
 const player = {
     x: 500,
@@ -30,11 +51,19 @@ const player = {
 };
 
 
+// ===============================
+// CAMERA
+// ===============================
+
 const camera = {
     x: 0,
     y: 0
 };
 
+
+// ===============================
+// LEVEL 1 LOCATION
+// ===============================
 
 const level1 = {
     x: 900,
@@ -43,14 +72,22 @@ const level1 = {
 };
 
 
+// ===============================
+// KEYS
+// ===============================
+
 const keys = {};
 
 
-// PAD
+// ===============================
+// TEMPORARY PATH
+// ===============================
+
 const pathPoints = [];
 
 let pathX = 300;
 let pathY = 500;
+
 
 for (let i = 0; i < 25; i++) {
 
@@ -59,179 +96,264 @@ for (let i = 0; i < 25; i++) {
         y: pathY
     });
 
-    pathX += 100 + Math.random() * 100;
-    pathY += (Math.random() - 0.5) * 250;
+    pathX +=
+        100 +
+        Math.random() * 100;
+
+    pathY +=
+        (Math.random() - 0.5) *
+        250;
+
 
     pathY = Math.max(
         150,
-        Math.min(WORLD_HEIGHT - 150, pathY)
+        Math.min(
+            WORLD_HEIGHT - 150,
+            pathY
+        )
     );
 }
 
 
-// CONTROLS
-document.addEventListener("keydown", event => {
+// ===============================
+// KEYBOARD
+// ===============================
 
-    const key = event.key.toLowerCase();
+document.addEventListener(
+    "keydown",
+    event => {
 
-    keys[key] = true;
+        const key =
+            event.key.toLowerCase();
 
-    if (
-        ["arrowup", "arrowdown", "arrowleft", "arrowright"]
-            .includes(key)
-    ) {
-        event.preventDefault();
+
+        keys[key] = true;
+
+
+        if (
+            [
+                "arrowup",
+                "arrowdown",
+                "arrowleft",
+                "arrowright"
+            ].includes(key)
+        ) {
+            event.preventDefault();
+        }
+
+
+        // LEVEL 1 ENTER
+        if (
+            event.key === "Enter" &&
+            !storyMap.hidden &&
+            !window.gamePaused &&
+            isPlayerOnLevel1()
+        ) {
+
+            keys["enter"] = false;
+
+            startLevel1();
+        }
     }
+);
 
 
-    // ENTER LEVEL
-    if (event.key === "Enter" && isPlayerOnLevel1()) {
+document.addEventListener(
+    "keyup",
+    event => {
 
-        storyMap.hidden = true;
-
-        const levelScreen =
-            document.getElementById("level-screen");
-
-        levelScreen.hidden = false;
-
-        console.log("Entered Level 1");
+        keys[
+            event.key.toLowerCase()
+        ] = false;
     }
-});
+);
 
 
-document.addEventListener("keyup", event => {
-    keys[event.key.toLowerCase()] = false;
-});
+// ===============================
+// START STORY MODE
+// ===============================
+
+storyButton.addEventListener(
+    "click",
+    async () => {
+
+        mapGameMenu.hidden = true;
+        storyMap.hidden = false;
+
+        window.gamePaused = false;
 
 
-// STORY MODE
-storyButton.addEventListener("click", async () => {
+        // Geen scrollbars tijdens Story Mode
+        document.body.classList.add(
+            "game-active"
+        );
 
-    mapGameMenu.hidden = true;
-    storyMap.hidden = false;
-    menuButton.hidden = false;
-    gamePaused = false;
 
-    try {
-        await document.documentElement.requestFullscreen();
-    } catch {}
+        // ☰ knop tonen
+        document
+            .getElementById("menu-button")
+            .hidden = false;
 
-    resizeCanvas();
 
-    requestAnimationFrame(gameLoop);
-});
+        // Fullscreen
+        if (!document.fullscreenElement) {
 
-function gameLoop() {
+            try {
 
-    if (storyMap.hidden) {
-        return;
+                await document.documentElement
+                    .requestFullscreen();
+
+            } catch {
+                console.log(
+                    "Fullscreen could not be started."
+                );
+            }
+        }
+
+
+        resizeCanvas();
+
+        requestAnimationFrame(
+            gameLoop
+        );
     }
-
-    if (!gamePaused) {
-        updatePlayer();
-    }
-
-    updateCamera();
-    drawWorld();
-
-    requestAnimationFrame(gameLoop);
-}
-
-leaveMapButton.addEventListener("click", async () => {
-
-    storyMap.hidden = true;
-    mapGameMenu.hidden = false;
-
-    if (document.fullscreenElement) {
-        await document.exitFullscreen();
-    }
-});
+);
 
 
-// CHECK LEVEL
+// ===============================
+// LEVEL CHECK
+// ===============================
+
 function isPlayerOnLevel1() {
 
-    const dx = player.x - level1.x;
-    const dy = player.y - level1.y;
+    const dx =
+        player.x - level1.x;
 
-    const distance = Math.sqrt(
-        dx * dx + dy * dy
+    const dy =
+        player.y - level1.y;
+
+
+    const distance =
+        Math.sqrt(
+            dx * dx +
+            dy * dy
+        );
+
+
+    return (
+        distance <
+        level1.radius
     );
-
-    return distance < level1.radius;
 }
 
 
-// PLAYER
+// ===============================
+// MOVE MAP PLAYER
+// ===============================
+
 function updatePlayer() {
 
-    if (keys["w"] || keys["arrowup"]) {
+    if (
+        keys["w"] ||
+        keys["arrowup"]
+    ) {
         player.y -= player.speed;
     }
 
-    if (keys["s"] || keys["arrowdown"]) {
+
+    if (
+        keys["s"] ||
+        keys["arrowdown"]
+    ) {
         player.y += player.speed;
     }
 
-    if (keys["a"] || keys["arrowleft"]) {
+
+    if (
+        keys["a"] ||
+        keys["arrowleft"]
+    ) {
         player.x -= player.speed;
     }
 
-    if (keys["d"] || keys["arrowright"]) {
+
+    if (
+        keys["d"] ||
+        keys["arrowright"]
+    ) {
         player.x += player.speed;
     }
 
 
+    // WORLD BORDERS
     player.x = Math.max(
-        0,
-        Math.min(WORLD_WIDTH, player.x)
+        player.size / 2,
+        Math.min(
+            WORLD_WIDTH -
+                player.size / 2,
+            player.x
+        )
     );
 
+
     player.y = Math.max(
-        0,
-        Math.min(WORLD_HEIGHT, player.y)
+        player.size / 2,
+        Math.min(
+            WORLD_HEIGHT -
+                player.size / 2,
+            player.y
+        )
     );
 }
 
 
+// ===============================
 // CAMERA
+// ===============================
+
 function updateCamera() {
 
     camera.x =
-        player.x - canvas.width / 2;
+        player.x -
+        canvas.width / 2;
 
     camera.y =
-        player.y - canvas.height / 2;
+        player.y -
+        canvas.height / 2;
 
 
     camera.x = Math.max(
         0,
         Math.min(
-            WORLD_WIDTH - canvas.width,
+            Math.max(
+                0,
+                WORLD_WIDTH -
+                    canvas.width
+            ),
             camera.x
         )
     );
 
+
     camera.y = Math.max(
         0,
         Math.min(
-            WORLD_HEIGHT - canvas.height,
+            Math.max(
+                0,
+                WORLD_HEIGHT -
+                    canvas.height
+            ),
             camera.y
         )
     );
 }
 
 
-// DRAW
+// ===============================
+// DRAW MAP
+// ===============================
+
 function drawWorld() {
-
-    ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
 
     // GRASS
     ctx.fillStyle = "#7ec850";
@@ -246,17 +368,24 @@ function drawWorld() {
 
     ctx.save();
 
+
+    // CAMERA
     ctx.translate(
         -camera.x,
         -camera.y
     );
 
 
+    // ===========================
     // PATH
+    // ===========================
+
     ctx.strokeStyle = "#d2b48c";
     ctx.lineWidth = 90;
+
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
+
 
     ctx.beginPath();
 
@@ -265,7 +394,12 @@ function drawWorld() {
         pathPoints[0].y
     );
 
-    for (let i = 1; i < pathPoints.length; i++) {
+
+    for (
+        let i = 1;
+        i < pathPoints.length;
+        i++
+    ) {
 
         ctx.lineTo(
             pathPoints[i].x,
@@ -273,11 +407,23 @@ function drawWorld() {
         );
     }
 
+
     ctx.stroke();
 
 
+    // ===========================
     // LEVEL 1 PLATEAU
-    ctx.fillStyle = "#777";
+    // ===========================
+
+    const onLevel =
+        isPlayerOnLevel1();
+
+
+    ctx.fillStyle =
+        onLevel
+            ? "#555"
+            : "#777";
+
 
     ctx.beginPath();
 
@@ -294,9 +440,13 @@ function drawWorld() {
 
     // LEVEL NUMBER
     ctx.fillStyle = "white";
-    ctx.font = "bold 40px Arial";
+
+    ctx.font =
+        "bold 40px Arial";
+
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
+
 
     ctx.fillText(
         "1",
@@ -305,7 +455,10 @@ function drawWorld() {
     );
 
 
-    // PLAYER
+    // ===========================
+    // MAP PLAYER
+    // ===========================
+
     ctx.fillStyle = "blue";
 
     ctx.beginPath();
@@ -324,11 +477,15 @@ function drawWorld() {
     ctx.restore();
 
 
-    // LEVEL INFO
-    if (isPlayerOnLevel1()) {
+    // ===========================
+    // LEVEL INFORMATION
+    // ===========================
+
+    if (onLevel) {
 
         ctx.fillStyle =
             "rgba(0, 0, 0, 0.65)";
+
 
         ctx.fillRect(
             canvas.width / 2 - 180,
@@ -339,9 +496,13 @@ function drawWorld() {
 
 
         ctx.fillStyle = "white";
+
         ctx.textAlign = "center";
 
-        ctx.font = "bold 25px Arial";
+
+        ctx.font =
+            "bold 25px Arial";
+
 
         ctx.fillText(
             "LEVEL 1",
@@ -350,7 +511,9 @@ function drawWorld() {
         );
 
 
-        ctx.font = "18px Arial";
+        ctx.font =
+            "18px Arial";
+
 
         ctx.fillText(
             "Press ENTER to play",
@@ -361,16 +524,31 @@ function drawWorld() {
 }
 
 
-// LOOP
+// ===============================
+// MAP LOOP
+// ===============================
+
 function gameLoop() {
 
+    // Stop map-loop wanneer we
+    // bijvoorbeeld een level ingaan.
     if (storyMap.hidden) {
         return;
     }
 
-    updatePlayer();
+
+    // Pauze = speler niet bewegen
+    if (!window.gamePaused) {
+        updatePlayer();
+    }
+
+
     updateCamera();
+
     drawWorld();
 
-    requestAnimationFrame(gameLoop);
+
+    requestAnimationFrame(
+        gameLoop
+    );
 }

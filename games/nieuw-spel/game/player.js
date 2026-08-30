@@ -1,29 +1,60 @@
-const levelPlayer = {
+window.levelPlayer = {
     x: 0,
     y: 0,
-    radius: 16
+    radius: 18
 };
 
 
 function resetPlayer() {
-    levelPlayer.x = levelCanvas.width / 2;
-    levelPlayer.y = levelCanvas.height / 2;
+
+    const canvas =
+        document.getElementById("level-canvas");
+
+    levelPlayer.x =
+        canvas.width / 2;
+
+    levelPlayer.y =
+        canvas.height / 2;
 }
 
 
 function movePlayerToPointer(event) {
 
-    if (!levelActive || gamePaused) {
+    if (
+        !window.levelActive ||
+        window.gamePaused
+    ) {
         return;
-    }   
+    }
 
-    const rect = levelCanvas.getBoundingClientRect();
+    const canvas =
+        document.getElementById("level-canvas");
 
-    levelPlayer.x =
+    const rect =
+        canvas.getBoundingClientRect();
+
+    const x =
         (event.clientX - rect.left) *
-        (levelCanvas.width / rect.width);
+        (canvas.width / rect.width);
 
-    levelPlayer.y =
+    const y =
         (event.clientY - rect.top) *
-        (levelCanvas.height / rect.height);
+        (canvas.height / rect.height);
+
+
+    levelPlayer.x = Math.max(
+        levelPlayer.radius,
+        Math.min(
+            canvas.width - levelPlayer.radius,
+            x
+        )
+    );
+
+    levelPlayer.y = Math.max(
+        levelPlayer.radius,
+        Math.min(
+            canvas.height - levelPlayer.radius,
+            y
+        )
+    );
 }
