@@ -19,6 +19,15 @@ const startScreen =
 const nameScreen =
     document.getElementById("nameScreen");
 
+const isMobile =
+    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    (navigator.maxTouchPoints > 1 && window.innerWidth < 1200);
+
+if (isMobile) {
+    document.getElementById("pcOnlyScreen").classList.remove("hidden");
+    document.getElementById("startScreen").classList.add("hidden");
+}
+
 const gameOverScreen =
     document.getElementById("gameOverScreen");
 
@@ -34,8 +43,25 @@ const survivalTimeElement =
 const scoreMessage =
     document.getElementById("scoreMessage");
 
-const playButton =
-    document.getElementById("playButton");
+playButton.addEventListener(
+    "click",
+    function() {
+
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+        }
+
+        startScreen.style.display =
+            "none";
+
+        nameScreen.classList.remove(
+            "hidden"
+        );
+
+        nameInput.value = "";
+        nameInput.focus();
+    }
+);
 
 const startGameButton =
     document.getElementById("startGameButton");
