@@ -1,4 +1,3 @@
-```javascript
 const API_URL = "/api/blue-dot";
 
 
@@ -198,4 +197,3 @@ async function loadLeaderboard() {
             "Leaderboard tijdelijk niet beschikbaar.";
     }
 }
-```
