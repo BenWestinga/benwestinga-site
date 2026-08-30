@@ -1,4 +1,3 @@
-
 const gameScreen =
     document.getElementById("gameScreen");
 
@@ -97,6 +96,33 @@ const enemyRadius = 16;
 const safeSpawnRadius = 150;
 
 
+/*
+    GROTE ENEMY
+
+    10% kans om te spawnen.
+    3x groter.
+    2x langzamer.
+    5 hits nodig.
+*/
+const bigEnemyChance = 0.10;
+
+const bigEnemyRadius =
+    enemyRadius * 3;
+
+const bigEnemyHits = 5;
+
+
+/*
+    BEN AFBEELDING
+*/
+
+const benImage =
+    new Image();
+
+benImage.src =
+    "Ben.png";
+
+
 /* =========================
    BULLETS
    ========================= */
@@ -182,6 +208,7 @@ function resizeCanvas() {
     }
 }
 
+
 window.addEventListener(
     "resize",
     resizeCanvas
@@ -240,7 +267,8 @@ canvas.addEventListener(
 function getSpawnRate(time) {
 
     const seconds =
-        (time - startTime) / 1000;
+        (time - startTime) /
+        1000;
 
     /*
         0 sec   = 1.0 sec
@@ -264,10 +292,26 @@ function getSpawnRate(time) {
 
 function spawnEnemy() {
 
+    /*
+        10% kans op grote enemy.
+    */
+
+    const isBig =
+        Math.random() <
+        bigEnemyChance;
+
+
+    const radius =
+        isBig
+            ? bigEnemyRadius
+            : enemyRadius;
+
+
     let x;
     let y;
 
     let valid = false;
+
 
     for (
         let attempt = 0;
@@ -276,20 +320,30 @@ function spawnEnemy() {
     ) {
 
         x =
-            enemyRadius +
+            radius +
             Math.random() *
-            (width - enemyRadius * 2);
+            (
+                width -
+                radius * 2
+            );
 
         y =
-            enemyRadius +
+            radius +
             Math.random() *
-            (height - enemyRadius * 2);
+            (
+                height -
+                radius * 2
+            );
+
 
         const dx =
-            x - player.x;
+            x -
+            player.x;
 
         const dy =
-            y - player.y;
+            y -
+            player.y;
+
 
         const distance =
             Math.sqrt(
@@ -297,9 +351,27 @@ function spawnEnemy() {
                 dy * dy
             );
 
+
+        /*
+            Kleine enemy:
+            exact dezelfde spawn-afstand
+            als vroeger.
+
+            Grote enemy:
+            iets meer ruimte omdat
+            hij veel groter is.
+        */
+
+        const requiredDistance =
+            isBig
+                ? safeSpawnRadius +
+                  radius
+                : safeSpawnRadius;
+
+
         if (
             distance >=
-            safeSpawnRadius
+            requiredDistance
         ) {
 
             valid = true;
@@ -308,25 +380,44 @@ function spawnEnemy() {
         }
     }
 
+
     if (!valid) {
         return;
     }
+
 
     const angle =
         Math.random() *
         Math.PI *
         2;
 
+
+    /*
+        Kleine enemy:
+        EXACT dezelfde snelheid
+        als eerst.
+
+        Grote enemy:
+        precies 2x langzamer.
+    */
+
     const speed =
-        1.5 +
-        Math.random() * 1.5;
+        isBig
+            ? 0.75 +
+              Math.random() * 0.75
+
+            : 1.5 +
+              Math.random() * 1.5;
+
 
     enemies.push({
 
         x: x,
+
         y: y,
 
-        radius: enemyRadius,
+        radius: radius,
+
 
         vx:
             Math.cos(angle) *
@@ -334,7 +425,18 @@ function spawnEnemy() {
 
         vy:
             Math.sin(angle) *
-            speed
+            speed,
+
+
+        speed: speed,
+
+        isBig: isBig,
+
+
+        hp:
+            isBig
+                ? bigEnemyHits
+                : 1
     });
 }
 
@@ -347,8 +449,133 @@ function updateEnemies() {
 
     for (const enemy of enemies) {
 
-        enemy.x += enemy.vx;
-        enemy.y += enemy.vy;
+
+        /*
+            ALLEEN GROTE ENEMY
+            VOLGT DE RODE SPELER.
+        */
+
+        if (enemy.isBig) {
+
+            const dx =
+                player.x -
+                enemy.x;
+
+            const dy =
+                player.y -
+                enemy.y;
+
+
+            const distance =
+                Math.sqrt(
+                    dx * dx +
+                    dy * dy
+                );
+
+
+            if (distance > 0) {
+
+                /*
+                    Gewenste richting
+                    naar speler.
+                */
+
+                const targetVx =
+                    (
+                        dx /
+                        distance
+                    ) *
+                    enemy.speed;
+
+                const targetVy =
+                    (
+                        dy /
+                        distance
+                    ) *
+                    enemy.speed;
+
+
+                /*
+                    Niet direct omdraaien.
+
+                    Hierdoor kan de grote
+                    enemy nog zichtbaar
+                    tegen de muur bouncen.
+                */
+
+                const steering =
+                    0.08;
+
+
+                enemy.vx +=
+                    (
+                        targetVx -
+                        enemy.vx
+                    ) *
+                    steering;
+
+                enemy.vy +=
+                    (
+                        targetVy -
+                        enemy.vy
+                    ) *
+                    steering;
+
+
+                /*
+                    Snelheid gelijk houden.
+                */
+
+                const currentSpeed =
+                    Math.sqrt(
+                        enemy.vx *
+                        enemy.vx +
+                        enemy.vy *
+                        enemy.vy
+                    );
+
+
+                if (currentSpeed > 0) {
+
+                    enemy.vx =
+                        (
+                            enemy.vx /
+                            currentSpeed
+                        ) *
+                        enemy.speed;
+
+                    enemy.vy =
+                        (
+                            enemy.vy /
+                            currentSpeed
+                        ) *
+                        enemy.speed;
+                }
+            }
+        }
+
+
+        /*
+            BEWEGING
+
+            Kleine enemy:
+            zelfde als eerst.
+
+            Grote enemy:
+            gebruikt bovenstaande
+            volg-richting.
+        */
+
+        enemy.x +=
+            enemy.vx;
+
+        enemy.y +=
+            enemy.vy;
+
+
+        /*
+            LINKER MUUR
+        */
 
         if (
             enemy.x -
@@ -359,12 +586,20 @@ function updateEnemies() {
                 enemy.radius;
 
             enemy.vx =
-                Math.abs(enemy.vx);
+                Math.abs(
+                    enemy.vx
+                );
         }
+
+
+        /*
+            RECHTER MUUR
+        */
 
         if (
             enemy.x +
-            enemy.radius >= width
+            enemy.radius >=
+            width
         ) {
 
             enemy.x =
@@ -372,8 +607,15 @@ function updateEnemies() {
                 enemy.radius;
 
             enemy.vx =
-                -Math.abs(enemy.vx);
+                -Math.abs(
+                    enemy.vx
+                );
         }
+
+
+        /*
+            BOVENKANT
+        */
 
         if (
             enemy.y -
@@ -384,12 +626,20 @@ function updateEnemies() {
                 enemy.radius;
 
             enemy.vy =
-                Math.abs(enemy.vy);
+                Math.abs(
+                    enemy.vy
+                );
         }
+
+
+        /*
+            ONDERKANT
+        */
 
         if (
             enemy.y +
-            enemy.radius >= height
+            enemy.radius >=
+            height
         ) {
 
             enemy.y =
@@ -397,7 +647,9 @@ function updateEnemies() {
                 enemy.radius;
 
             enemy.vy =
-                -Math.abs(enemy.vy);
+                -Math.abs(
+                    enemy.vy
+                );
         }
     }
 }
@@ -413,10 +665,14 @@ function shoot(time) {
         time - lastShot <
         shotDelay
     ) {
+
         return;
     }
 
-    lastShot = time;
+
+    lastShot =
+        time;
+
 
     const direction =
         player.x <
@@ -424,11 +680,14 @@ function shoot(time) {
             ? 1
             : -1;
 
+
     bullets.push({
 
-        x: player.x,
+        x:
+            player.x,
 
-        y: player.y,
+        y:
+            player.y,
 
         vx:
             direction *
@@ -447,7 +706,8 @@ function shoot(time) {
 function updateBullets() {
 
     for (
-        let i = bullets.length - 1;
+        let i =
+            bullets.length - 1;
         i >= 0;
         i--
     ) {
@@ -455,18 +715,24 @@ function updateBullets() {
         const bullet =
             bullets[i];
 
+
         bullet.x +=
             bullet.vx;
+
 
         if (
             bullet.x <
                 -bullet.radius ||
+
             bullet.x >
                 width +
                 bullet.radius
         ) {
 
-            bullets.splice(i, 1);
+            bullets.splice(
+                i,
+                1
+            );
         }
     }
 }
@@ -492,6 +758,7 @@ function checkCollisions() {
         const enemy =
             enemies[i];
 
+
         for (
             let j =
                 bullets.length - 1;
@@ -502,6 +769,7 @@ function checkCollisions() {
             const bullet =
                 bullets[j];
 
+
             const dx =
                 bullet.x -
                 enemy.x;
@@ -510,11 +778,13 @@ function checkCollisions() {
                 bullet.y -
                 enemy.y;
 
+
             const distance =
                 Math.sqrt(
                     dx * dx +
                     dy * dy
                 );
+
 
             if (
                 distance <=
@@ -522,9 +792,41 @@ function checkCollisions() {
                 enemy.radius
             ) {
 
-                enemies.splice(i, 1);
+                /*
+                    Enemy geraakt.
+                */
 
-                bullets.splice(j, 1);
+                enemy.hp--;
+
+
+                /*
+                    Kogel verwijderen.
+                */
+
+                bullets.splice(
+                    j,
+                    1
+                );
+
+
+                /*
+                    Kleine enemy:
+                    hp = 1
+
+                    Grote enemy:
+                    hp = 5
+                */
+
+                if (
+                    enemy.hp <= 0
+                ) {
+
+                    enemies.splice(
+                        i,
+                        1
+                    );
+                }
+
 
                 break;
             }
@@ -536,7 +838,10 @@ function checkCollisions() {
         SPELER → ENEMY
     */
 
-    for (const enemy of enemies) {
+    for (
+        const enemy
+        of enemies
+    ) {
 
         const dx =
             player.x -
@@ -546,11 +851,13 @@ function checkCollisions() {
             player.y -
             enemy.y;
 
+
         const distance =
             Math.sqrt(
                 dx * dx +
                 dy * dy
             );
+
 
         if (
             distance <=
@@ -571,6 +878,10 @@ function checkCollisions() {
    ========================= */
 
 function draw() {
+
+    /*
+        ACHTERGROND
+    */
 
     ctx.fillStyle =
         "white";
@@ -602,7 +913,8 @@ function draw() {
     ctx.strokeStyle =
         "rgba(0, 0, 0, 0.22)";
 
-    ctx.lineWidth = 2;
+    ctx.lineWidth =
+        2;
 
     ctx.stroke();
 
@@ -629,24 +941,97 @@ function draw() {
 
     /*
         ENEMIES
+
+        ALLE enemies gebruiken
+        Ben.png.
+
+        Grootte wordt automatisch
+        bepaald door enemy.radius.
     */
 
-    for (const enemy of enemies) {
+    for (
+        const enemy
+        of enemies
+    ) {
 
-        ctx.beginPath();
+        /*
+            Als Ben.png geladen is.
+        */
 
-        ctx.arc(
-            enemy.x,
-            enemy.y,
-            enemy.radius,
-            0,
-            Math.PI * 2
-        );
+        if (
+            benImage.complete &&
+            benImage.naturalWidth > 0
+        ) {
 
-        ctx.fillStyle =
-            "blue";
+            ctx.save();
 
-        ctx.fill();
+
+            /*
+                Cirkel maken.
+
+                Hierdoor blijft de enemy
+                rond zoals de oude bal.
+            */
+
+            ctx.beginPath();
+
+            ctx.arc(
+                enemy.x,
+                enemy.y,
+                enemy.radius,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.clip();
+
+
+            /*
+                PNG tekenen.
+            */
+
+            ctx.drawImage(
+                benImage,
+
+                enemy.x -
+                    enemy.radius,
+
+                enemy.y -
+                    enemy.radius,
+
+                enemy.radius * 2,
+
+                enemy.radius * 2
+            );
+
+
+            ctx.restore();
+        }
+
+        else {
+
+            /*
+                Als Ben.png niet gevonden
+                wordt, blijft hij blauw.
+
+                Zo crasht de game niet.
+            */
+
+            ctx.beginPath();
+
+            ctx.arc(
+                enemy.x,
+                enemy.y,
+                enemy.radius,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fillStyle =
+                "blue";
+
+            ctx.fill();
+        }
     }
 
 
@@ -654,7 +1039,10 @@ function draw() {
         KOGELS
     */
 
-    for (const bullet of bullets) {
+    for (
+        const bullet
+        of bullets
+    ) {
 
         ctx.beginPath();
 
@@ -681,8 +1069,12 @@ function draw() {
 function updateTimer(time) {
 
     const elapsed =
-        (time - startTime) /
+        (
+            time -
+            startTime
+        ) /
         1000;
+
 
     timerElement.textContent =
         elapsed.toFixed(2);
@@ -695,26 +1087,42 @@ function updateTimer(time) {
 
 function gameLoop(time) {
 
-    if (!gameRunning) {
+    if (
+        !gameRunning
+    ) {
+
         return;
     }
 
-    updateTimer(time);
+
+    updateTimer(
+        time
+    );
+
 
     const spawnRate =
-        getSpawnRate(time);
+        getSpawnRate(
+            time
+        );
+
 
     if (
-        time - lastSpawn >=
+        time -
+        lastSpawn >=
         spawnRate
     ) {
 
         spawnEnemy();
 
-        lastSpawn = time;
+        lastSpawn =
+            time;
     }
 
-    shoot(time);
+
+    shoot(
+        time
+    );
+
 
     updateEnemies();
 
@@ -722,11 +1130,17 @@ function gameLoop(time) {
 
     checkCollisions();
 
-    if (!gameRunning) {
+
+    if (
+        !gameRunning
+    ) {
+
         return;
     }
 
+
     draw();
+
 
     animationFrame =
         requestAnimationFrame(
@@ -744,6 +1158,7 @@ function startGame() {
     const name =
         nameInput.value.trim();
 
+
     if (!name) {
 
         nameInput.focus();
@@ -755,13 +1170,16 @@ function startGame() {
     startScreen.style.display =
         "none";
 
+
     nameScreen.classList.add(
         "hidden"
     );
 
+
     gameOverScreen.classList.add(
         "hidden"
     );
+
 
     gameScreen.style.display =
         "block";
@@ -792,6 +1210,7 @@ function startGame() {
     startTime =
         performance.now();
 
+
     lastSpawn =
         startTime;
 
@@ -803,7 +1222,8 @@ function startGame() {
         "0.00";
 
 
-    gameRunning = true;
+    gameRunning =
+        true;
 
 
     cancelAnimationFrame(
@@ -824,7 +1244,10 @@ function startGame() {
 
 async function endGame() {
 
-    if (!gameRunning) {
+    if (
+        !gameRunning
+    ) {
+
         return;
     }
 
@@ -834,11 +1257,15 @@ async function endGame() {
 
 
     const elapsed =
-        (endTime - startTime) /
+        (
+            endTime -
+            startTime
+        ) /
         1000;
 
 
-    gameRunning = false;
+    gameRunning =
+        false;
 
 
     cancelAnimationFrame(
@@ -854,8 +1281,10 @@ async function endGame() {
     playerNameElement.textContent =
         nameInput.value.trim();
 
+
     survivalTimeElement.textContent =
         elapsed.toFixed(2);
+
 
     timerElement.textContent =
         elapsed.toFixed(2);
@@ -871,7 +1300,7 @@ async function endGame() {
 
 
     /*
-        Score naar server sturen.
+        SCORE NAAR SERVER
     */
 
     const result =
@@ -884,7 +1313,8 @@ async function endGame() {
     if (result) {
 
         scoreMessage.textContent =
-            result.message || "";
+            result.message ||
+            "";
     }
 }
 
@@ -900,11 +1330,15 @@ playButton.addEventListener(
         startScreen.style.display =
             "none";
 
+
         nameScreen.classList.remove(
             "hidden"
         );
 
-        nameInput.value = "";
+
+        nameInput.value =
+            "";
+
 
         nameInput.focus();
     }
@@ -940,6 +1374,7 @@ backFromNameButton.addEventListener(
             "hidden"
         );
 
+
         startScreen.style.display =
             "flex";
     }
@@ -954,6 +1389,7 @@ continueButton.addEventListener(
             "hidden"
         );
 
+
         startScreen.style.display =
             "flex";
     }
@@ -967,9 +1403,11 @@ leaderboardButton.addEventListener(
         startScreen.style.display =
             "none";
 
+
         leaderboardScreen.classList.remove(
             "hidden"
         );
+
 
         await loadLeaderboard();
     }
@@ -983,6 +1421,7 @@ backFromLeaderboardButton.addEventListener(
         leaderboardScreen.classList.add(
             "hidden"
         );
+
 
         startScreen.style.display =
             "flex";
