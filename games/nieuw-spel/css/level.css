@@ -49,6 +49,7 @@ body.game-active {
     height: 55px;
 
     margin: 0;
+    padding: 0;
 
     border: none;
     border-radius: 10px;
@@ -56,13 +57,32 @@ body.game-active {
     background:
         rgba(0, 0, 0, 0.35);
 
-    color: white;
+    display: flex;
+    flex-direction: column;
 
-    font-size: 30px;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
 
     cursor: pointer;
 
     z-index: 1500;
+}
+
+
+#menu-button span {
+    width: 27px;
+    height: 3px;
+
+    background: white;
+
+    border-radius: 3px;
+}
+
+
+#menu-button[hidden] {
+    display: none;
 }
 
 

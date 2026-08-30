@@ -119,6 +119,12 @@ registerForm.addEventListener("submit", async event => {
     }
 });
 
+document
+    .getElementById("back-to-games-button")
+    .addEventListener("click", () => {
+
+        window.location.href = "/";
+    });
 
 document
     .getElementById("logout-button")

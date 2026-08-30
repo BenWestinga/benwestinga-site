@@ -17,9 +17,53 @@ const leaveStoryButton =
 window.gamePaused = false;
 
 
+function openPauseMenu() {
+
+    const onMap =
+        !storyMap.hidden;
+
+    const inLevel =
+        window.levelActive === true;
+
+
+    // Niet in Story Mode?
+    if (!onMap && !inLevel) {
+
+        pauseMenuButton.hidden = true;
+
+        return;
+    }
+
+
+    window.gamePaused = true;
+
+    pauseMenu.hidden = false;
+
+    pauseMenuButton.hidden = true;
+
+
+    leaveLevelButton.hidden =
+        !inLevel;
+}
+
+
 pauseMenuButton.addEventListener(
     "click",
-    () => {
+    openPauseMenu
+);
+
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.code !== "Space" ||
+            event.repeat
+        ) {
+            return;
+        }
+
 
         const onMap =
             !storyMap.hidden;
@@ -28,27 +72,19 @@ pauseMenuButton.addEventListener(
             window.levelActive === true;
 
 
-        // Niet in Story Mode?
         if (!onMap && !inLevel) {
-
-            pauseMenuButton.hidden = true;
-
             return;
         }
 
 
-        window.gamePaused = true;
-
-        pauseMenu.hidden = false;
-
-        pauseMenuButton.hidden = true;
+        event.preventDefault();
 
 
-        leaveLevelButton.hidden =
-            !inLevel;
+        if (pauseMenu.hidden) {
+            openPauseMenu();
+        }
     }
 );
-
 
 continueButton.addEventListener(
     "click",
