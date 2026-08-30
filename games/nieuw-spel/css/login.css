@@ -45,15 +45,40 @@ input {
 }
 
 #story-map {
+    position: fixed;
+    inset: 0;
+
+    width: 100vw;
+    height: 100vh;
+
     margin: 0;
-    padding: 20px;
+    padding: 0;
+
+    background: #7ec850;
+    overflow: hidden;
+    z-index: 100;
 }
 
 #map-canvas {
     display: block;
-    width: min(960px, 95vw);
-    height: auto;
-    margin: 0 auto 15px auto;
-    border: 3px solid black;
+
+    width: 100vw;
+    height: 100vh;
+
+    margin: 0;
+    border: none;
+
     background: #7ec850;
+}
+
+#leave-map-button {
+    position: absolute;
+
+    top: 20px;
+    left: 20px;
+
+    width: auto;
+    margin: 0;
+
+    z-index: 101;
 }

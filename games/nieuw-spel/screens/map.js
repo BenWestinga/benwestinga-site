@@ -7,6 +7,15 @@ const storyMap = document.getElementById("story-map");
 const canvas = document.getElementById("map-canvas");
 const ctx = canvas.getContext("2d");
 
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+resizeCanvas();
+
+window.addEventListener("resize", resizeCanvas);
+
 
 const WORLD_WIDTH = 3000;
 const WORLD_HEIGHT = 1800;
