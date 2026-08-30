@@ -7,6 +7,8 @@
     <title>New Game</title>
 
     <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/map.css">
+    <link rel="stylesheet" href="css/level.css">
 </head>
 
 <body>
@@ -14,6 +16,9 @@
     <main>
 
         <h1>NEW GAME</h1>
+
+
+        <!-- ACCOUNT MENU -->
 
         <div id="account-menu">
 
@@ -26,6 +31,9 @@
             </button>
 
         </div>
+
+
+        <!-- LOGIN -->
 
         <form id="login-form" hidden>
 
@@ -58,6 +66,9 @@
 
         </form>
 
+
+        <!-- CREATE ACCOUNT -->
+
         <form id="register-form" hidden>
 
             <h2>Create Account</h2>
@@ -71,7 +82,9 @@
                 required
             >
 
-            <p>Username must be 5–25 characters.</p>
+            <p>
+                Username must be 5–25 characters.
+            </p>
 
             <input
                 id="register-password"
@@ -102,51 +115,114 @@
 
         </form>
 
+
+        <!-- MAIN MENU -->
+
         <section id="game-menu" hidden>
 
-    <h2>MAIN MENU</h2>
+            <h2>MAIN MENU</h2>
 
-    <p>
-        Logged in as:
-        <strong id="current-user"></strong>
-    </p>
+            <p>
+                Logged in as:
+                <strong id="current-user"></strong>
+            </p>
 
-    <button id="story-button">
-        STORY MODE
-    </button>
+            <button id="story-button">
+                STORY MODE
+            </button>
 
-    <button id="endless-button">
-        ENDLESS MODE
-    </button>
+            <button id="endless-button">
+                ENDLESS MODE
+            </button>
 
-    <button id="logout-button">
-        LOG OUT
-    </button>
+            <button id="logout-button">
+                LOG OUT
+            </button>
 
-</section>
+        </section>
 
 
-<section id="story-map" hidden>
+        <!-- STORY MAP -->
 
-    <canvas
-        id="map-canvas"
-        width="960"
-        height="540"
-    ></canvas>
+        <section id="story-map" hidden>
 
-    <button id="leave-map-button">
-        BACK TO MENU
-    </button>
+            <canvas
+                id="map-canvas"
+                width="960"
+                height="540"
+            ></canvas>
 
-</section>
+            <button id="leave-map-button">
+                BACK TO MENU
+            </button>
+
+        </section>
+
+
+        <!-- LEVEL -->
+
+        <section id="level-screen" hidden>
+
+            <canvas id="level-canvas"></canvas>
+
+        </section>
+
+
+        <!-- PAUSE MENU -->
+
+        <div id="pause-menu" hidden>
+
+            <div id="pause-menu-box">
+
+                <h2>PAUSED</h2>
+
+                <button id="continue-button">
+                    CONTINUE
+                </button>
+
+                <button
+                    id="leave-level-button"
+                    hidden
+                >
+                    LEAVE LEVEL
+                </button>
+
+                <button id="leave-story-button">
+                    LEAVE STORY MODE
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- THREE-LINE MENU BUTTON -->
+
+        <button
+            id="menu-button"
+            hidden
+        >
+            ☰
+        </button>
+
 
         <p id="message"></p>
 
     </main>
 
+
     <script src="js/api.js"></script>
     <script src="js/login.js"></script>
+
     <script src="screens/map.js"></script>
+
+    <script src="game/player.js"></script>
+    <script src="game/combat.js"></script>
+    <script src="game/level-engine.js"></script>
+
+    <script src="levels/level-01.js"></script>
+
+    <script src="screens/pause-menu.js"></script>  
 
 </body>
 </html>

@@ -7,6 +7,7 @@ const storyMap = document.getElementById("story-map");
 const canvas = document.getElementById("map-canvas");
 const ctx = canvas.getContext("2d");
 
+
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -20,6 +21,7 @@ window.addEventListener("resize", resizeCanvas);
 const WORLD_WIDTH = 3000;
 const WORLD_HEIGHT = 1800;
 
+
 const player = {
     x: 500,
     y: 500,
@@ -27,15 +29,24 @@ const player = {
     speed: 4
 };
 
+
 const camera = {
     x: 0,
     y: 0
 };
 
+
+const level1 = {
+    x: 900,
+    y: 500,
+    radius: 70
+};
+
+
 const keys = {};
 
 
-// Willekeurig pad
+// PAD
 const pathPoints = [];
 
 let pathX = 300;
@@ -58,15 +69,32 @@ for (let i = 0; i < 25; i++) {
 }
 
 
+// CONTROLS
 document.addEventListener("keydown", event => {
 
-    keys[event.key.toLowerCase()] = true;
+    const key = event.key.toLowerCase();
+
+    keys[key] = true;
 
     if (
         ["arrowup", "arrowdown", "arrowleft", "arrowright"]
-            .includes(event.key.toLowerCase())
+            .includes(key)
     ) {
         event.preventDefault();
+    }
+
+
+    // ENTER LEVEL
+    if (event.key === "Enter" && isPlayerOnLevel1()) {
+
+        storyMap.hidden = true;
+
+        const levelScreen =
+            document.getElementById("level-screen");
+
+        levelScreen.hidden = false;
+
+        console.log("Entered Level 1");
     }
 });
 
@@ -76,22 +104,65 @@ document.addEventListener("keyup", event => {
 });
 
 
-storyButton.addEventListener("click", () => {
+// STORY MODE
+storyButton.addEventListener("click", async () => {
 
     mapGameMenu.hidden = true;
     storyMap.hidden = false;
+    menuButton.hidden = false;
+    gamePaused = false;
+
+    try {
+        await document.documentElement.requestFullscreen();
+    } catch {}
+
+    resizeCanvas();
 
     requestAnimationFrame(gameLoop);
 });
 
+function gameLoop() {
 
-leaveMapButton.addEventListener("click", () => {
+    if (storyMap.hidden) {
+        return;
+    }
+
+    if (!gamePaused) {
+        updatePlayer();
+    }
+
+    updateCamera();
+    drawWorld();
+
+    requestAnimationFrame(gameLoop);
+}
+
+leaveMapButton.addEventListener("click", async () => {
 
     storyMap.hidden = true;
     mapGameMenu.hidden = false;
+
+    if (document.fullscreenElement) {
+        await document.exitFullscreen();
+    }
 });
 
 
+// CHECK LEVEL
+function isPlayerOnLevel1() {
+
+    const dx = player.x - level1.x;
+    const dy = player.y - level1.y;
+
+    const distance = Math.sqrt(
+        dx * dx + dy * dy
+    );
+
+    return distance < level1.radius;
+}
+
+
+// PLAYER
 function updatePlayer() {
 
     if (keys["w"] || keys["arrowup"]) {
@@ -123,6 +194,7 @@ function updatePlayer() {
 }
 
 
+// CAMERA
 function updateCamera() {
 
     camera.x =
@@ -150,6 +222,7 @@ function updateCamera() {
 }
 
 
+// DRAW
 function drawWorld() {
 
     ctx.clearRect(
@@ -160,7 +233,7 @@ function drawWorld() {
     );
 
 
-    // Achtergrond
+    // GRASS
     ctx.fillStyle = "#7ec850";
 
     ctx.fillRect(
@@ -171,7 +244,6 @@ function drawWorld() {
     );
 
 
-    // Pad
     ctx.save();
 
     ctx.translate(
@@ -179,9 +251,10 @@ function drawWorld() {
         -camera.y
     );
 
+
+    // PATH
     ctx.strokeStyle = "#d2b48c";
     ctx.lineWidth = 90;
-
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
@@ -203,7 +276,36 @@ function drawWorld() {
     ctx.stroke();
 
 
-    // Speler
+    // LEVEL 1 PLATEAU
+    ctx.fillStyle = "#777";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        level1.x,
+        level1.y,
+        level1.radius,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    // LEVEL NUMBER
+    ctx.fillStyle = "white";
+    ctx.font = "bold 40px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    ctx.fillText(
+        "1",
+        level1.x,
+        level1.y
+    );
+
+
+    // PLAYER
     ctx.fillStyle = "blue";
 
     ctx.beginPath();
@@ -218,10 +320,48 @@ function drawWorld() {
 
     ctx.fill();
 
+
     ctx.restore();
+
+
+    // LEVEL INFO
+    if (isPlayerOnLevel1()) {
+
+        ctx.fillStyle =
+            "rgba(0, 0, 0, 0.65)";
+
+        ctx.fillRect(
+            canvas.width / 2 - 180,
+            canvas.height - 130,
+            360,
+            90
+        );
+
+
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+
+        ctx.font = "bold 25px Arial";
+
+        ctx.fillText(
+            "LEVEL 1",
+            canvas.width / 2,
+            canvas.height - 95
+        );
+
+
+        ctx.font = "18px Arial";
+
+        ctx.fillText(
+            "Press ENTER to play",
+            canvas.width / 2,
+            canvas.height - 65
+        );
+    }
 }
 
 
+// LOOP
 function gameLoop() {
 
     if (storyMap.hidden) {
