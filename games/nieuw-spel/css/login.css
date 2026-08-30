@@ -43,3 +43,17 @@ input {
 #game-menu {
     margin-top: 30px;
 }
+
+#story-map {
+    margin: 0;
+    padding: 20px;
+}
+
+#map-canvas {
+    display: block;
+    width: min(960px, 95vw);
+    height: auto;
+    margin: 0 auto 15px auto;
+    border: 3px solid black;
+    background: #7ec850;
+}

@@ -104,22 +104,41 @@
 
         <section id="game-menu" hidden>
 
-            <h2>Welcome</h2>
+    <h2>MAIN MENU</h2>
 
-            <p>
-                Logged in as:
-                <strong id="current-user"></strong>
-            </p>
+    <p>
+        Logged in as:
+        <strong id="current-user"></strong>
+    </p>
 
-            <button id="logout-button">
-                LOG OUT
-            </button>
+    <button id="story-button">
+        STORY MODE
+    </button>
 
-            <p>
-                After logging out, you must enter your password again.
-            </p>
+    <button id="endless-button">
+        ENDLESS MODE
+    </button>
 
-        </section>
+    <button id="logout-button">
+        LOG OUT
+    </button>
+
+</section>
+
+
+<section id="story-map" hidden>
+
+    <canvas
+        id="map-canvas"
+        width="960"
+        height="540"
+    ></canvas>
+
+    <button id="leave-map-button">
+        BACK TO MENU
+    </button>
+
+</section>
 
         <p id="message"></p>
 
@@ -127,6 +146,7 @@
 
     <script src="js/api.js"></script>
     <script src="js/login.js"></script>
+    <script src="screens/map.js"></script>
 
 </body>
 </html>
