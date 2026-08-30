@@ -4,6 +4,7 @@ import sqlite3
 import hashlib
 import os
 import base64
+import hmac
 
 PORT = 8091
 DATABASE = "/data/accounts.db"
@@ -42,6 +43,27 @@ def hash_password(password):
     )
 
 
+def verify_password(password, stored_hash, stored_salt):
+    salt = base64.b64decode(stored_salt)
+
+    password_hash = hashlib.scrypt(
+        password.encode(),
+        salt=salt,
+        n=16384,
+        r=8,
+        p=1
+    )
+
+    calculated_hash = base64.b64encode(
+        password_hash
+    ).decode()
+
+    return hmac.compare_digest(
+        calculated_hash,
+        stored_hash
+    )
+
+
 class Handler(BaseHTTPRequestHandler):
 
     def send_json(self, status, data):
@@ -77,19 +99,16 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
 
         if self.path == "/test":
-
             self.send_json(
                 200,
                 {
                     "message": "New Game API works!"
                 }
             )
-
             return
 
 
         if self.path == "/test-db":
-
             db = sqlite3.connect(DATABASE)
 
             amount = db.execute(
@@ -105,7 +124,6 @@ class Handler(BaseHTTPRequestHandler):
                     "accounts": amount
                 }
             )
-
             return
 
 
@@ -124,42 +142,30 @@ class Handler(BaseHTTPRequestHandler):
             data = self.read_json()
 
             if not data:
-
                 self.send_json(
                     400,
                     {
                         "error": "Invalid request."
                     }
                 )
-
                 return
 
 
-            username = data.get(
-                "username",
-                ""
-            )
-
-            password = data.get(
-                "password",
-                ""
-            )
+            username = data.get("username", "")
+            password = data.get("password", "")
 
 
             if not isinstance(username, str):
-
                 self.send_json(
                     400,
                     {
                         "error": "Invalid username."
                     }
                 )
-
                 return
 
 
             if len(username) < 5 or len(username) > 25:
-
                 self.send_json(
                     400,
                     {
@@ -167,24 +173,10 @@ class Handler(BaseHTTPRequestHandler):
                         "Username must be between 5 and 25 characters."
                     }
                 )
-
                 return
 
 
-            if not isinstance(password, str):
-
-                self.send_json(
-                    400,
-                    {
-                        "error": "Invalid password."
-                    }
-                )
-
-                return
-
-
-            if len(password) < 8:
-
+            if not isinstance(password, str) or len(password) < 8:
                 self.send_json(
                     400,
                     {
@@ -192,7 +184,6 @@ class Handler(BaseHTTPRequestHandler):
                         "Password must contain at least 8 characters."
                     }
                 )
-
                 return
 
 
@@ -200,11 +191,9 @@ class Handler(BaseHTTPRequestHandler):
                 password
             )
 
-
             db = sqlite3.connect(DATABASE)
 
             try:
-
                 db.execute(
                     """
                     INSERT INTO users (
@@ -224,7 +213,6 @@ class Handler(BaseHTTPRequestHandler):
                 db.commit()
 
             except sqlite3.IntegrityError:
-
                 db.close()
 
                 self.send_json(
@@ -234,23 +222,91 @@ class Handler(BaseHTTPRequestHandler):
                         "This username already exists."
                     }
                 )
-
                 return
 
 
             db.close()
-
 
             self.send_json(
                 201,
                 {
                     "message":
                     "Account created successfully.",
-                    "username":
-                    username
+                    "username": username
                 }
             )
+            return
 
+
+        if self.path == "/login":
+
+            data = self.read_json()
+
+            if not data:
+                self.send_json(
+                    400,
+                    {
+                        "error": "Invalid request."
+                    }
+                )
+                return
+
+
+            username = data.get("username", "")
+            password = data.get("password", "")
+
+            db = sqlite3.connect(DATABASE)
+
+            user = db.execute(
+                """
+                SELECT
+                    username,
+                    password_hash,
+                    password_salt
+                FROM users
+                WHERE username = ?
+                """,
+                (username,)
+            ).fetchone()
+
+            db.close()
+
+
+            if not user:
+                self.send_json(
+                    404,
+                    {
+                        "error":
+                        "Account does not exist."
+                    }
+                )
+                return
+
+
+            if not verify_password(
+                password,
+                user[1],
+                user[2]
+            ):
+                self.send_json(
+                    401,
+                    {
+                        "error":
+                        "Incorrect password."
+                    }
+                )
+                return
+
+
+            self.send_json(
+                200,
+                {
+                    "message":
+                    "Login successful.",
+                    "username":
+                    user[0]
+                }
+            )
             return
 
 
