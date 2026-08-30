@@ -3,11 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>New Game</title>
+
+    <link rel="stylesheet" href="css/login.css">
 </head>
 
 <body>
-    <h1>NEW GAME</h1>
-    <p>You are now in: games/nieuw-spel/</p>
+
+    <main>
+
+        <h1>NEW GAME</h1>
+
+        <div id="account-menu">
+
+            <button id="show-login">
+                LOG IN
+            </button>
+
+            <button id="show-register">
+                CREATE NEW ACCOUNT
+            </button>
+
+        </div>
+
+        <form id="login-form" hidden>
+
+            <h2>Log In</h2>
+
+            <input
+                id="login-username"
+                type="text"
+                placeholder="Username"
+                required
+            >
+
+            <input
+                id="login-password"
+                type="password"
+                placeholder="Password"
+                required
+            >
+
+            <button type="submit">
+                LOG IN
+            </button>
+
+            <button
+                type="button"
+                class="back-button"
+            >
+                BACK
+            </button>
+
+        </form>
+
+        <form id="register-form" hidden>
+
+            <h2>Create Account</h2>
+
+            <input
+                id="register-username"
+                type="text"
+                placeholder="Username"
+                minlength="5"
+                maxlength="25"
+                required
+            >
+
+            <p>Username must be 5–25 characters.</p>
+
+            <input
+                id="register-password"
+                type="password"
+                placeholder="Password"
+                minlength="8"
+                required
+            >
+
+            <input
+                id="register-password-confirm"
+                type="password"
+                placeholder="Confirm password"
+                minlength="8"
+                required
+            >
+
+            <button type="submit">
+                CREATE ACCOUNT
+            </button>
+
+            <button
+                type="button"
+                class="back-button"
+            >
+                BACK
+            </button>
+
+        </form>
+
+        <section id="game-menu" hidden>
+
+            <h2>Welcome</h2>
+
+            <p>
+                Logged in as:
+                <strong id="current-user"></strong>
+            </p>
+
+            <button id="logout-button">
+                LOG OUT
+            </button>
+
+            <p>
+                After logging out, you must enter your password again.
+            </p>
+
+        </section>
+
+        <p id="message"></p>
+
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/login.js"></script>
+
 </body>
 </html>
