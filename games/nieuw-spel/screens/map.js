@@ -1,7 +1,7 @@
 const storyButton = document.getElementById("story-button");
 const leaveMapButton = document.getElementById("leave-map-button");
 
-const gameMenu = document.getElementById("game-menu");
+const mapGameMenu = document.getElementById("game-menu");
 const storyMap = document.getElementById("story-map");
 
 const canvas = document.getElementById("map-canvas");
@@ -69,7 +69,7 @@ document.addEventListener("keyup", event => {
 
 storyButton.addEventListener("click", () => {
 
-    gameMenu.hidden = true;
+    mapGameMenu.hidden = true;
     storyMap.hidden = false;
 
     requestAnimationFrame(gameLoop);
@@ -79,7 +79,7 @@ storyButton.addEventListener("click", () => {
 leaveMapButton.addEventListener("click", () => {
 
     storyMap.hidden = true;
-    gameMenu.hidden = false;
+    mapGameMenu.hidden = false;
 });
 
 
