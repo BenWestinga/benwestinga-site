@@ -2,3 +2,4 @@ compose.yml
 compose.yml.bak
 deploy.sh
 hooks/
+games/blue-dot/server/scores.json
