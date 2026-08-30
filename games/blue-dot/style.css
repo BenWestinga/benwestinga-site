@@ -155,7 +155,7 @@ canvas {
    LEADERBOARD
    ========================= */
 
-#leaderboard {
+#leaderboardList {
     width: min(600px, 85vw);
 
     min-height: 250px;

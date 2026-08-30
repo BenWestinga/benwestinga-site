@@ -51,7 +51,7 @@ async function submitScore(name, time) {
 async function loadLeaderboard() {
 
     const leaderboard =
-        document.getElementById("leaderboard");
+        document.getElementById("leaderboardList");
 
     leaderboard.innerHTML = "Laden...";
 
