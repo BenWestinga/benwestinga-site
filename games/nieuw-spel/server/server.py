@@ -301,6 +301,8 @@ class Handler(BaseHTTPRequestHandler):
 
         if self.path == "/me":
 
+            token = self.get_session_token()
+
             db = sqlite3.connect(DATABASE)
 
             user = self.get_logged_in_user(db)
@@ -314,17 +316,17 @@ class Handler(BaseHTTPRequestHandler):
                     {
                         "error":
                         "Not logged in."
-                    }
+                }
                 )
 
                 return
 
-
             self.send_json(
                 200,
                 {
-                    "username": user[1]
-                }
+                 "username": user[1]
+                },
+                self.session_cookie(token)
             )
 
             return
