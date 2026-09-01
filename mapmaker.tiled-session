@@ -1,6 +1,9 @@
 {
-    "activeFile": "",
+    "activeFile": "games/nieuw-spel/lava.tsx",
     "expandedProjectPaths": [
+        "games",
+        "games/nieuw-spel",
+        "."
     ],
     "fileStates": {
         "": {
@@ -25,6 +28,58 @@
         "games/nieuw-spel/Water.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
+        },
+        "games/nieuw-spel/grass.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "games/nieuw-spel/gravel.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "games/nieuw-spel/ice.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "games/nieuw-spel/lava.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "games/nieuw-spel/lavapath.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "games/nieuw-spel/mountain.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "games/nieuw-spel/nature.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "games/nieuw-spel/rock.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "games/nieuw-spel/sand.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "games/nieuw-spel/snow.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "games/nieuw-spel/spelmap.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 2098,
+                "y": 2927
+            }
+        },
+        "games/nieuw-spel/water.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         }
     },
     "last.exportedFilePath": "C:/Users/benwe/Documents/benwestinga-site-main/games/nieuw-spel",
@@ -34,15 +89,34 @@
     "map.lastUsedFormat": "tmx",
     "map.width": 100,
     "openFiles": [
+        "games/nieuw-spel/spelmap.tmx",
+        "games/nieuw-spel/grass.tsx",
+        "games/nieuw-spel/water.tsx",
+        "games/nieuw-spel/sand.tsx",
+        "games/nieuw-spel/gravel.tsx",
+        "games/nieuw-spel/mountain.tsx",
+        "games/nieuw-spel/rock.tsx",
+        "games/nieuw-spel/ice.tsx",
+        "games/nieuw-spel/snow.tsx",
+        "games/nieuw-spel/nature.tsx",
+        "games/nieuw-spel/lava.tsx",
+        "games/nieuw-spel/lavapath.tsx"
     ],
     "project": "mapmaker.tiled-project",
     "property.type": "bool",
     "recentFiles": [
-        "games/nieuw-spel/Steen.tsx",
-        "games/nieuw-spel/Water.tsx",
-        "games/nieuw-spel/Sand.tsx",
-        "games/nieuw-spel/Grass.tsx",
-        "games/nieuw-spel/Nature.tsx"
+        "games/nieuw-spel/spelmap.tmx",
+        "games/nieuw-spel/grass.tsx",
+        "games/nieuw-spel/water.tsx",
+        "games/nieuw-spel/sand.tsx",
+        "games/nieuw-spel/gravel.tsx",
+        "games/nieuw-spel/mountain.tsx",
+        "games/nieuw-spel/rock.tsx",
+        "games/nieuw-spel/ice.tsx",
+        "games/nieuw-spel/snow.tsx",
+        "games/nieuw-spel/nature.tsx",
+        "games/nieuw-spel/lavapath.tsx",
+        "games/nieuw-spel/lava.tsx"
     ],
     "tileset.lastUsedExportFilter": "All Files (*)",
     "tileset.lastUsedFormat": "tsx"
