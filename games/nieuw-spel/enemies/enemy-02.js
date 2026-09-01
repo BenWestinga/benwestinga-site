@@ -2,7 +2,7 @@ export default {
     id: "big-grass-goon",
     name: "Big Grass Goon",
 
-    hp: 14,
+    hp: 10,
     size: 5,
     speed: "slow",
 

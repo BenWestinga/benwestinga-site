@@ -1,7 +1,6 @@
-import grassGoon from "../enemies/enemy-01.js";
-import bigGrassGoon from "../enemies/enemy-02.js";
-import grassBomb from "../enemies/enemy-03.js";
-
+import grassGoon from "../enemies/enemy-01.js?v=2";
+import bigGrassGoon from "../enemies/enemy-02.js?v=2";
+import grassBomb from "../enemies/enemy-03.js?v=2";
 
 export const config = {
 
@@ -51,7 +50,7 @@ export const config = {
                 "grassGoon",
 
             count:
-                40,
+                50,
 
             start:
                 5,
@@ -71,7 +70,7 @@ export const config = {
                 "grassBomb",
 
             count:
-                4,
+                8,
 
             start:
                 25,
@@ -133,7 +132,7 @@ export const config = {
                 "grassBomb",
 
             count:
-                8,
+                12,
 
             start:
                 80,
