@@ -1,0 +1,49 @@
+{
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
+        "games/nieuw-spel/Grass.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1.5
+        },
+        "games/nieuw-spel/Nature.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "games/nieuw-spel/Sand.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "games/nieuw-spel/Steen.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "games/nieuw-spel/Water.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.exportedFilePath": "C:/Users/benwe/Documents/benwestinga-site-main/games/nieuw-spel",
+    "last.imagePath": "C:/Users/benwe/Documents/benwestinga-site-main/games/nieuw-spel",
+    "map.height": 100,
+    "map.lastUsedExportFilter": "All Files (*)",
+    "map.lastUsedFormat": "tmx",
+    "map.width": 100,
+    "openFiles": [
+    ],
+    "project": "mapmaker.tiled-project",
+    "property.type": "bool",
+    "recentFiles": [
+        "games/nieuw-spel/Steen.tsx",
+        "games/nieuw-spel/Water.tsx",
+        "games/nieuw-spel/Sand.tsx",
+        "games/nieuw-spel/Grass.tsx",
+        "games/nieuw-spel/Nature.tsx"
+    ],
+    "tileset.lastUsedExportFilter": "All Files (*)",
+    "tileset.lastUsedFormat": "tsx"
+}
