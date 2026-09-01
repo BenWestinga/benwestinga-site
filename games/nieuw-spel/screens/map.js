@@ -2975,6 +2975,8 @@ function updatePlayer() {
         player.x =
             newX;
 
+        }
+
     }
 
 
@@ -3028,6 +3030,8 @@ function updatePlayer() {
 
         player.y =
             newY;
+
+        }
 
     }
 
