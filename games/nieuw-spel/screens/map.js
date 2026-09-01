@@ -296,7 +296,7 @@ async function loadTileset(
 
         throw new Error(
 
-            "Tileset niet gevonden: " +
+            "Tileset not found: " +
             tilesetReference.source
 
         );
@@ -334,7 +334,7 @@ async function loadTileset(
 
         throw new Error(
 
-            "Ongeldige tileset: " +
+            "Invalid tileset: " +
             tilesetReference.source
 
         );
@@ -414,7 +414,7 @@ async function loadTileset(
 
         throw new Error(
 
-            "Geen PNG in " +
+            "no PNG found in " +
             tilesetReference.source
 
         );
@@ -464,7 +464,7 @@ async function loadTileset(
 
                         new Error(
 
-                            "PNG niet geladen: " +
+                            "PNG could not be loaded: " +
                             imageUrl.href
 
                         )
@@ -631,7 +631,7 @@ function loadLevelObjects() {
     ) {
 
         console.error(
-            "Levels object layer niet gevonden."
+            "Levels object layer not found."
         );
 
         return;
@@ -718,7 +718,7 @@ function loadLevelObjects() {
 
     console.log(
 
-        "Levels gevonden:",
+        "Levels found:",
 
         levelPoints.size
 
@@ -1444,7 +1444,7 @@ async function loadTiledMap() {
             ) {
 
                 throw new Error(
-                    "spelmap.json niet gevonden."
+                    "spelmap.json not found."
                 );
 
             }
@@ -1515,7 +1515,7 @@ async function loadTiledMap() {
 
             console.log(
 
-                "Map geladen:",
+                "Map loaded:",
 
                 WORLD_WIDTH,
                 WORLD_HEIGHT
@@ -2256,13 +2256,13 @@ function killPlayer(
     ) {
 
         showNotice(
-            "Je bent verdronken!"
+            "You drowned!"
         );
 
     } else {
 
         showNotice(
-            "Je bent in de lava gevallen!"
+            "you fell into the lava!"
         );
 
     }
@@ -2301,7 +2301,7 @@ window.completeStoryLevel =
             ) {
 
                 showNotice(
-                    "Dit level is nog niet unlocked."
+                    "This level is still locked."
                 );
 
             }
@@ -2322,7 +2322,7 @@ window.completeStoryLevel =
 
                 "Level " +
                 levelNumber +
-                " opnieuw gehaald. Geen extra boekje.",
+                " Beaten again. No extra book gained",
 
                 3000
 
@@ -2340,7 +2340,7 @@ window.completeStoryLevel =
 
             "Level " +
             levelNumber +
-            " gehaald! +1 boekje";
+            " You beat it! +1 book";
 
 
         if (
@@ -2382,7 +2382,7 @@ window.resetStoryProgress =
         respawnPlayer();
 
         showNotice(
-            "Story progress gereset."
+            "Story progress resetted."
         );
 
     };
@@ -2493,7 +2493,7 @@ async function launchLevel(
 
         showNotice(
 
-            "Haal eerst Level " +
+            "Complete level first " +
             (
                 levelNumber -
                 1
@@ -2626,7 +2626,7 @@ async function launchLevel(
 
                 "Level " +
                 levelNumber +
-                " is gekoppeld, maar is nog leeg."
+                " is connected, but still empty"
 
             );
 
@@ -2648,7 +2648,7 @@ async function launchLevel(
         showNotice(
 
             fileName +
-            " kon niet worden geladen."
+            " could not be loaded."
 
         );
 
@@ -2843,7 +2843,7 @@ storyButton.addEventListener(
             } catch {
 
                 console.log(
-                    "Fullscreen kon niet gestart worden."
+                    "Fullscreen could not be started."
                 );
 
             }

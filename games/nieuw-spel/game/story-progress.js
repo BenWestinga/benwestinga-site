@@ -5,7 +5,7 @@
 
 
     // =====================================================
-    // WEAPENS
+    // WEAPONS
     // =====================================================
 
     const WEAPONS = {
@@ -51,8 +51,8 @@
     // =====================================================
     // UPGRADE TREE
     //
-    // Totale prijs van ALLE upgrades samen:
-    // 100 boekjes
+    // 27 upgrades
+    // Total cost: exactly 100 books
     // =====================================================
 
     const UPGRADES = {
@@ -69,7 +69,7 @@
             name: "Quick Hands I",
 
             description:
-                "+2% sneller schieten.",
+                "+2% faster fire rate.",
 
             cost: 2,
 
@@ -87,7 +87,7 @@
             name: "Heavy Ammo I",
 
             description:
-                "+4% grotere kogels.",
+                "+4% larger bullets.",
 
             cost: 2,
 
@@ -99,7 +99,7 @@
 
 
         // =================================================
-        // SNELHEID / LINKSBOVEN
+        // RAPID FIRE
         // =================================================
 
         quickHands2: {
@@ -109,7 +109,7 @@
             name: "Quick Hands II",
 
             description:
-                "Je vuursnelheid wordt nog iets hoger.",
+                "Your fire rate increases even further.",
 
             cost: 3,
 
@@ -129,7 +129,7 @@
             name: "Double Tap",
 
             description:
-                "Sommige schoten vuren direct een extra kogel af.",
+                "Some shots instantly fire a second bullet.",
 
             cost: 3,
 
@@ -149,7 +149,7 @@
             name: "Split Burst",
 
             description:
-                "Af en toe ontstaan twee kleine extra kogels naast je normale schot.",
+                "Occasionally fires two small extra bullets alongside your normal shot.",
 
             cost: 4,
 
@@ -162,6 +162,26 @@
         },
 
 
+        critLine: {
+
+            id: "critLine",
+
+            name: "Crit Line",
+
+            description:
+                "Every 15th shot becomes a critical hit.",
+
+            cost: 4,
+
+            requires: [
+                "splitBurst"
+            ],
+
+            x: 49,
+            y: 30
+        },
+
+
         overclockCore: {
 
             id: "overclockCore",
@@ -169,7 +189,7 @@
             name: "Overclock Core",
 
             description:
-                "Sterke eindupgrade voor een snelle-fire build.",
+                "Powerful final upgrade for a rapid-fire build.",
 
             cost: 4,
 
@@ -184,7 +204,7 @@
 
 
         // =================================================
-        // EXPLOSIES / LINKSONDER
+        // EXPLOSIVES
         // =================================================
 
         chainRhythm: {
@@ -194,7 +214,7 @@
             name: "Chain Rhythm",
 
             description:
-                "Elke 10e kogel veroorzaakt een lichte explosie.",
+                "Every 10th bullet causes a small explosion.",
 
             cost: 4,
 
@@ -214,7 +234,7 @@
             name: "Blast Expert",
 
             description:
-                "Explosies krijgen een grotere radius.",
+                "Explosions have a larger blast radius.",
 
             cost: 4,
 
@@ -234,7 +254,7 @@
             name: "Napalm Dust",
 
             description:
-                "Explosies laten kort een schadelijk gebied achter.",
+                "Explosions briefly leave behind a damaging area.",
 
             cost: 4,
 
@@ -254,7 +274,7 @@
             name: "Inferno Payload",
 
             description:
-                "Sterke eindupgrade voor explosieve aanvallen.",
+                "Powerful final upgrade for explosive attacks.",
 
             cost: 4,
 
@@ -269,7 +289,7 @@
 
 
         // =================================================
-        // IJS / HELEMAAL LINKS
+        // ICE
         // =================================================
 
         frostBomb: {
@@ -279,7 +299,7 @@
             name: "Frost Bomb",
 
             description:
-                "Elke 20 seconden valt een ijsbom op de dichtstbijzijnde enemy en bevriest die 1 seconde.",
+                "Every 20 seconds, an ice bomb targets the nearest enemy and freezes it for 1 second.",
 
             cost: 4,
 
@@ -299,7 +319,7 @@
             name: "Deep Freeze",
 
             description:
-                "Enemies blijven langer bevroren.",
+                "Enemies remain frozen for longer.",
 
             cost: 4,
 
@@ -319,7 +339,7 @@
             name: "Cold Shards",
 
             description:
-                "Bevroren enemies krijgen extra damage.",
+                "Frozen enemies take additional damage.",
 
             cost: 4,
 
@@ -339,7 +359,7 @@
             name: "Glacier Reactor",
 
             description:
-                "Sterke eindupgrade voor de freeze-build.",
+                "Powerful final upgrade for a freeze build.",
 
             cost: 4,
 
@@ -354,7 +374,7 @@
 
 
         // =================================================
-        // HEAVY / RECHTSBOVEN
+        // HEAVY AMMO
         // =================================================
 
         heavyAmmo2: {
@@ -364,7 +384,7 @@
             name: "Heavy Ammo II",
 
             description:
-                "Je kogels worden nog groter.",
+                "Your bullets become even larger.",
 
             cost: 3,
 
@@ -384,7 +404,7 @@
             name: "Brutal Force",
 
             description:
-                "Je kogels doen iets meer algemene damage.",
+                "All bullets deal slightly more damage.",
 
             cost: 4,
 
@@ -404,7 +424,7 @@
             name: "Boss Hunter",
 
             description:
-                "Je doet extra damage tegen bosses.",
+                "Deal additional damage to bosses.",
 
             cost: 4,
 
@@ -424,7 +444,7 @@
             name: "Titan Shells",
 
             description:
-                "Sterke eindupgrade voor zware kogels en brute damage.",
+                "Powerful final upgrade for heavy bullets and raw damage.",
 
             cost: 4,
 
@@ -439,7 +459,7 @@
 
 
         // =================================================
-        // PIERCING / RECHTSONDER
+        // PIERCING
         // =================================================
 
         armorCrack: {
@@ -449,7 +469,7 @@
             name: "Armor Crack",
 
             description:
-                "Sterkere enemies verliezen sneller hun bescherming.",
+                "Strong and armored enemies lose their protection faster.",
 
             cost: 4,
 
@@ -469,7 +489,7 @@
             name: "Piercing Tip",
 
             description:
-                "Sommige kogels vliegen door een enemy heen.",
+                "Some bullets pass through one enemy.",
 
             cost: 4,
 
@@ -489,7 +509,7 @@
             name: "Rail Rounds",
 
             description:
-                "Piercing kogels behouden meer kracht nadat ze een enemy raken.",
+                "Piercing bullets retain more power after hitting an enemy.",
 
             cost: 4,
 
@@ -509,7 +529,7 @@
             name: "Return Shrapnel",
 
             description:
-                "Een kill met een piercing kogel schiet kleine scherven weg.",
+                "A piercing kill launches small pieces of shrapnel.",
 
             cost: 4,
 
@@ -523,7 +543,7 @@
 
 
         // =================================================
-        // ELECTRIC / HELEMAAL RECHTS
+        // ELECTRIC
         // =================================================
 
         shockPop: {
@@ -533,7 +553,7 @@
             name: "Shock Pop",
 
             description:
-                "Elke 12e kogel veroorzaakt kleine chain lightning.",
+                "Every 12th bullet triggers a small chain lightning attack.",
 
             cost: 4,
 
@@ -553,7 +573,7 @@
             name: "Static Build",
 
             description:
-                "Chain lightning kan één extra enemy raken.",
+                "Chain lightning can hit one additional enemy.",
 
             cost: 3,
 
@@ -573,7 +593,7 @@
             name: "Storm Burst",
 
             description:
-                "Soms ontstaat een elektrische burst rondom de geraakte enemy.",
+                "Occasionally creates an electrical burst around the enemy you hit.",
 
             cost: 4,
 
@@ -593,7 +613,7 @@
             name: "Tempest Crown",
 
             description:
-                "Sterke eindupgrade voor de lightning-build.",
+                "Powerful final upgrade for a lightning build.",
 
             cost: 4,
 
@@ -656,6 +676,10 @@
                 JSON.parse(saved);
 
 
+            // =============================================
+            // COMPLETED LEVELS
+            // =============================================
+
             let completedLevels =
                 Array.isArray(
                     parsed.completedLevels
@@ -676,12 +700,19 @@
 
 
             completedLevels =
-                [...new Set(completedLevels)]
-                    .sort(
-                        (a, b) =>
-                            a - b
-                    );
+                [
+                    ...new Set(
+                        completedLevels
+                    )
+                ].sort(
+                    (a, b) =>
+                        a - b
+                );
 
+
+            // =============================================
+            // BOOKS
+            // =============================================
 
             let books =
                 Number(
@@ -690,7 +721,9 @@
 
 
             if (
-                !Number.isFinite(books) ||
+                !Number.isFinite(
+                    books
+                ) ||
                 books < 0
             ) {
 
@@ -698,6 +731,10 @@
 
             }
 
+
+            // =============================================
+            // PURCHASED UPGRADES
+            // =============================================
 
             let purchasedUpgrades =
                 Array.isArray(
@@ -711,15 +748,20 @@
                     : [];
 
 
-            // Oude test-upgrades omzetten
-            // zodat oude saves niet fout gaan.
+            // =============================================
+            // OLD SAVE MIGRATION
+            //
+            // Old:
+            // fasterShooting -> Quick Hands I
+            // automaticBomb -> Frost Bomb
+            // =============================================
 
             purchasedUpgrades =
                 purchasedUpgrades.map(
-                    id => {
+                    upgradeId => {
 
                         if (
-                            id ===
+                            upgradeId ===
                             "fasterShooting"
                         ) {
 
@@ -729,7 +771,7 @@
 
 
                         if (
-                            id ===
+                            upgradeId ===
                             "automaticBomb"
                         ) {
 
@@ -738,17 +780,50 @@
                         }
 
 
-                        return id;
+                        return upgradeId;
 
                     }
                 );
 
 
             purchasedUpgrades =
+                [
+                    ...new Set(
+                        purchasedUpgrades
+                    )
+                ];
+
+
+            purchasedUpgrades =
                 purchasedUpgrades.filter(
-                    id =>
-                        UPGRADES[id]
+                    upgradeId =>
+                        UPGRADES[
+                            upgradeId
+                        ]
                 );
+
+
+            // =============================================
+            // SELECTED WEAPON
+            // =============================================
+
+            let selectedWeapon =
+                typeof parsed.selectedWeapon ===
+                "string"
+                    ? parsed.selectedWeapon
+                    : "pistol";
+
+
+            if (
+                !WEAPONS[
+                    selectedWeapon
+                ]
+            ) {
+
+                selectedWeapon =
+                    "pistol";
+
+            }
 
 
             return {
@@ -757,11 +832,7 @@
 
                 books,
 
-                selectedWeapon:
-                    typeof parsed.selectedWeapon ===
-                    "string"
-                        ? parsed.selectedWeapon
-                        : "pistol",
+                selectedWeapon,
 
                 purchasedUpgrades
 
@@ -771,8 +842,11 @@
         } catch (error) {
 
             console.error(
-                "Story progress kon niet worden geladen:",
+
+                "Story progress could not be loaded:",
+
                 error
+
             );
 
 
@@ -788,7 +862,7 @@
 
 
     // =====================================================
-    // UI
+    // BOOK COUNTER
     // =====================================================
 
     function updateBookCounter() {
@@ -799,44 +873,17 @@
             );
 
 
-        if (counter) {
+        if (!counter) {
 
-            counter.textContent =
-                String(
-                    data.books
-                );
+            return;
 
         }
 
-    }
 
-
-    // =====================================================
-    // SAVE
-    // =====================================================
-
-    function saveData() {
-
-        localStorage.setItem(
-            SAVE_KEY,
-            JSON.stringify(data)
-        );
-
-
-        updateBookCounter();
-
-
-        window.dispatchEvent(
-
-            new CustomEvent(
-                "story-progress-changed",
-                {
-                    detail:
-                        getData()
-                }
-            )
-
-        );
+        counter.textContent =
+            String(
+                data.books
+            );
 
     }
 
@@ -869,7 +916,45 @@
 
 
     // =====================================================
-    // LEVEL COMPLETED
+    // SAVE
+    // =====================================================
+
+    function saveData() {
+
+        localStorage.setItem(
+
+            SAVE_KEY,
+
+            JSON.stringify(
+                data
+            )
+
+        );
+
+
+        updateBookCounter();
+
+
+        window.dispatchEvent(
+
+            new CustomEvent(
+
+                "story-progress-changed",
+
+                {
+                    detail:
+                        getData()
+                }
+
+            )
+
+        );
+
+    }
+
+
+    // =====================================================
+    // LEVEL COMPLETED?
     // =====================================================
 
     function isLevelCompleted(
@@ -892,7 +977,7 @@
 
 
     // =====================================================
-    // LEVEL UNLOCKED
+    // LEVEL UNLOCKED?
     // =====================================================
 
     function isLevelUnlocked(
@@ -918,14 +1003,19 @@
         }
 
 
+        // Level 1 is always available.
+
         if (
-            levelNumber === 1
+            levelNumber ===
+            1
         ) {
 
             return true;
 
         }
 
+
+        // Completed levels remain available.
 
         if (
             isLevelCompleted(
@@ -937,6 +1027,8 @@
 
         }
 
+
+        // Previous level must be completed.
 
         return isLevelCompleted(
             levelNumber - 1
@@ -992,7 +1084,8 @@
 
             return {
 
-                success: false,
+                success:
+                    false,
 
                 reason:
                     "invalid"
@@ -1010,7 +1103,8 @@
 
             return {
 
-                success: false,
+                success:
+                    false,
 
                 reason:
                     "locked"
@@ -1020,7 +1114,9 @@
         }
 
 
+        // =============================================
         // REPLAY
+        // =============================================
 
         if (
             isLevelCompleted(
@@ -1050,7 +1146,9 @@
         }
 
 
-        // EERSTE KEER
+        // =============================================
+        // FIRST COMPLETION
+        // =============================================
 
         data.completedLevels.push(
             levelNumber
@@ -1063,8 +1161,13 @@
         );
 
 
-        data.books += 1;
+        data.books +=
+            1;
 
+
+        // =============================================
+        // CHECK FOR WEAPON UNLOCK
+        // =============================================
 
         let weaponUnlocked =
             null;
@@ -1133,7 +1236,7 @@
 
 
     // =====================================================
-    // WEAPONS
+    // WEAPON UNLOCK
     // =====================================================
 
     function isWeaponUnlocked(
@@ -1170,6 +1273,10 @@
     }
 
 
+    // =====================================================
+    // SELECT WEAPON
+    // =====================================================
+
     function selectWeapon(
         weaponId
     ) {
@@ -1196,6 +1303,10 @@
 
     }
 
+
+    // =====================================================
+    // GET SELECTED WEAPON
+    // =====================================================
 
     function getSelectedWeapon() {
 
@@ -1230,19 +1341,29 @@
 
 
     // =====================================================
-    // UPGRADES
+    // GET UPGRADE
     // =====================================================
 
     function getUpgrade(
         upgradeId
     ) {
 
-        return UPGRADES[
-            upgradeId
-        ] || null;
+        return (
+
+            UPGRADES[
+                upgradeId
+            ] ||
+
+            null
+
+        );
 
     }
 
+
+    // =====================================================
+    // HAS UPGRADE
+    // =====================================================
 
     function hasUpgrade(
         upgradeId
@@ -1256,6 +1377,10 @@
 
     }
 
+
+    // =====================================================
+    // UPGRADE UNLOCKED?
+    // =====================================================
 
     function isUpgradeUnlocked(
         upgradeId
@@ -1287,14 +1412,19 @@
         return upgrade
             .requires
             .every(
-                requiredId =>
+                requiredUpgradeId =>
+
                     hasUpgrade(
-                        requiredId
+                        requiredUpgradeId
                     )
             );
 
     }
 
+
+    // =====================================================
+    // UPGRADE VISIBLE?
+    // =====================================================
 
     function isUpgradeVisible(
         upgradeId
@@ -1331,6 +1461,10 @@
     }
 
 
+    // =====================================================
+    // BUY UPGRADE
+    // =====================================================
+
     function buyUpgrade(
         upgradeId
     ) {
@@ -1345,7 +1479,8 @@
 
             return {
 
-                success: false,
+                success:
+                    false,
 
                 reason:
                     "unknown"
@@ -1363,7 +1498,8 @@
 
             return {
 
-                success: false,
+                success:
+                    false,
 
                 reason:
                     "owned"
@@ -1381,7 +1517,8 @@
 
             return {
 
-                success: false,
+                success:
+                    false,
 
                 reason:
                     "locked"
@@ -1398,7 +1535,8 @@
 
             return {
 
-                success: false,
+                success:
+                    false,
 
                 reason:
                     "money"
@@ -1422,7 +1560,8 @@
 
         return {
 
-            success: true,
+            success:
+                true,
 
             upgrade
 
@@ -1434,8 +1573,8 @@
     // =====================================================
     // COMBAT MODIFIERS
     //
-    // Deze worden later daadwerkelijk
-    // door combat.js gebruikt.
+    // New modifier names are included.
+    // Old bombInterval is also kept for compatibility.
     // =====================================================
 
     function getCombatModifiers() {
@@ -1496,41 +1635,109 @@
         }
 
 
+        const frostBombInterval =
+
+            hasUpgrade(
+                "frostBomb"
+            )
+
+                ? 20000
+
+                : null;
+
+
         return {
+
+            // =============================
+            // BASIC
+            // =============================
 
             shootCooldownMultiplier,
 
             bulletSizeMultiplier,
 
+
+            // =============================
+            // EXPLOSIVE
+            // =============================
+
             explosiveEvery:
+
                 hasUpgrade(
                     "chainRhythm"
                 )
+
                     ? 10
+
                     : null,
 
-            frostBombInterval:
-                hasUpgrade(
-                    "frostBomb"
-                )
-                    ? 20000
-                    : null,
+
+            // =============================
+            // FROST
+            // =============================
+
+            frostBombInterval,
+
+
+            // Legacy name from the old system.
+            // Kept so older combat code does not break.
+
+            bombInterval:
+                frostBombInterval,
+
+
+            // =============================
+            // RAPID FIRE
+            // =============================
 
             doubleTap:
+
                 hasUpgrade(
                     "doubleTap"
                 ),
 
+
+            splitBurst:
+
+                hasUpgrade(
+                    "splitBurst"
+                ),
+
+
+            critEvery:
+
+                hasUpgrade(
+                    "critLine"
+                )
+
+                    ? 15
+
+                    : null,
+
+
+            // =============================
+            // PIERCING
+            // =============================
+
             piercing:
+
                 hasUpgrade(
                     "piercingTip"
                 ),
 
+
+            // =============================
+            // LIGHTNING
+            // =============================
+
             lightningEvery:
+
                 hasUpgrade(
                     "shockPop"
                 )
+
                     ? 12
+
                     : null
 
         };
@@ -1552,14 +1759,14 @@
 
 
         console.log(
-            "Story progress volledig gereset."
+            "Story progress fully reset."
         );
 
     }
 
 
     // =====================================================
-    // GLOBAL
+    // GLOBAL API
     // =====================================================
 
     window.StoryProgress = {
@@ -1595,10 +1802,13 @@
     };
 
 
-    // Voor tijdelijk testen vanuit console
+    // =====================================================
+    // TEST HELPERS
+    // =====================================================
 
     window.completeStoryLevel =
         completeLevel;
+
 
     window.resetStoryProgress =
         reset;

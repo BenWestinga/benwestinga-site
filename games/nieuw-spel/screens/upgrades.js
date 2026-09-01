@@ -29,7 +29,7 @@
     ) {
 
         console.error(
-            "Upgrade menu HTML-elementen ontbreken."
+            "Upgrade menu HTML elements are missing."
         );
 
         return;
@@ -94,7 +94,7 @@
 
 
         // =================================================
-        // SVG VERBINDINGSLIJNEN
+        // CONNECTION LINES
         // =================================================
 
         const svg =
@@ -337,10 +337,6 @@
             }
 
 
-            // =============================
-            // ICON
-            // =============================
-
             const icon =
                 document.createElement(
                     "div"
@@ -357,10 +353,6 @@
                 );
 
 
-            // =============================
-            // NAME
-            // =============================
-
             const name =
                 document.createElement(
                     "div"
@@ -374,10 +366,6 @@
             name.textContent =
                 upgrade.name;
 
-
-            // =============================
-            // PRICE
-            // =============================
 
             const price =
                 document.createElement(
@@ -481,7 +469,7 @@
                     ) {
 
                         showTemporaryMessage(
-                            "Niet genoeg boekjes."
+                            "Not enough books."
                         );
 
                     }
@@ -493,7 +481,7 @@
                     ) {
 
                         showTemporaryMessage(
-                            "Je moet eerst de vorige upgrade kopen."
+                            "You need to buy the previous upgrade first."
                         );
 
                     }
@@ -510,7 +498,7 @@
 
 
         // =================================================
-        // CENTER INFO
+        // INFO PANEL
         // =================================================
 
         const info =
@@ -532,9 +520,6 @@
             tree
         );
 
-
-        // Toon info van geselecteerde upgrade,
-        // anders algemene uitleg.
 
         if (
             selectedUpgradeId &&
@@ -678,12 +663,12 @@
             </strong>
 
             <p>
-                Begin met één van de twee upgrades.
-                Nieuwe takken verschijnen wanneer je upgrades koopt.
+                Start with one of the two upgrades.
+                New branches appear as you buy upgrades.
             </p>
 
             <small>
-                Alle upgrades samen kosten 📕 100
+                Choose your path carefully.
             </small>
 
         `;
