@@ -1,11 +1,6 @@
-import grassGoon
-    from "../enemies/enemy-01.js";
-
-import bigGrassGoon
-    from "../enemies/enemy-02.js";
-
-import grassBomb
-    from "../enemies/enemy-03.js";
+import grassGoon from "../enemies/enemy-01.js";
+import bigGrassGoon from "../enemies/enemy-02.js";
+import grassBomb from "../enemies/enemy-03.js";
 
 
 export const config = {
@@ -30,7 +25,7 @@ export const config = {
             0.58,
 
         color:
-            "#6f9f4d"
+            "#d8c18b"
     },
 
 
