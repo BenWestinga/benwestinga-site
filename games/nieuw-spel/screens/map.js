@@ -2675,7 +2675,13 @@ document.addEventListener(
 
 
         const key =
-            event.key.toLowerCase();
+            typeof event.key === "string"
+                ? event.key.toLowerCase()
+                : "";
+
+        if (!key) {
+            return;
+        }
 
 
         keys[
@@ -2704,8 +2710,8 @@ document.addEventListener(
 
         if (
 
-            event.key ===
-                "Enter" &&
+            key ===
+                "enter" &&
 
             !event.repeat &&
 
@@ -2748,9 +2754,16 @@ document.addEventListener(
 
     event => {
 
-        keys[
-            event.key.toLowerCase()
-        ] =
+        const key =
+            typeof event.key === "string"
+                ? event.key.toLowerCase()
+                : "";
+
+        if (!key) {
+            return;
+        }
+
+        keys[key] =
             false;
 
     }
