@@ -1,39 +1,83 @@
 (() => {
 
     const levelScreen =
-        document.getElementById("level-screen");
+        document.getElementById(
+            "level-screen"
+        );
 
     const canvas =
-        document.getElementById("level-canvas");
+        document.getElementById(
+            "level-canvas"
+        );
 
     const ctx =
         canvas.getContext("2d");
 
 
-    let animationFrame = null;
-    let activeContext = null;
+    /*
+        Deze waardes definiëren voorlopig
+        wat slow / medium / fast betekent.
+    */
 
-    let sandLoaded = false;
+    const ENEMY_SPEEDS = {
 
-    const sandImage =
-        new Image();
+        slow: 100,
 
-    sandImage.src =
-        new URL(
-            "sand.png",
-            window.location.href
-        ).href;
+        medium: 180,
 
-    sandImage.onload = () => {
-        sandLoaded = true;
+        fast: 250
     };
 
 
-    // ==========================================
-    // GLOBALS
-    // ==========================================
+    /*
+        size 2 = radius 18
+        size 5 = radius 30
+    */
+
+    const ENEMY_SIZE_BASE = 10;
+
+    const ENEMY_SIZE_STEP = 4;
+
+
+    let animationFrame = null;
+
+    let activeContext = null;
+
+    let activeConfig = null;
+
+
+    let backgroundImage = null;
+
+    let backgroundLoaded = false;
+
+
+    let lastFrameTime = 0;
+
+
+    const state = {
+
+        elapsedMs: 0,
+
+        status: "idle",
+
+        statusTimer: 0,
+
+        enemies: [],
+
+        explosions: [],
+
+        spawnEvents: [],
+
+        spawnIndex: 0,
+
+        nextEnemyId: 1,
+
+        completionSent: false
+    };
+
 
     window.levelActive = false;
+
     window.currentLevel = null;
 
 
@@ -48,11 +92,27 @@
 
         canvas.height =
             window.innerHeight;
+
+
+        if (
+            window.levelActive &&
+            window.LevelPlayer
+        ) {
+
+            window.LevelPlayer
+                .clamp();
+        }
     }
 
 
     window.addEventListener(
         "resize",
+        resizeLevelCanvas
+    );
+
+
+    document.addEventListener(
+        "fullscreenchange",
         resizeLevelCanvas
     );
 
@@ -69,6 +129,7 @@
             return;
         }
 
+
         try {
 
             await document
@@ -78,7 +139,7 @@
         } catch (error) {
 
             console.log(
-                "Fullscreen kon niet worden gestart.",
+                "Fullscreen could not be started.",
                 error
             );
         }
@@ -89,10 +150,80 @@
     // BACKGROUND
     // ==========================================
 
+    async function loadBackground(
+        config
+    ) {
+
+        backgroundImage = null;
+
+        backgroundLoaded =
+            false;
+
+
+        if (
+            !config?.background?.image
+        ) {
+            return;
+        }
+
+
+        const image =
+            new Image();
+
+
+        const url =
+            new URL(
+                config.background.image,
+                window.location.href
+            ).href;
+
+
+        await new Promise(
+            (resolve) => {
+
+                image.onload =
+                    () => {
+
+                        backgroundImage =
+                            image;
+
+                        backgroundLoaded =
+                            true;
+
+                        resolve();
+                    };
+
+
+                image.onerror =
+                    () => {
+
+                        console.warn(
+                            "Level background could not be loaded:",
+                            url
+                        );
+
+                        resolve();
+                    };
+
+
+                image.src =
+                    url;
+            }
+        );
+    }
+
+
     function drawBackground() {
 
+        const background =
+            activeConfig?.background ||
+            {};
+
+
         ctx.fillStyle =
-            "#d8c18b";
+            background.color ||
+            "#6f9f4d";
+
 
         ctx.fillRect(
             0,
@@ -102,25 +233,27 @@
         );
 
 
-        if (sandLoaded) {
+        if (
+            backgroundLoaded &&
+            backgroundImage
+        ) {
 
             ctx.save();
 
-            /*
-                Doorzichtige sand.png
-                over het HELE scherm.
-            */
 
             ctx.globalAlpha =
-                0.58;
+                background.alpha ??
+                0.55;
+
 
             ctx.drawImage(
-                sandImage,
+                backgroundImage,
                 0,
                 0,
                 canvas.width,
                 canvas.height
             );
+
 
             ctx.restore();
         }
@@ -128,7 +261,7 @@
 
 
     // ==========================================
-    // BORDER
+    // ARENA
     // ==========================================
 
     function drawBorders() {
@@ -136,15 +269,15 @@
         const border = 14;
 
 
-        // DONKERE BUITENRAND
-
         ctx.save();
 
+
         ctx.strokeStyle =
-            "rgba(20, 20, 20, 0.95)";
+            "rgba(20,20,20,0.95)";
 
         ctx.lineWidth =
             border;
+
 
         ctx.strokeRect(
             border / 2,
@@ -154,76 +287,79 @@
         );
 
 
-        // LICHTE BINNENRAND
-
         ctx.strokeStyle =
             "rgba(255,255,255,0.85)";
 
-        ctx.lineWidth =
-            3;
+        ctx.lineWidth = 3;
+
 
         ctx.strokeRect(
             border,
             border,
-            canvas.width - border * 2,
-            canvas.height - border * 2
+            canvas.width -
+                border * 2,
+            canvas.height -
+                border * 2
         );
+
 
         ctx.restore();
     }
 
 
-    // ==========================================
-    // MIDDENLIJN
-    // ==========================================
-
     function drawCenterLine() {
 
         ctx.save();
 
+
         ctx.beginPath();
+
 
         ctx.moveTo(
             canvas.width / 2,
             14
         );
 
+
         ctx.lineTo(
             canvas.width / 2,
             canvas.height - 14
         );
 
+
         ctx.strokeStyle =
             "rgba(255,255,255,0.45)";
 
-        ctx.lineWidth =
-            4;
+
+        ctx.lineWidth = 4;
+
 
         ctx.setLineDash([
             18,
             18
         ]);
 
+
         ctx.stroke();
+
 
         ctx.restore();
     }
 
 
     // ==========================================
-    // LEVEL TITEL
+    // HUD
     // ==========================================
 
-    function drawLevelTitle() {
+    function drawHud() {
 
-        if (
-            !window.currentLevel
-        ) {
+        if (!activeConfig) {
             return;
         }
 
 
         ctx.save();
+
 
         ctx.textAlign =
             "center";
@@ -234,30 +370,1468 @@
         ctx.font =
             "bold 28px Arial";
 
-        ctx.lineWidth =
-            6;
+        ctx.lineWidth = 6;
 
         ctx.strokeStyle =
             "rgba(0,0,0,0.75)";
 
+
+        const title =
+            `LEVEL ${activeConfig.number}`;
+
+
         ctx.strokeText(
-            "LEVEL " +
-            window.currentLevel.number,
+            title,
             canvas.width / 2,
             48
         );
+
 
         ctx.fillStyle =
             "white";
 
+
         ctx.fillText(
-            "LEVEL " +
-            window.currentLevel.number,
+            title,
             canvas.width / 2,
             48
         );
 
+
+        // TIMER
+
+        ctx.font =
+            "bold 18px Arial";
+
+        ctx.textAlign =
+            "left";
+
+
+        const seconds =
+            (
+                state.elapsedMs /
+                1000
+            ).toFixed(1);
+
+
+        ctx.lineWidth = 4;
+
+
+        ctx.strokeText(
+            `${seconds}s`,
+            28,
+            42
+        );
+
+
+        ctx.fillStyle =
+            "white";
+
+
+        ctx.fillText(
+            `${seconds}s`,
+            28,
+            42
+        );
+
+
+        // START DELAY
+
+        const delayMs =
+            activeConfig.startDelayMs ||
+            0;
+
+
+        if (
+            state.status ===
+                "playing" &&
+            state.elapsedMs <
+                delayMs
+        ) {
+
+            const remaining =
+                Math.max(
+                    1,
+                    Math.ceil(
+                        (
+                            delayMs -
+                            state.elapsedMs
+                        ) /
+                        1000
+                    )
+                );
+
+
+            ctx.textAlign =
+                "center";
+
+            ctx.font =
+                "bold 54px Arial";
+
+            ctx.lineWidth = 8;
+
+
+            ctx.strokeText(
+                `GET READY ${remaining}`,
+                canvas.width / 2,
+                canvas.height / 2
+            );
+
+
+            ctx.fillStyle =
+                "white";
+
+
+            ctx.fillText(
+                `GET READY ${remaining}`,
+                canvas.width / 2,
+                canvas.height / 2
+            );
+        }
+
+
+        if (
+            state.status ===
+            "dead"
+        ) {
+
+            ctx.textAlign =
+                "center";
+
+            ctx.font =
+                "bold 58px Arial";
+
+            ctx.lineWidth = 8;
+
+
+            ctx.strokeText(
+                "HIT! RESTARTING...",
+                canvas.width / 2,
+                canvas.height / 2
+            );
+
+
+            ctx.fillStyle =
+                "white";
+
+
+            ctx.fillText(
+                "HIT! RESTARTING...",
+                canvas.width / 2,
+                canvas.height / 2
+            );
+        }
+
+
+        if (
+            state.status ===
+            "won"
+        ) {
+
+            ctx.textAlign =
+                "center";
+
+            ctx.font =
+                "bold 58px Arial";
+
+            ctx.lineWidth = 8;
+
+
+            ctx.strokeText(
+                "LEVEL COMPLETE!",
+                canvas.width / 2,
+                canvas.height / 2
+            );
+
+
+            ctx.fillStyle =
+                "white";
+
+
+            ctx.fillText(
+                "LEVEL COMPLETE!",
+                canvas.width / 2,
+                canvas.height / 2
+            );
+        }
+
+
         ctx.restore();
+    }
+
+
+    // ==========================================
+    // ENEMY HELPERS
+    // ==========================================
+
+    function getEnemyRadius(
+        size
+    ) {
+
+        return (
+            ENEMY_SIZE_BASE +
+            size *
+            ENEMY_SIZE_STEP
+        );
+    }
+
+
+    function getEnemySpeed(
+        speed
+    ) {
+
+        if (
+            typeof speed ===
+            "number"
+        ) {
+            return speed;
+        }
+
+
+        return (
+            ENEMY_SPEEDS[speed] ||
+            ENEMY_SPEEDS.medium
+        );
+    }
+
+
+    // ==========================================
+    // RANDOM SPAWN TIMES
+    // ==========================================
+
+    function createJitteredTimes(
+        count,
+        startSeconds,
+        durationSeconds
+    ) {
+
+        if (
+            count <= 0
+        ) {
+            return [];
+        }
+
+
+        const startMs =
+            startSeconds *
+            1000;
+
+
+        const durationMs =
+            durationSeconds *
+            1000;
+
+
+        const slotSize =
+            durationMs /
+            count;
+
+
+        const times = [];
+
+
+        /*
+            Niet lineair.
+
+            Iedere enemy krijgt een
+            willekeurig moment binnen
+            zijn eigen deel van het
+            tijdsvenster.
+        */
+
+        for (
+            let i = 0;
+            i < count;
+            i++
+        ) {
+
+            times.push(
+
+                startMs +
+
+                i *
+                slotSize +
+
+                Math.random() *
+                slotSize
+            );
+        }
+
+
+        return times;
+    }
+
+
+    function buildSpawnEvents() {
+
+        const events = [];
+
+
+        for (
+            const group
+            of activeConfig.spawnGroups ||
+            []
+        ) {
+
+            const times =
+                createJitteredTimes(
+
+                    group.count,
+
+                    group.start,
+
+                    group.duration
+                );
+
+
+            for (
+                const timeMs
+                of times
+            ) {
+
+                events.push({
+
+                    timeMs,
+
+                    enemyType:
+                        group.enemy
+                });
+            }
+        }
+
+
+        events.sort(
+            (a, b) =>
+                a.timeMs -
+                b.timeMs
+        );
+
+
+        return events;
+    }
+
+
+    // ==========================================
+    // SPAWN POSITION
+    // ==========================================
+
+    function randomSpawnPosition(
+        radius
+    ) {
+
+        /*
+            Enemy begint ver genoeg
+            buiten beeld.
+        */
+
+        const margin =
+            Math.max(
+                90,
+                radius * 2 + 30
+            );
+
+
+        const side =
+            Math.floor(
+                Math.random() * 4
+            );
+
+
+        // LEFT
+
+        if (side === 0) {
+
+            return {
+
+                x: -margin,
+
+                y:
+                    Math.random() *
+                    canvas.height
+            };
+        }
+
+
+        // RIGHT
+
+        if (side === 1) {
+
+            return {
+
+                x:
+                    canvas.width +
+                    margin,
+
+                y:
+                    Math.random() *
+                    canvas.height
+            };
+        }
+
+
+        // TOP
+
+        if (side === 2) {
+
+            return {
+
+                x:
+                    Math.random() *
+                    canvas.width,
+
+                y:
+                    -margin
+            };
+        }
+
+
+        // BOTTOM
+
+        return {
+
+            x:
+                Math.random() *
+                canvas.width,
+
+            y:
+                canvas.height +
+                margin
+        };
+    }
+
+
+    // ==========================================
+    // SPAWN ENEMY
+    // ==========================================
+
+    function spawnEnemy(
+        typeId
+    ) {
+
+        const definition =
+            activeConfig
+                .enemyTypes?.[
+                    typeId
+                ];
+
+
+        if (!definition) {
+
+            console.warn(
+                "Unknown enemy type:",
+                typeId
+            );
+
+            return;
+        }
+
+
+        const radius =
+            getEnemyRadius(
+                definition.size ||
+                1
+            );
+
+
+        const position =
+            randomSpawnPosition(
+                radius
+            );
+
+
+        const enemy = {
+
+            id:
+                state.nextEnemyId++,
+
+            type:
+                definition.id,
+
+            name:
+                definition.name,
+
+            behavior:
+                definition.behavior,
+
+            color:
+                definition.color ||
+                "#d73535",
+
+
+            x:
+                position.x,
+
+            y:
+                position.y,
+
+
+            radius,
+
+
+            speed:
+                getEnemySpeed(
+                    definition.speed
+                ),
+
+
+            hp:
+                definition.hp,
+
+            maxHp:
+                definition.hp,
+
+
+            enteredArena:
+                false,
+
+
+            explosionRadius:
+                definition
+                    .explosionRadius ||
+                0,
+
+
+            explosionDuration:
+                definition
+                    .explosionDuration ||
+                0
+        };
+
+
+        /*
+            Grass Goon:
+
+            Richt zich ALLEEN bij spawn
+            op de positie waar de speler
+            op dat moment staat.
+
+            Daarna blijft hij eeuwig
+            in precies die richting gaan.
+        */
+
+        if (
+            definition.behavior ===
+            "straight-through"
+        ) {
+
+            const dx =
+                window.levelPlayer.x -
+                enemy.x;
+
+
+            const dy =
+                window.levelPlayer.y -
+                enemy.y;
+
+
+            const distance =
+                Math.hypot(
+                    dx,
+                    dy
+                ) || 1;
+
+
+            enemy.vx =
+                (
+                    dx /
+                    distance
+                ) *
+                enemy.speed;
+
+
+            enemy.vy =
+                (
+                    dy /
+                    distance
+                ) *
+                enemy.speed;
+        }
+
+
+        state.enemies.push(
+            enemy
+        );
+    }
+
+
+    function processSpawns() {
+
+        while (
+
+            state.spawnIndex <
+                state.spawnEvents.length &&
+
+            state
+                .spawnEvents[
+                    state.spawnIndex
+                ]
+                .timeMs <=
+                state.elapsedMs
+
+        ) {
+
+            spawnEnemy(
+
+                state
+                    .spawnEvents[
+                        state.spawnIndex
+                    ]
+                    .enemyType
+            );
+
+
+            state.spawnIndex++;
+        }
+    }
+
+
+    // ==========================================
+    // MAP CHECKS
+    // ==========================================
+
+    function isInsideArena(
+        enemy
+    ) {
+
+        return (
+
+            enemy.x >= 0 &&
+
+            enemy.x <=
+                canvas.width &&
+
+            enemy.y >= 0 &&
+
+            enemy.y <=
+                canvas.height
+
+        );
+    }
+
+
+    function isFullyOutsideArena(
+        enemy
+    ) {
+
+        /*
+            Extra 120px zodat hij
+            zichtbaar echt helemaal
+            uit beeld verdwenen is.
+        */
+
+        const margin =
+            enemy.radius +
+            120;
+
+
+        return (
+
+            enemy.x <
+                -margin ||
+
+            enemy.x >
+                canvas.width +
+                margin ||
+
+            enemy.y <
+                -margin ||
+
+            enemy.y >
+                canvas.height +
+                margin
+
+        );
+    }
+
+
+    // ==========================================
+    // ENEMY DEATH
+    // ==========================================
+
+    function removeEnemyById(
+        id
+    ) {
+
+        const index =
+            state.enemies
+                .findIndex(
+                    enemy =>
+                        enemy.id ===
+                        id
+                );
+
+
+        if (
+            index !== -1
+        ) {
+
+            state.enemies.splice(
+                index,
+                1
+            );
+        }
+    }
+
+
+    // ==========================================
+    // EXPLOSIONS
+    // ==========================================
+
+    function createExplosion(
+        x,
+        y,
+        radius,
+        duration
+    ) {
+
+        state.explosions.push({
+
+            x,
+
+            y,
+
+            radius,
+
+            remaining:
+                duration
+        });
+
+
+        if (
+            state.status ===
+                "playing" &&
+
+            window.LevelPlayer
+                .touchesCircle(
+                    x,
+                    y,
+                    radius
+                )
+        ) {
+
+            killPlayer();
+        }
+    }
+
+
+    function killEnemy(
+        enemy
+    ) {
+
+        removeEnemyById(
+            enemy.id
+        );
+
+
+        /*
+            Grass Bomb ontploft
+            wanneer hij doodgaat.
+        */
+
+        if (
+            enemy.behavior ===
+                "bomb-chase" &&
+
+            enemy.explosionRadius >
+                0
+        ) {
+
+            createExplosion(
+
+                enemy.x,
+
+                enemy.y,
+
+                enemy.explosionRadius,
+
+                enemy
+                    .explosionDuration ||
+                0.1
+            );
+        }
+    }
+
+
+    function damageEnemy(
+        enemy,
+        damage
+    ) {
+
+        if (
+            state.status !==
+            "playing"
+        ) {
+            return;
+        }
+
+
+        enemy.hp -=
+            damage;
+
+
+        if (
+            enemy.hp <= 0
+        ) {
+
+            killEnemy(
+                enemy
+            );
+        }
+    }
+
+
+    // ==========================================
+    // PLAYER DEATH
+    // ==========================================
+
+    function killPlayer() {
+
+        if (
+            state.status !==
+            "playing"
+        ) {
+            return;
+        }
+
+
+        state.status =
+            "dead";
+
+        state.statusTimer =
+            0;
+
+
+        window.levelPlayer.alive =
+            false;
+
+
+        window.LevelCombat
+            .clear();
+    }
+
+
+    // ==========================================
+    // ENEMY MOVEMENT
+    // ==========================================
+
+    function updateEnemies(
+        dt
+    ) {
+
+        for (
+            let i =
+                state.enemies.length -
+                1;
+            i >= 0;
+            i--
+        ) {
+
+            const enemy =
+                state.enemies[i];
+
+
+            /*
+                Grass Goon:
+                rechte lijn.
+            */
+
+            if (
+                enemy.behavior ===
+                "straight-through"
+            ) {
+
+                enemy.x +=
+                    enemy.vx * dt;
+
+                enemy.y +=
+                    enemy.vy * dt;
+
+            } else {
+
+                /*
+                    Big Grass Goon +
+                    Grass Bomb:
+
+                    constant speler volgen.
+                */
+
+                const dx =
+                    window.levelPlayer.x -
+                    enemy.x;
+
+
+                const dy =
+                    window.levelPlayer.y -
+                    enemy.y;
+
+
+                const distance =
+                    Math.hypot(
+                        dx,
+                        dy
+                    ) || 1;
+
+
+                enemy.x +=
+                    (
+                        dx /
+                        distance
+                    ) *
+                    enemy.speed *
+                    dt;
+
+
+                enemy.y +=
+                    (
+                        dy /
+                        distance
+                    ) *
+                    enemy.speed *
+                    dt;
+            }
+
+
+            if (
+                isInsideArena(
+                    enemy
+                )
+            ) {
+
+                enemy.enteredArena =
+                    true;
+            }
+
+
+            /*
+                Alleen Grass Goon
+                verdwijnt nadat hij
+                HELEMAAL door de arena
+                heen is gegaan.
+            */
+
+            if (
+                enemy.behavior ===
+                    "straight-through" &&
+
+                enemy.enteredArena &&
+
+                isFullyOutsideArena(
+                    enemy
+                )
+            ) {
+
+                state.enemies.splice(
+                    i,
+                    1
+                );
+
+                continue;
+            }
+
+
+            /*
+                ELKE enemy aanraken =
+                instant death.
+            */
+
+            if (
+                window.LevelPlayer
+                    .touchesCircle(
+                        enemy.x,
+                        enemy.y,
+                        enemy.radius
+                    )
+            ) {
+
+                /*
+                    Grass Bomb geeft
+                    ook zijn explosie.
+                */
+
+                if (
+                    enemy.behavior ===
+                        "bomb-chase" &&
+
+                    enemy.explosionRadius >
+                        0
+                ) {
+
+                    createExplosion(
+
+                        enemy.x,
+
+                        enemy.y,
+
+                        enemy
+                            .explosionRadius,
+
+                        enemy
+                            .explosionDuration ||
+                        0.1
+                    );
+                }
+
+
+                killPlayer();
+
+                return;
+            }
+        }
+    }
+
+
+    function updateExplosions(
+        dt
+    ) {
+
+        for (
+            let i =
+                state.explosions.length -
+                1;
+            i >= 0;
+            i--
+        ) {
+
+            const explosion =
+                state.explosions[i];
+
+
+            explosion.remaining -=
+                dt;
+
+
+            /*
+                Ook als je pas NA
+                de explosie begint
+                erin te bewegen
+                tijdens die 0.1 sec,
+                ga je dood.
+            */
+
+            if (
+                state.status ===
+                    "playing" &&
+
+                window.LevelPlayer
+                    .touchesCircle(
+                        explosion.x,
+                        explosion.y,
+                        explosion.radius
+                    )
+            ) {
+
+                killPlayer();
+            }
+
+
+            if (
+                explosion.remaining <=
+                0
+            ) {
+
+                state.explosions.splice(
+                    i,
+                    1
+                );
+            }
+        }
+    }
+
+
+    // ==========================================
+    // DRAW ENEMIES
+    // ==========================================
+
+    function drawEnemies() {
+
+        for (
+            const enemy
+            of state.enemies
+        ) {
+
+            ctx.save();
+
+
+            ctx.beginPath();
+
+            ctx.arc(
+                enemy.x,
+                enemy.y,
+                enemy.radius,
+                0,
+                Math.PI * 2
+            );
+
+
+            ctx.fillStyle =
+                enemy.color;
+
+            ctx.fill();
+
+
+            ctx.lineWidth = 2;
+
+            ctx.strokeStyle =
+                "rgba(0,0,0,0.7)";
+
+            ctx.stroke();
+
+
+            /*
+                Tijdelijke HP bar.
+                Later kunnen PNG's
+                dit vervangen.
+            */
+
+            const barWidth =
+                enemy.radius * 2;
+
+            const barHeight =
+                5;
+
+
+            const hpRatio =
+                Math.max(
+                    0,
+                    enemy.hp /
+                    enemy.maxHp
+                );
+
+
+            ctx.fillStyle =
+                "rgba(0,0,0,0.65)";
+
+
+            ctx.fillRect(
+                enemy.x -
+                    barWidth / 2,
+                enemy.y -
+                    enemy.radius -
+                    11,
+                barWidth,
+                barHeight
+            );
+
+
+            ctx.fillStyle =
+                "white";
+
+
+            ctx.fillRect(
+                enemy.x -
+                    barWidth / 2,
+                enemy.y -
+                    enemy.radius -
+                    11,
+                barWidth *
+                    hpRatio,
+                barHeight
+            );
+
+
+            ctx.restore();
+        }
+    }
+
+
+    function drawExplosions() {
+
+        for (
+            const explosion
+            of state.explosions
+        ) {
+
+            ctx.save();
+
+
+            ctx.beginPath();
+
+            ctx.arc(
+                explosion.x,
+                explosion.y,
+                explosion.radius,
+                0,
+                Math.PI * 2
+            );
+
+
+            ctx.fillStyle =
+                "rgba(255,120,20,0.45)";
+
+            ctx.fill();
+
+
+            ctx.lineWidth = 4;
+
+            ctx.strokeStyle =
+                "rgba(255,230,100,0.9)";
+
+            ctx.stroke();
+
+
+            ctx.restore();
+        }
+    }
+
+
+    // ==========================================
+    // WIN
+    // ==========================================
+
+    function checkWin() {
+
+        if (
+            state.status !==
+            "playing"
+        ) {
+            return;
+        }
+
+
+        const allSpawnsFinished =
+            state.spawnIndex >=
+            state.spawnEvents.length;
+
+
+        if (
+
+            allSpawnsFinished &&
+
+            state.enemies.length ===
+                0 &&
+
+            state.explosions.length ===
+                0
+
+        ) {
+
+            winLevel();
+        }
+    }
+
+
+    function winLevel() {
+
+        if (
+            state.status !==
+            "playing"
+        ) {
+            return;
+        }
+
+
+        state.status =
+            "won";
+
+        state.statusTimer =
+            0;
+
+
+        window.LevelCombat
+            .clear();
+
+
+        if (
+            !state.completionSent
+        ) {
+
+            state.completionSent =
+                true;
+
+
+            if (
+                activeContext
+                    ?.completeLevel
+            ) {
+
+                activeContext
+                    .completeLevel();
+
+            } else if (
+                window
+                    .completeStoryLevel
+            ) {
+
+                window
+                    .completeStoryLevel(
+                        activeConfig.number
+                    );
+            }
+        }
+    }
+
+
+    // ==========================================
+    // RESET LEVEL
+    // ==========================================
+
+    function resetRuntime() {
+
+        state.elapsedMs =
+            0;
+
+
+        state.status =
+            "playing";
+
+
+        state.statusTimer =
+            0;
+
+
+        state.enemies.length =
+            0;
+
+
+        state.explosions.length =
+            0;
+
+
+        /*
+            Nieuwe random spawnmomenten
+            bij iedere restart.
+        */
+
+        state.spawnEvents =
+            buildSpawnEvents();
+
+
+        state.spawnIndex =
+            0;
+
+
+        state.nextEnemyId =
+            1;
+
+
+        window.LevelPlayer
+            .reset();
+
+
+        window.LevelCombat
+            .reset();
+    }
+
+
+    // ==========================================
+    // UPDATE
+    // ==========================================
+
+    function updateLevel(
+        dt
+    ) {
+
+        updateExplosions(
+            dt
+        );
+
+
+        /*
+            DEAD
+
+            Na 0.9 sec wordt het
+            HELE level opnieuw gestart.
+        */
+
+        if (
+            state.status ===
+            "dead"
+        ) {
+
+            state.statusTimer +=
+                dt;
+
+
+            if (
+                state.statusTimer >=
+                0.9
+            ) {
+
+                resetRuntime();
+            }
+
+
+            return;
+        }
+
+
+        /*
+            WON
+        */
+
+        if (
+            state.status ===
+            "won"
+        ) {
+
+            state.statusTimer +=
+                dt;
+
+
+            if (
+                state.statusTimer >=
+                1.2
+            ) {
+
+                returnToStoryMap();
+            }
+
+
+            return;
+        }
+
+
+        state.elapsedMs +=
+            dt * 1000;
+
+
+        /*
+            Eerste 5 seconden:
+            helemaal niets.
+        */
+
+        const delayMs =
+            activeConfig
+                .startDelayMs ||
+            0;
+
+
+        if (
+            state.elapsedMs <
+            delayMs
+        ) {
+            return;
+        }
+
+
+        processSpawns();
+
+
+        updateEnemies(
+            dt
+        );
+
+
+        if (
+            state.status !==
+            "playing"
+        ) {
+            return;
+        }
+
+
+        window.LevelCombat
+            .update(
+
+                dt,
+
+                state.enemies,
+
+                damageEnemy
+            );
+
+
+        checkWin();
     }
 
 
@@ -274,13 +1848,28 @@
             canvas.height
         );
 
+
         drawBackground();
 
         drawCenterLine();
 
+        drawEnemies();
+
+
+        window.LevelCombat
+            .draw(ctx);
+
+
+        drawExplosions();
+
+
+        window.LevelPlayer
+            .draw(ctx);
+
+
         drawBorders();
 
-        drawLevelTitle();
+        drawHud();
     }
 
 
@@ -288,26 +1877,57 @@
     // LOOP
     // ==========================================
 
-    function levelLoop() {
+    function levelLoop(
+        time
+    ) {
 
         if (
             !window.levelActive
         ) {
 
-            animationFrame = null;
+            animationFrame =
+                null;
+
             return;
         }
+
+
+        if (!lastFrameTime) {
+
+            lastFrameTime =
+                time;
+        }
+
+
+        /*
+            Max 0.05 voorkomt rare
+            grote sprongen bij tab switch.
+        */
+
+        const dt =
+            Math.min(
+
+                (
+                    time -
+                    lastFrameTime
+                ) /
+                1000,
+
+                0.05
+            );
+
+
+        lastFrameTime =
+            time;
 
 
         if (
             !window.gamePaused
         ) {
 
-            /*
-                Later komt hier algemene
-                level gameplay.
-            */
-
+            updateLevel(
+                dt
+            );
         }
 
 
@@ -322,14 +1942,18 @@
 
 
     // ==========================================
-    // START LEVEL
+    // START
     // ==========================================
 
     window.startStoryLevel =
         async function(
             config,
-            context
+            context = {}
         ) {
+
+            activeConfig =
+                config;
+
 
             activeContext =
                 context;
@@ -347,12 +1971,11 @@
                 false;
 
 
-            /*
-                Story map verbergen.
-            */
+            state.completionSent =
+                false;
+
 
             if (
-                context &&
                 context.hideMap
             ) {
 
@@ -364,10 +1987,59 @@
                 false;
 
 
-            resizeLevelCanvas();
+            window.LevelPlayer
+                .bindControls();
 
 
             await makeFullscreen();
+
+
+            resizeLevelCanvas();
+
+
+            await loadBackground(
+                config
+            );
+
+
+            const selectedWeapon =
+
+                context.selectedWeapon ||
+
+                window
+                    .StoryProgress
+                    ?.getSelectedWeapon
+                    ?.() ||
+
+                "pistol";
+
+
+            const combatModifiers =
+
+                context.combatModifiers ||
+
+                window
+                    .StoryProgress
+                    ?.getCombatModifiers
+                    ?.() ||
+
+                {};
+
+
+            await window.LevelCombat
+                .configure(
+
+                    selectedWeapon,
+
+                    combatModifiers
+                );
+
+
+            resetRuntime();
+
+
+            lastFrameTime =
+                0;
 
 
             if (
@@ -383,7 +2055,7 @@
 
 
     // ==========================================
-    // TERUG NAAR MAP
+    // RETURN TO MAP
     // ==========================================
 
     function returnToStoryMap() {
@@ -400,6 +2072,30 @@
             null;
 
 
+        state.status =
+            "idle";
+
+
+        state.enemies.length =
+            0;
+
+
+        state.explosions.length =
+            0;
+
+
+        state.spawnEvents.length =
+            0;
+
+
+        state.spawnIndex =
+            0;
+
+
+        window.LevelCombat
+            .clear();
+
+
         levelScreen.hidden =
             true;
 
@@ -412,14 +2108,15 @@
                 animationFrame
             );
 
+
             animationFrame =
                 null;
         }
 
 
         if (
-            activeContext &&
-            activeContext.returnToMap
+            activeContext
+                ?.returnToMap
         ) {
 
             activeContext
@@ -429,13 +2126,36 @@
 
         activeContext =
             null;
+
+
+        activeConfig =
+            null;
+
+
+        lastFrameTime =
+            0;
     }
 
 
     window.returnToStoryMap =
         returnToStoryMap;
 
+
     window.leaveCurrentLevel =
         returnToStoryMap;
+
+
+    /*
+        Handig voor toekomstige
+        enemy projectiles.
+    */
+
+    window.LevelEngine = {
+
+        killPlayer,
+
+        getState:
+            () => state
+    };
 
 })();

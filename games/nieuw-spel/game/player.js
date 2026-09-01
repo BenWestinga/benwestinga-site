@@ -1,60 +1,206 @@
-window.levelPlayer = {
-    x: 0,
-    y: 0,
-    radius: 18
-};
+(() => {
+
+    const player = {
+        x: 0,
+        y: 0,
+        radius: 18,
+        alive: true
+    };
 
 
-function resetPlayer() {
-
-    const canvas =
-        document.getElementById("level-canvas");
-
-    levelPlayer.x =
-        canvas.width / 2;
-
-    levelPlayer.y =
-        canvas.height / 2;
-}
+    window.levelPlayer = player;
 
 
-function movePlayerToPointer(event) {
-
-    if (
-        !window.levelActive ||
-        window.gamePaused
-    ) {
-        return;
+    function getCanvas() {
+        return document.getElementById("level-canvas");
     }
 
-    const canvas =
-        document.getElementById("level-canvas");
 
-    const rect =
-        canvas.getBoundingClientRect();
+    function resetPlayer() {
 
-    const x =
-        (event.clientX - rect.left) *
-        (canvas.width / rect.width);
+        const canvas = getCanvas();
 
-    const y =
-        (event.clientY - rect.top) *
-        (canvas.height / rect.height);
+        if (!canvas) {
+            return;
+        }
 
 
-    levelPlayer.x = Math.max(
-        levelPlayer.radius,
-        Math.min(
-            canvas.width - levelPlayer.radius,
-            x
-        )
-    );
+        player.x =
+            canvas.width * 0.25;
 
-    levelPlayer.y = Math.max(
-        levelPlayer.radius,
-        Math.min(
-            canvas.height - levelPlayer.radius,
-            y
-        )
-    );
-}
+        player.y =
+            canvas.height * 0.5;
+
+        player.alive = true;
+    }
+
+
+    function clampPlayer() {
+
+        const canvas = getCanvas();
+
+        if (!canvas) {
+            return;
+        }
+
+
+        player.x = Math.max(
+            player.radius,
+            Math.min(
+                canvas.width - player.radius,
+                player.x
+            )
+        );
+
+
+        player.y = Math.max(
+            player.radius,
+            Math.min(
+                canvas.height - player.radius,
+                player.y
+            )
+        );
+    }
+
+
+    function movePlayerToPointer(event) {
+
+        if (
+            !window.levelActive ||
+            window.gamePaused ||
+            !player.alive
+        ) {
+            return;
+        }
+
+
+        const canvas = getCanvas();
+
+        if (!canvas) {
+            return;
+        }
+
+
+        const rect =
+            canvas.getBoundingClientRect();
+
+
+        player.x =
+            (event.clientX - rect.left) *
+            (canvas.width / rect.width);
+
+
+        player.y =
+            (event.clientY - rect.top) *
+            (canvas.height / rect.height);
+
+
+        clampPlayer();
+    }
+
+
+    function drawPlayer(ctx) {
+
+        ctx.save();
+
+        ctx.beginPath();
+
+        ctx.arc(
+            player.x,
+            player.y,
+            player.radius,
+            0,
+            Math.PI * 2
+        );
+
+
+        ctx.fillStyle =
+            player.alive
+                ? "#2f6fff"
+                : "#555555";
+
+        ctx.fill();
+
+
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "white";
+        ctx.stroke();
+
+        ctx.restore();
+    }
+
+
+    function touchesCircle(
+        x,
+        y,
+        radius
+    ) {
+
+        const dx =
+            player.x - x;
+
+        const dy =
+            player.y - y;
+
+
+        return (
+            Math.hypot(dx, dy) <=
+            player.radius + radius
+        );
+    }
+
+
+    function bindControls() {
+
+        const canvas = getCanvas();
+
+
+        if (
+            !canvas ||
+            canvas.dataset.playerControlsBound === "1"
+        ) {
+            return;
+        }
+
+
+        canvas.dataset.playerControlsBound =
+            "1";
+
+
+        canvas.addEventListener(
+            "pointermove",
+            movePlayerToPointer
+        );
+
+
+        canvas.addEventListener(
+            "pointerdown",
+            movePlayerToPointer
+        );
+    }
+
+
+    window.LevelPlayer = {
+        reset: resetPlayer,
+        clamp: clampPlayer,
+        draw: drawPlayer,
+        touchesCircle,
+        bindControls
+    };
+
+
+    if (
+        document.readyState === "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            bindControls
+        );
+
+    } else {
+
+        bindControls();
+    }
+
+})();
