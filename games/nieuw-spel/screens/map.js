@@ -23,6 +23,59 @@ const ctx =
         "2d"
     );
 
+// ======================================================
+// WIND / FOG
+// ======================================================
+
+const windImage =
+    new Image();
+
+let windImageLoaded =
+    false;
+
+windImage.onload =
+    () => {
+
+        windImageLoaded =
+            true;
+
+    };
+
+windImage.onerror =
+    () => {
+
+        console.error(
+            "wind.png could not be loaded."
+        );
+
+    };
+
+windImage.src =
+    new URL(
+        "wind.png",
+        window.location.href
+    ).href;
+
+
+// Offscreen canvas waarop de wind wordt getekend.
+// Hierdoor kunnen reveal-zones elkaar veilig overlappen.
+
+const windOverlayCanvas =
+    document.createElement(
+        "canvas"
+    );
+
+const windOverlayCtx =
+    windOverlayCanvas.getContext(
+        "2d"
+    );
+
+
+let WIND_REVEAL_RADIUS =
+    450;
+
+const WIND_MIN_EDGE_FACTOR =
+    0.91;
 
 // ======================================================
 // CANVAS
@@ -35,8 +88,14 @@ function resizeCanvas() {
 
     canvas.height =
         window.innerHeight;
-}
 
+
+    windOverlayCanvas.width =
+        canvas.width;
+
+    windOverlayCanvas.height =
+        canvas.height;
+}
 
 resizeCanvas();
 
@@ -646,6 +705,7 @@ function loadLevelObjects() {
 
     }
 
+    recalculateWindRevealRadius();
 
     console.log(
 
@@ -666,6 +726,676 @@ function loadLevelObjects() {
 
 }
 
+// ======================================================
+// WIND REVEAL SYSTEM
+// ======================================================
+
+function recalculateWindRevealRadius() {
+
+    let maximumDistance =
+        0;
+
+
+    let previousPoint =
+        spawnPoint;
+
+
+    // Spawn -> Level 1
+    // Level 1 -> Level 2
+    // ...
+    // Level 48 -> Level 49
+    //
+    // Na Level 49 verdwijnt alle wind.
+
+    for (
+        let levelNumber = 1;
+        levelNumber <= 49;
+        levelNumber++
+    ) {
+
+        const point =
+            levelPoints.get(
+                levelNumber
+            );
+
+
+        if (!point) {
+
+            continue;
+
+        }
+
+
+        const distance =
+            Math.hypot(
+
+                point.x -
+                    previousPoint.x,
+
+                point.y -
+                    previousPoint.y
+
+            );
+
+
+        maximumDistance =
+            Math.max(
+
+                maximumDistance,
+                distance
+
+            );
+
+
+        previousPoint =
+            point;
+
+    }
+
+
+    // Extra ruimte zorgt ervoor dat ook
+    // de hele level-marker zichtbaar blijft.
+    //
+    // Delen door 0.91 compenseert voor
+    // de naar binnen lopende spikes.
+
+    WIND_REVEAL_RADIUS =
+        Math.max(
+
+            360,
+
+            (
+                maximumDistance +
+                BOSS_RADIUS +
+                90
+            ) /
+            WIND_MIN_EDGE_FACTOR
+
+        );
+
+
+    console.log(
+        "Wind reveal radius:",
+        Math.round(
+            WIND_REVEAL_RADIUS
+        )
+    );
+
+}
+
+
+// ======================================================
+// ALLE WIND WEG NA LEVEL 49
+// ======================================================
+
+function isWindFullyCleared() {
+
+    return (
+
+        window.StoryProgress &&
+
+        StoryProgress
+            .isLevelCompleted(
+                49
+            )
+
+    );
+
+}
+
+
+// ======================================================
+// REVEAL CENTERS
+// ======================================================
+
+function getWindRevealCenters() {
+
+    const centers = [
+
+        {
+            x: spawnPoint.x,
+            y: spawnPoint.y
+        }
+
+    ];
+
+
+    if (
+        !window.StoryProgress
+    ) {
+
+        return centers;
+
+    }
+
+
+    for (
+        let levelNumber = 1;
+        levelNumber <= 48;
+        levelNumber++
+    ) {
+
+        if (
+            !StoryProgress
+                .isLevelCompleted(
+                    levelNumber
+                )
+        ) {
+
+            continue;
+
+        }
+
+
+        const point =
+            levelPoints.get(
+                levelNumber
+            );
+
+
+        if (point) {
+
+            centers.push({
+
+                x: point.x,
+                y: point.y
+
+            });
+
+        }
+
+    }
+
+
+    return centers;
+
+}
+
+
+// ======================================================
+// NATUURLIJKE, LICHT SPIKY RAND
+// ======================================================
+
+function getWindEdgeFactor(
+    center,
+    angle
+) {
+
+    const seed =
+
+        center.x *
+            0.013 +
+
+        center.y *
+            0.017;
+
+
+    return (
+
+        1 +
+
+        Math.sin(
+            angle * 7 +
+            seed
+        ) *
+            0.045 +
+
+        Math.sin(
+            angle * 13 +
+            seed * 1.7
+        ) *
+            0.030 +
+
+        Math.sin(
+            angle * 19 +
+            seed * 0.6
+        ) *
+            0.015
+
+    );
+
+}
+
+
+// ======================================================
+// IS DIT PUNT VRIJ VAN WIND?
+// ======================================================
+
+function isPointRevealedByWind(
+    x,
+    y
+) {
+
+    if (
+        isWindFullyCleared()
+    ) {
+
+        return true;
+
+    }
+
+
+    const centers =
+        getWindRevealCenters();
+
+
+    for (
+        const center
+        of centers
+    ) {
+
+        const dx =
+            x -
+            center.x;
+
+
+        const dy =
+            y -
+            center.y;
+
+
+        const distance =
+            Math.hypot(
+                dx,
+                dy
+            );
+
+
+        const angle =
+            Math.atan2(
+                dy,
+                dx
+            );
+
+
+        const edgeRadius =
+
+            WIND_REVEAL_RADIUS *
+
+            getWindEdgeFactor(
+                center,
+                angle
+            );
+
+
+        if (
+            distance <=
+            edgeRadius
+        ) {
+
+            return true;
+
+        }
+
+    }
+
+
+    return false;
+
+}
+
+
+// ======================================================
+// HELE SPELER MOET BUITEN DE WIND ZIJN
+// ======================================================
+
+function positionInsideRevealedWindArea(
+    x,
+    y
+) {
+
+    if (
+        isWindFullyCleared()
+    ) {
+
+        return true;
+
+    }
+
+
+    const half =
+        player.size / 2 -
+        2;
+
+
+    const points = [
+
+        {
+            x,
+            y
+        },
+
+        {
+            x: x - half,
+            y: y - half
+        },
+
+        {
+            x: x + half,
+            y: y - half
+        },
+
+        {
+            x: x - half,
+            y: y + half
+        },
+
+        {
+            x: x + half,
+            y: y + half
+        }
+
+    ];
+
+
+    return points.every(
+
+        point =>
+
+            isPointRevealedByWind(
+
+                point.x,
+                point.y
+
+            )
+
+    );
+
+}
+
+
+// ======================================================
+// SPIKY REVEAL PATH TEKENEN
+// ======================================================
+
+function createWindRevealPath(
+    context,
+    center
+) {
+
+    const pointCount =
+        72;
+
+
+    context.beginPath();
+
+
+    for (
+        let i = 0;
+        i < pointCount;
+        i++
+    ) {
+
+        const angle =
+
+            (
+                i /
+                pointCount
+            ) *
+
+            Math.PI *
+            2;
+
+
+        const radius =
+
+            WIND_REVEAL_RADIUS *
+
+            getWindEdgeFactor(
+                center,
+                angle
+            );
+
+
+        const screenX =
+
+            center.x -
+            camera.x +
+
+            Math.cos(
+                angle
+            ) *
+            radius;
+
+
+        const screenY =
+
+            center.y -
+            camera.y +
+
+            Math.sin(
+                angle
+            ) *
+            radius;
+
+
+        if (
+            i === 0
+        ) {
+
+            context.moveTo(
+                screenX,
+                screenY
+            );
+
+        } else {
+
+            context.lineTo(
+                screenX,
+                screenY
+            );
+
+        }
+
+    }
+
+
+    context.closePath();
+
+}
+
+
+// ======================================================
+// WIND TEKENEN
+// ======================================================
+
+function drawWindOverlay() {
+
+    if (
+        isWindFullyCleared()
+    ) {
+
+        return;
+
+    }
+
+
+    const windCtx =
+        windOverlayCtx;
+
+
+    windCtx.clearRect(
+
+        0,
+        0,
+
+        windOverlayCanvas.width,
+        windOverlayCanvas.height
+
+    );
+
+
+    // Witte basis zodat onbekend gebied
+    // echt nauwelijks zichtbaar is.
+
+    windCtx.fillStyle =
+        "rgba(245, 248, 252, 0.94)";
+
+
+    windCtx.fillRect(
+
+        0,
+        0,
+
+        windOverlayCanvas.width,
+        windOverlayCanvas.height
+
+    );
+
+
+    // ==================================================
+    // BEWEGENDE WIND.PNG
+    // ==================================================
+
+    if (
+        windImageLoaded
+    ) {
+
+        const tileWidth =
+            440;
+
+
+        const tileHeight =
+
+            tileWidth *
+
+            (
+                windImage.height /
+                windImage.width
+            );
+
+
+        const time =
+            performance.now();
+
+
+        const offsetX =
+
+            (
+                time *
+                0.018
+            ) %
+            tileWidth;
+
+
+        const offsetY =
+
+            (
+                time *
+                0.007
+            ) %
+            tileHeight;
+
+
+        windCtx.save();
+
+
+        windCtx.globalAlpha =
+            0.72;
+
+
+        for (
+
+            let y =
+                -tileHeight -
+                offsetY;
+
+            y <
+                canvas.height +
+                tileHeight;
+
+            y +=
+                tileHeight
+
+        ) {
+
+            for (
+
+                let x =
+                    -tileWidth +
+                    offsetX;
+
+                x <
+                    canvas.width +
+                    tileWidth;
+
+                x +=
+                    tileWidth
+
+            ) {
+
+                windCtx.drawImage(
+
+                    windImage,
+
+                    x,
+                    y,
+
+                    tileWidth,
+                    tileHeight
+
+                );
+
+            }
+
+        }
+
+
+        windCtx.restore();
+
+    }
+
+
+    // ==================================================
+    // GATEN UIT WIND SNIJDEN
+    // ==================================================
+
+    windCtx.save();
+
+
+    windCtx.globalCompositeOperation =
+        "destination-out";
+
+
+    for (
+        const center
+        of getWindRevealCenters()
+    ) {
+
+        createWindRevealPath(
+
+            windCtx,
+            center
+
+        );
+
+
+        windCtx.fillStyle =
+            "black";
+
+
+        windCtx.fill();
+
+    }
+
+
+    windCtx.restore();
+
+
+    // ==================================================
+    // OVER MAP TEKENEN
+    // ==================================================
+
+    ctx.drawImage(
+
+        windOverlayCanvas,
+
+        0,
+        0
+
+    );
+
+}
 
 // ======================================================
 // MAP LADEN
@@ -2226,20 +2956,24 @@ function updatePlayer() {
 
         if (
 
-            !positionHasCollision(
+        !positionHasCollision(
 
-                newX,
+            newX,
+            player.y
 
-                player.y
+        ) &&
 
-            )
+        positionInsideRevealedWindArea(
 
-        ) {
+            newX,
+            player.y
 
-            player.x =
-                newX;
+        )
 
-        }
+    ) {
+
+        player.x =
+            newX;
 
     }
 
@@ -2276,20 +3010,24 @@ function updatePlayer() {
 
         if (
 
-            !positionHasCollision(
+        !positionHasCollision(
 
-                player.x,
+            player.x,
+            newY
 
-                newY
+        ) &&
 
-            )
+        positionInsideRevealedWindArea(
 
-        ) {
+            player.x,
+            newY
 
-            player.y =
-                newY;
+        )
 
-        }
+    ) {
+
+        player.y =
+            newY;
 
     }
 
@@ -3569,13 +4307,16 @@ function drawWorld() {
     );
 
 
+    // ==================================================
+    // MAP + LEVEL MARKERS
+    // ==================================================
+
     ctx.save();
 
 
     ctx.translate(
 
         -camera.x,
-
         -camera.y
 
     );
@@ -3587,11 +4328,40 @@ function drawWorld() {
     drawLevelMarkers();
 
 
+    ctx.restore();
+
+
+    // ==================================================
+    // WIND BOVEN DE WERELD
+    // ==================================================
+
+    drawWindOverlay();
+
+
+    // ==================================================
+    // PLAYER BOVEN WIND
+    // ==================================================
+
+    ctx.save();
+
+
+    ctx.translate(
+
+        -camera.x,
+        -camera.y
+
+    );
+
+
     drawPlayer();
 
 
     ctx.restore();
 
+
+    // ==================================================
+    // HUD
+    // ==================================================
 
     drawHud();
 
