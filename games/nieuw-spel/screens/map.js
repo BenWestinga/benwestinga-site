@@ -726,77 +726,55 @@ function getPropertiesAtPosition(
 // COLLISION CONTROLEREN
 // ==========================================
 
-function positionHasCollision(
-    x,
-    y
-) {
+function positionHasCollision(x, y) {
 
-    const half =
-        player.size / 2;
-
-
-    /*
-        We controleren meerdere punten
-        rondom de speler.
-
-        Daardoor kan de speler niet half
-        door een rots of berg lopen.
-    */
+    const half = player.size / 2;
 
     const points = [
-
-        {
-            x: x - half,
-            y: y - half
-        },
-
-        {
-            x: x + half,
-            y: y - half
-        },
-
-        {
-            x: x - half,
-            y: y + half
-        },
-
-        {
-            x: x + half,
-            y: y + half
-        }
-
+        { x: x - half, y: y - half },
+        { x: x + half, y: y - half },
+        { x: x - half, y: y + half },
+        { x: x + half, y: y + half }
     ];
 
+    for (const point of points) {
 
-    for (
-        const point
-        of points
-    ) {
+        const tileX = Math.floor(point.x / TILE_WIDTH);
+        const tileY = Math.floor(point.y / TILE_HEIGHT);
 
-        const properties =
-            getPropertiesAtPosition(
-                point.x,
-                point.y
-            );
+        const gids = getGidsAtTile(tileX, tileY);
 
+        for (const gid of gids) {
 
-        /*
-            collision = juiste spelling.
+            const result = getTilesetForGid(gid);
 
-            colission staat er ook bij
-            voor het geval ergens in Tiled
-            nog de oude spelfout staat.
-        */
+            if (!result) {
+                continue;
+            }
 
-        if (
-            properties.collision === true ||
-            properties.colission === true
-        ) {
+            const source =
+                result.tileset.source.toLowerCase();
 
-            return true;
+            // Alles uit deze tilesets blokkeert
+            if (
+                source.includes("mountain.tsx") ||
+                source.includes("rock.tsx")
+            ) {
+                return true;
+            }
+
+            // Ook normale collision-properties blijven werken
+            const properties =
+                getPropertiesForGid(gid);
+
+            if (
+                properties.collision === true ||
+                properties.colission === true
+            ) {
+                return true;
+            }
         }
     }
-
 
     return false;
 }
