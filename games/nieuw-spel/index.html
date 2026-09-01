@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/map.css">
     <link rel="stylesheet" href="css/level.css">
+    <link rel="stylesheet" href="css/story-ui.css">
 </head>
 
 <body>
@@ -156,6 +158,88 @@
                 height="540"
             ></canvas>
 
+
+            <!-- BOEKJES -->
+
+            <div id="book-counter">
+
+                <div id="book-icon">
+                    📕
+                </div>
+
+                <span id="book-count">
+                    0
+                </span>
+
+            </div>
+
+
+            <!-- MAP KNOPPEN -->
+
+            <div id="story-map-buttons">
+
+                <button id="shop-button">
+                    WEAPONS
+                </button>
+
+                <button id="upgrades-button">
+                    UPGRADES
+                </button>
+
+            </div>
+
+
+            <!-- WEAPON SHOP -->
+
+            <div
+                id="shop-screen"
+                class="story-popup"
+                hidden
+            >
+
+                <div class="story-popup-box">
+
+                    <button
+                        id="close-shop-button"
+                        class="popup-close"
+                    >
+                        ×
+                    </button>
+
+                    <h2>WEAPONS</h2>
+
+                    <div id="weapon-list"></div>
+
+                </div>
+
+            </div>
+
+
+            <!-- UPGRADES -->
+
+            <div
+                id="upgrades-screen"
+                class="story-popup"
+                hidden
+            >
+
+                <div class="story-popup-box">
+
+                    <button
+                        id="close-upgrades-button"
+                        class="popup-close"
+                    >
+                        ×
+                    </button>
+
+                    <h2>SPECIAL UPGRADES</h2>
+
+                    <div id="upgrade-list"></div>
+
+                </div>
+
+            </div>
+
         </section>
 
 
@@ -214,10 +298,26 @@
     </main>
 
 
+    <!-- ACCOUNT -->
+
     <script src="js/api.js"></script>
     <script src="js/login.js"></script>
 
+
+    <!-- STORY SYSTEM -->
+
+    <script src="game/story-progress.js"></script>
+
+
+    <!-- STORY MAP -->
+
     <script src="screens/map.js"></script>
+
+    <script src="screens/shop.js"></script>
+    <script src="screens/upgrades.js"></script>
+
+
+    <!-- GAMEPLAY -->
 
     <script src="game/player.js"></script>
     <script src="game/combat.js"></script>
@@ -226,9 +326,10 @@
 
     <script src="game/level-engine.js"></script>
 
-    <script src="levels/level-01.js"></script>
+    <!-- PAUSE -->
 
     <script src="screens/pause-menu.js"></script>
 
 </body>
+
 </html>

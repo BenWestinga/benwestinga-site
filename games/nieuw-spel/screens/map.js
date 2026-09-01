@@ -1,8 +1,27 @@
-const storyButton = document.getElementById("story-button");
-const mapGameMenu = document.getElementById("game-menu");
-const storyMap = document.getElementById("story-map");
-const canvas = document.getElementById("map-canvas");
-const ctx = canvas.getContext("2d");
+const storyButton =
+    document.getElementById(
+        "story-button"
+    );
+
+const mapGameMenu =
+    document.getElementById(
+        "game-menu"
+    );
+
+const storyMap =
+    document.getElementById(
+        "story-map"
+    );
+
+const canvas =
+    document.getElementById(
+        "map-canvas"
+    );
+
+const ctx =
+    canvas.getContext(
+        "2d"
+    );
 
 
 // ======================================================
@@ -10,13 +29,22 @@ const ctx = canvas.getContext("2d");
 // ======================================================
 
 function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+
+    canvas.width =
+        window.innerWidth;
+
+    canvas.height =
+        window.innerHeight;
 }
+
 
 resizeCanvas();
 
-window.addEventListener("resize", resizeCanvas);
+
+window.addEventListener(
+    "resize",
+    resizeCanvas
+);
 
 
 // ======================================================
@@ -41,49 +69,41 @@ let mapLoadingPromise = null;
 // LEVELS
 // ======================================================
 
-const levelPoints = new Map();
+const levelPoints =
+    new Map();
+
 
 let spawnPoint = {
+
     x: 350,
     y: 1768
+
 };
 
+
 const LEVEL_RADIUS = 43;
+
 const BOSS_RADIUS = 52;
+
 const LEVEL_INTERACT_RADIUS = 72;
 
-const bossLevels = new Set([
-    5,
-    10,
-    15,
-    20,
-    25,
-    30,
-    35,
-    40,
-    45,
-    49,
-    50
-]);
 
+const bossLevels =
+    new Set([
 
-// ======================================================
-// PROGRESS
-// ======================================================
+        5,
+        10,
+        15,
+        20,
+        25,
+        30,
+        35,
+        40,
+        45,
+        49,
+        50
 
-const PROGRESS_KEY =
-    "nieuwSpelHighestCompletedLevel";
-
-let highestCompletedLevel =
-    Number(
-        localStorage.getItem(PROGRESS_KEY)
-    ) || 0;
-
-highestCompletedLevel =
-    Math.max(
-        0,
-        Math.min(50, highestCompletedLevel)
-    );
+    ]);
 
 
 // ======================================================
@@ -91,10 +111,14 @@ highestCompletedLevel =
 // ======================================================
 
 const player = {
+
     x: 350,
     y: 1768,
+
     size: 26,
+
     speed: 4
+
 };
 
 
@@ -103,8 +127,10 @@ const player = {
 // ======================================================
 
 const camera = {
+
     x: 0,
     y: 0
+
 };
 
 
@@ -114,7 +140,9 @@ const camera = {
 
 const keys = {};
 
-let levelLaunchBusy = false;
+
+let levelLaunchBusy =
+    false;
 
 
 // ======================================================
@@ -124,15 +152,23 @@ let levelLaunchBusy = false;
 let hazardGraceUntil = 0;
 
 let noticeText = "";
+
 let noticeUntil = 0;
 
-function showNotice(text, duration = 2200) {
 
-    noticeText = text;
+function showNotice(
+    text,
+    duration = 2200
+) {
+
+    noticeText =
+        text;
+
 
     noticeUntil =
         performance.now() +
         duration;
+
 }
 
 
@@ -140,20 +176,33 @@ function showNotice(text, duration = 2200) {
 // PROPERTY VALUE
 // ======================================================
 
-function convertPropertyValue(value, type) {
+function convertPropertyValue(
+    value,
+    type
+) {
 
-    if (type === "bool") {
-        return value === "true";
+    if (
+        type === "bool"
+    ) {
+
+        return value ===
+            "true";
     }
+
 
     if (
         type === "int" ||
         type === "float"
     ) {
-        return Number(value);
+
+        return Number(
+            value
+        );
     }
 
+
     return value;
+
 }
 
 
@@ -168,143 +217,222 @@ async function loadTileset(
 
     const tsxUrl =
         new URL(
+
             tilesetReference.source,
+
             mapUrl
+
         );
+
 
     const response =
-        await fetch(tsxUrl);
+        await fetch(
+            tsxUrl
+        );
 
-    if (!response.ok) {
+
+    if (
+        !response.ok
+    ) {
 
         throw new Error(
+
             "Tileset niet gevonden: " +
             tilesetReference.source
+
         );
+
     }
+
 
     const text =
         await response.text();
 
+
     const parser =
         new DOMParser();
 
+
     const xml =
         parser.parseFromString(
+
             text,
+
             "text/xml"
+
         );
+
 
     const tilesetElement =
-        xml.querySelector("tileset");
+        xml.querySelector(
+            "tileset"
+        );
 
-    if (!tilesetElement) {
+
+    if (
+        !tilesetElement
+    ) {
 
         throw new Error(
+
             "Ongeldige tileset: " +
             tilesetReference.source
+
         );
+
     }
+
 
     const tileWidth =
         Number(
+
             tilesetElement.getAttribute(
                 "tilewidth"
             )
+
         );
+
 
     const tileHeight =
         Number(
+
             tilesetElement.getAttribute(
                 "tileheight"
             )
+
         );
+
 
     const spacing =
         Number(
+
             tilesetElement.getAttribute(
                 "spacing"
             ) || 0
+
         );
+
 
     const margin =
         Number(
+
             tilesetElement.getAttribute(
                 "margin"
             ) || 0
+
         );
+
 
     const columns =
         Number(
+
             tilesetElement.getAttribute(
                 "columns"
             ) || 1
+
         );
+
 
     const tileCount =
         Number(
+
             tilesetElement.getAttribute(
                 "tilecount"
             ) || 0
+
         );
+
 
     const imageElement =
         tilesetElement.querySelector(
             "image"
         );
 
-    if (!imageElement) {
+
+    if (
+        !imageElement
+    ) {
 
         throw new Error(
+
             "Geen PNG in " +
             tilesetReference.source
+
         );
+
     }
+
 
     const imageSource =
         imageElement.getAttribute(
             "source"
         );
 
+
     const imageUrl =
         new URL(
+
             imageSource,
+
             tsxUrl
+
         );
+
 
     const image =
         new Image();
 
+
     image.src =
         imageUrl.href;
 
+
     await new Promise(
-        (resolve, reject) => {
+
+        (
+            resolve,
+            reject
+        ) => {
 
             image.onload =
                 resolve;
 
+
             image.onerror =
-                () =>
+                () => {
+
                     reject(
+
                         new Error(
+
                             "PNG niet geladen: " +
                             imageUrl.href
+
                         )
+
                     );
+
+                };
+
         }
+
     );
 
 
+    // ==================================================
     // TILE PROPERTIES
+    // ==================================================
 
     const tileProperties =
         new Map();
 
+
     const tileElements =
-        tilesetElement.querySelectorAll(
-            "tile"
-        );
+        tilesetElement
+            .querySelectorAll(
+                "tile"
+            );
+
 
     for (
         const tileElement
@@ -313,17 +441,23 @@ async function loadTileset(
 
         const tileId =
             Number(
+
                 tileElement.getAttribute(
                     "id"
                 )
+
             );
+
 
         const properties = {};
 
+
         const propertyElements =
-            tileElement.querySelectorAll(
-                "properties > property"
-            );
+            tileElement
+                .querySelectorAll(
+                    "properties > property"
+                );
+
 
         for (
             const propertyElement
@@ -335,33 +469,51 @@ async function loadTileset(
                     "name"
                 );
 
+
             const type =
                 propertyElement.getAttribute(
                     "type"
                 ) || "string";
+
 
             let value =
                 propertyElement.getAttribute(
                     "value"
                 );
 
-            if (value === null) {
+
+            if (
+                value === null
+            ) {
 
                 value =
                     propertyElement.textContent;
+
             }
 
-            properties[name] =
+
+            properties[
+                name
+            ] =
                 convertPropertyValue(
+
                     value,
+
                     type
+
                 );
+
         }
 
+
         tileProperties.set(
+
             tileId,
+
             properties
+
         );
+
     }
 
 
@@ -377,13 +529,17 @@ async function loadTileset(
 
         tileWidth,
         tileHeight,
+
         spacing,
         margin,
+
         columns,
         tileCount,
 
         tileProperties
+
     };
+
 }
 
 
@@ -395,23 +551,34 @@ function loadLevelObjects() {
 
     levelPoints.clear();
 
+
     const levelLayer =
         tiledMap.layers.find(
+
             layer =>
+
                 layer.type ===
                     "objectgroup" &&
-                layer.name.toLowerCase() ===
+
+                layer.name
+                    .toLowerCase() ===
                     "levels"
+
         );
 
-    if (!levelLayer) {
+
+    if (
+        !levelLayer
+    ) {
 
         console.error(
             "Levels object layer niet gevonden."
         );
 
         return;
+
     }
+
 
     for (
         const object
@@ -424,52 +591,79 @@ function loadLevelObjects() {
                 .toLowerCase();
 
 
-        // Jouw JSON gebruikt "spawnpoint".
-        // "spawn" werkt ook.
-
         if (
-            name === "spawnpoint" ||
-            name === "spawn"
+            name ===
+                "spawnpoint" ||
+            name ===
+                "spawn"
         ) {
 
             spawnPoint = {
+
                 x: object.x,
                 y: object.y
+
             };
 
+
             continue;
+
         }
 
 
         const levelNumber =
-            Number(object.name);
+            Number(
+                object.name
+            );
+
 
         if (
-            Number.isInteger(levelNumber) &&
+
+            Number.isInteger(
+                levelNumber
+            ) &&
+
             levelNumber >= 1 &&
+
             levelNumber <= 50
+
         ) {
 
             levelPoints.set(
+
                 levelNumber,
+
                 {
+
                     x: object.x,
                     y: object.y
+
                 }
+
             );
+
         }
+
     }
 
 
     console.log(
+
         "Spawn:",
+
         spawnPoint
+
     );
 
+
     console.log(
+
         "Levels gevonden:",
+
         levelPoints.size
+
     );
+
 }
 
 
@@ -479,51 +673,77 @@ function loadLevelObjects() {
 
 async function loadTiledMap() {
 
-    if (mapLoaded) {
+    if (
+        mapLoaded
+    ) {
+
         return;
     }
 
-    if (mapLoadingPromise) {
+
+    if (
+        mapLoadingPromise
+    ) {
+
         return mapLoadingPromise;
     }
+
 
     mapLoadingPromise =
         (async () => {
 
+
             const mapUrl =
                 new URL(
+
                     "spelmap.json",
+
                     window.location.href
+
                 );
 
-            const response =
-                await fetch(mapUrl);
 
-            if (!response.ok) {
+            const response =
+                await fetch(
+                    mapUrl
+                );
+
+
+            if (
+                !response.ok
+            ) {
 
                 throw new Error(
                     "spelmap.json niet gevonden."
                 );
+
             }
+
 
             tiledMap =
                 await response.json();
 
+
             TILE_WIDTH =
                 tiledMap.tilewidth;
 
+
             TILE_HEIGHT =
                 tiledMap.tileheight;
+
 
             WORLD_WIDTH =
                 tiledMap.width *
                 TILE_WIDTH;
 
+
             WORLD_HEIGHT =
                 tiledMap.height *
                 TILE_HEIGHT;
 
+
             tilesets = [];
+
 
             for (
                 const reference
@@ -532,33 +752,52 @@ async function loadTiledMap() {
 
                 const tileset =
                     await loadTileset(
+
                         reference,
+
                         mapUrl
+
                     );
+
 
                 tilesets.push(
                     tileset
                 );
+
             }
 
+
             tilesets.sort(
+
                 (a, b) =>
                     a.firstgid -
                     b.firstgid
+
             );
+
 
             loadLevelObjects();
 
-            mapLoaded = true;
+
+            mapLoaded =
+                true;
+
 
             console.log(
+
                 "Map geladen:",
+
                 WORLD_WIDTH,
                 WORLD_HEIGHT
+
             );
+
+
         })();
 
+
     return mapLoadingPromise;
+
 }
 
 
@@ -566,31 +805,47 @@ async function loadTiledMap() {
 // TILESET HELPERS
 // ======================================================
 
-function cleanGid(rawGid) {
+function cleanGid(
+    rawGid
+) {
 
     return (
+
         rawGid &
         0x1FFFFFFF
+
     );
+
 }
 
 
-function getTilesetForGid(rawGid) {
+function getTilesetForGid(
+    rawGid
+) {
 
     const gid =
-        cleanGid(rawGid);
+        cleanGid(
+            rawGid
+        );
 
-    if (gid === 0) {
+
+    if (
+        gid === 0
+    ) {
+
         return null;
     }
 
+
     for (
+
         let i =
             tilesets.length - 1;
 
         i >= 0;
 
         i--
+
     ) {
 
         if (
@@ -599,14 +854,21 @@ function getTilesetForGid(rawGid) {
         ) {
 
             return {
+
                 gid,
+
                 tileset:
                     tilesets[i]
+
             };
+
         }
+
     }
 
+
     return null;
+
 }
 
 
@@ -615,10 +877,18 @@ function getTilesetName(
 ) {
 
     return tileset.source
-        .replaceAll("\\", "/")
+
+        .replaceAll(
+            "\\",
+            "/"
+        )
+
         .split("/")
+
         .pop()
+
         .toLowerCase();
+
 }
 
 
@@ -631,20 +901,32 @@ function getPropertiesForGid(
             rawGid
         );
 
-    if (!result) {
+
+    if (
+        !result
+    ) {
+
         return {};
     }
+
 
     const localTileId =
         result.gid -
         result.tileset.firstgid;
 
+
     return (
+
         result.tileset
             .tileProperties
-            .get(localTileId)
+            .get(
+                localTileId
+            )
+
         || {}
+
     );
+
 }
 
 
@@ -659,19 +941,32 @@ function getGidsAtTile(
 
     const gids = [];
 
-    if (!tiledMap) {
-        return gids;
-    }
 
     if (
-        tileX < 0 ||
-        tileY < 0 ||
-        tileX >= tiledMap.width ||
-        tileY >= tiledMap.height
+        !tiledMap
     ) {
 
         return gids;
     }
+
+
+    if (
+
+        tileX < 0 ||
+        tileY < 0 ||
+
+        tileX >=
+            tiledMap.width ||
+
+        tileY >=
+            tiledMap.height
+
+    ) {
+
+        return gids;
+
+    }
+
 
     for (
         const layer
@@ -679,28 +974,46 @@ function getGidsAtTile(
     ) {
 
         if (
+
             layer.type !==
                 "tilelayer" ||
+
             !layer.visible
+
         ) {
 
             continue;
+
         }
+
 
         const index =
             tileY *
             layer.width +
             tileX;
 
-        const gid =
-            layer.data[index];
 
-        if (gid) {
-            gids.push(gid);
+        const gid =
+            layer.data[
+                index
+            ];
+
+
+        if (
+            gid
+        ) {
+
+            gids.push(
+                gid
+            );
+
         }
+
     }
 
+
     return gids;
+
 }
 
 
@@ -715,19 +1028,26 @@ function pointHasCollision(
 
     const tileX =
         Math.floor(
-            x / TILE_WIDTH
+            x /
+            TILE_WIDTH
         );
+
 
     const tileY =
         Math.floor(
-            y / TILE_HEIGHT
+            y /
+            TILE_HEIGHT
         );
+
 
     const gids =
         getGidsAtTile(
+
             tileX,
             tileY
+
         );
+
 
     for (
         const gid
@@ -735,11 +1055,18 @@ function pointHasCollision(
     ) {
 
         const result =
-            getTilesetForGid(gid);
+            getTilesetForGid(
+                gid
+            );
 
-        if (!result) {
+
+        if (
+            !result
+        ) {
+
             continue;
         }
+
 
         const source =
             getTilesetName(
@@ -750,33 +1077,45 @@ function pointHasCollision(
         // ALLE BERGEN EN STENEN BLOKKEREN
 
         if (
+
             source ===
                 "mountain.tsx" ||
+
             source ===
                 "rock.tsx"
+
         ) {
 
             return true;
+
         }
 
-
-        // PROPERTIES BLIJVEN OOK WERKEN
 
         const properties =
             getPropertiesForGid(
                 gid
             );
 
+
         if (
-            properties.collision === true ||
-            properties.colission === true
+
+            properties.collision ===
+                true ||
+
+            properties.colission ===
+                true
+
         ) {
 
             return true;
+
         }
+
     }
 
+
     return false;
+
 }
 
 
@@ -788,11 +1127,14 @@ function positionHasCollision(
     const half =
         player.size / 2;
 
+
     const inset = 2;
+
 
     const points = [
 
         {
+
             x:
                 x -
                 half +
@@ -802,9 +1144,11 @@ function positionHasCollision(
                 y -
                 half +
                 inset
+
         },
 
         {
+
             x:
                 x +
                 half -
@@ -814,9 +1158,11 @@ function positionHasCollision(
                 y -
                 half +
                 inset
+
         },
 
         {
+
             x:
                 x -
                 half +
@@ -826,9 +1172,11 @@ function positionHasCollision(
                 y +
                 half -
                 inset
+
         },
 
         {
+
             x:
                 x +
                 half -
@@ -838,17 +1186,25 @@ function positionHasCollision(
                 y +
                 half -
                 inset
+
         }
 
     ];
 
+
     return points.some(
+
         point =>
+
             pointHasCollision(
+
                 point.x,
                 point.y
+
             )
+
     );
+
 }
 
 
@@ -863,19 +1219,26 @@ function pointHazard(
 
     const tileX =
         Math.floor(
-            x / TILE_WIDTH
+            x /
+            TILE_WIDTH
         );
+
 
     const tileY =
         Math.floor(
-            y / TILE_HEIGHT
+            y /
+            TILE_HEIGHT
         );
+
 
     const gids =
         getGidsAtTile(
+
             tileX,
             tileY
+
         );
+
 
     for (
         const gid
@@ -887,9 +1250,14 @@ function pointHazard(
                 gid
             );
 
-        if (!result) {
+
+        if (
+            !result
+        ) {
+
             continue;
         }
+
 
         const source =
             getTilesetName(
@@ -897,8 +1265,7 @@ function pointHazard(
             );
 
 
-        // Niet afhankelijk van properties.
-        // Alles uit water.tsx is water.
+        // HELE WATER TILESET IS DODELIJK
 
         if (
             source ===
@@ -906,11 +1273,12 @@ function pointHazard(
         ) {
 
             return "water";
+
         }
 
 
-        // Alles uit lava.tsx is dodelijke lava.
-        // lavapath.tsx wordt NIET automatisch dodelijk.
+        // HELE LAVA TILESET IS DODELIJK
+        // lavapath.tsx NIET
 
         if (
             source ===
@@ -918,6 +1286,7 @@ function pointHazard(
         ) {
 
             return "lava";
+
         }
 
 
@@ -926,87 +1295,116 @@ function pointHazard(
                 gid
             );
 
+
         if (
-            properties.water === true
+            properties.water ===
+            true
         ) {
 
             return "water";
+
         }
 
+
         if (
-            properties.deadly === true
+            properties.deadly ===
+            true
         ) {
 
             return "lava";
+
         }
+
     }
 
+
     return null;
+
 }
 
+
+// ======================================================
+// DANGEROUS TILE CHECK
+// ======================================================
 
 function checkDangerousTile() {
 
     if (
+
         performance.now() <
         hazardGraceUntil
+
     ) {
 
         return;
+
     }
 
-    const half =
+
+    const offset =
         player.size *
         0.28;
+
 
     const points = [
 
         {
+
             x: player.x,
             y: player.y
+
         },
 
         {
+
             x:
                 player.x -
-                half,
+                offset,
 
             y:
                 player.y -
-                half
+                offset
+
         },
 
         {
+
             x:
                 player.x +
-                half,
+                offset,
 
             y:
                 player.y -
-                half
+                offset
+
         },
 
         {
+
             x:
                 player.x -
-                half,
+                offset,
 
             y:
                 player.y +
-                half
+                offset
+
         },
 
         {
+
             x:
                 player.x +
-                half,
+                offset,
 
             y:
                 player.y +
-                half
+                offset
+
         }
 
     ];
+
 
     for (
         const point
@@ -1015,19 +1413,28 @@ function checkDangerousTile() {
 
         const danger =
             pointHazard(
+
                 point.x,
                 point.y
+
             );
 
-        if (danger) {
+
+        if (
+            danger
+        ) {
 
             killPlayer(
                 danger
             );
 
+
             return;
+
         }
+
     }
+
 }
 
 
@@ -1037,19 +1444,30 @@ function checkDangerousTile() {
 
 function getRespawnPoint() {
 
+    const highestCompletedLevel =
+        StoryProgress
+            .getHighestCompletedLevel();
+
+
     if (
+
         highestCompletedLevel > 0 &&
+
         levelPoints.has(
             highestCompletedLevel
         )
+
     ) {
 
         return levelPoints.get(
             highestCompletedLevel
         );
+
     }
 
+
     return spawnPoint;
+
 }
 
 
@@ -1058,31 +1476,54 @@ function respawnPlayer() {
     const respawn =
         getRespawnPoint();
 
+
     player.x =
         respawn.x;
+
 
     player.y =
         respawn.y;
 
+
+    // Voorkomt dat hij onmiddellijk
+    // opnieuw doodgaat als de spawn
+    // vlak langs water/lava ligt.
+
     hazardGraceUntil =
         performance.now() +
         1000;
+
 
     for (
         const key
         in keys
     ) {
 
-        keys[key] = false;
+        keys[
+            key
+        ] =
+            false;
+
     }
 
+
     updateCamera();
+
 }
 
 
-function killPlayer(cause) {
+// ======================================================
+// PLAYER DEAD
+// ======================================================
 
-    if (cause === "water") {
+function killPlayer(
+    cause
+) {
+
+    if (
+        cause ===
+        "water"
+    ) {
 
         showNotice(
             "Je bent verdronken!"
@@ -1093,9 +1534,12 @@ function killPlayer(cause) {
         showNotice(
             "Je bent in de lava gevallen!"
         );
+
     }
 
+
     respawnPlayer();
+
 }
 
 
@@ -1104,72 +1548,113 @@ function killPlayer(cause) {
 // ======================================================
 
 window.completeStoryLevel =
-    function(levelNumber) {
+    function(
+        levelNumber
+    ) {
 
-        levelNumber =
-            Number(levelNumber);
+        const result =
+            StoryProgress
+                .completeLevel(
+                    levelNumber
+                );
+
 
         if (
-            !Number.isInteger(
-                levelNumber
-            ) ||
-            levelNumber < 1 ||
-            levelNumber > 50
+            !result ||
+            !result.success
         ) {
 
-            return;
+            if (
+                result &&
+                result.reason ===
+                    "locked"
+            ) {
+
+                showNotice(
+                    "Dit level is nog niet unlocked."
+                );
+
+            }
+
+
+            return result;
+
         }
 
 
-        /*
-            Alleen verhogen.
-
-            Voorbeeld:
-            3 gehaald → checkpoint 3.
-
-            Daarna level 2 opnieuw gehaald →
-            checkpoint blijft 3.
-        */
+        // REPLAY
 
         if (
-            levelNumber >
-            highestCompletedLevel
+            !result.firstTime
         ) {
-
-            highestCompletedLevel =
-                levelNumber;
-
-            localStorage.setItem(
-                PROGRESS_KEY,
-                highestCompletedLevel
-            );
 
             showNotice(
+
                 "Level " +
                 levelNumber +
-                " gehaald!"
+                " opnieuw gehaald. Geen extra boekje.",
+
+                3000
+
             );
+
+
+            return result;
+
         }
+
+
+        // EERSTE KEER
+
+        let message =
+
+            "Level " +
+            levelNumber +
+            " gehaald! +1 boekje";
+
+
+        if (
+            result.weaponUnlocked
+        ) {
+
+            message +=
+
+                " | " +
+                result.weaponUnlocked.name +
+                " unlocked!";
+
+        }
+
+
+        showNotice(
+
+            message,
+
+            4500
+
+        );
+
+
+        return result;
+
     };
 
 
-// Handig tijdens het bouwen.
-// Later kunnen we dit verwijderen.
+// ======================================================
+// RESET VOOR TESTEN
+// ======================================================
 
 window.resetStoryProgress =
     function() {
 
-        highestCompletedLevel = 0;
-
-        localStorage.removeItem(
-            PROGRESS_KEY
-        );
+        StoryProgress.reset();
 
         respawnPlayer();
 
-        console.log(
+        showNotice(
             "Story progress gereset."
         );
+
     };
 
 
@@ -1179,8 +1664,13 @@ window.resetStoryProgress =
 
 function getPlayerLevel() {
 
-    let closest = null;
-    let closestDistance = Infinity;
+    let closest =
+        null;
+
+
+    let closestDistance =
+        Infinity;
+
 
     for (
         const [
@@ -1194,34 +1684,50 @@ function getPlayerLevel() {
             player.x -
             position.x;
 
+
         const dy =
             player.y -
             position.y;
 
+
         const distance =
             Math.sqrt(
+
                 dx * dx +
                 dy * dy
+
             );
 
+
         if (
+
             distance <=
                 LEVEL_INTERACT_RADIUS &&
+
             distance <
                 closestDistance
+
         ) {
 
             closestDistance =
                 distance;
 
+
             closest = {
+
                 levelNumber,
+
                 position
+
             };
+
         }
+
     }
 
+
     return closest;
+
 }
 
 
@@ -1233,24 +1739,73 @@ async function launchLevel(
     levelNumber
 ) {
 
-    if (levelLaunchBusy) {
+    if (
+        levelLaunchBusy
+    ) {
+
         return;
+
     }
 
-    levelLaunchBusy = true;
+
+    // ==================================================
+    // LOCK CHECK
+    // ==================================================
+
+    if (
+
+        !StoryProgress
+            .isLevelUnlocked(
+                levelNumber
+            )
+
+    ) {
+
+        showNotice(
+
+            "Haal eerst Level " +
+            (
+                levelNumber -
+                1
+            ) +
+            "."
+
+        );
+
+
+        return;
+
+    }
+
+
+    levelLaunchBusy =
+        true;
+
 
     const fileName =
+
         "level-" +
-        String(levelNumber)
-            .padStart(2, "0") +
-        ".js";
+
+        String(
+            levelNumber
+        ).padStart(
+            2,
+            "0"
+        )
+
+        + ".js";
+
 
     const levelUrl =
         new URL(
+
             "levels/" +
-                fileName,
+            fileName,
+
             window.location.href
+
         );
+
 
     try {
 
@@ -1260,91 +1815,121 @@ async function launchLevel(
             );
 
 
-        /*
-            Later kun je in bijvoorbeeld
-            level-03.js zetten:
-
-            export function startLevel(context) {
-                ...
-            }
-
-            of:
-
-            export default function(context) {
-                ...
-            }
-        */
-
         const startFunction =
+
             levelModule.startLevel ||
+
             levelModule.default;
 
 
         if (
+
             typeof startFunction ===
             "function"
+
         ) {
 
             window.gamePaused =
                 true;
 
+
             await startFunction({
 
                 levelNumber,
 
+
+                selectedWeapon:
+                    StoryProgress
+                        .getSelectedWeapon(),
+
+
+                combatModifiers:
+                    StoryProgress
+                        .getCombatModifiers(),
+
+
                 completeLevel:
+
                     () =>
+
                         window
                             .completeStoryLevel(
                                 levelNumber
                             ),
 
+
                 hideMap:
+
                     () => {
 
                         storyMap.hidden =
                             true;
+
                     },
 
+
                 returnToMap:
+
                     () => {
 
                         storyMap.hidden =
                             false;
 
+
                         window.gamePaused =
                             false;
 
+
                         resizeCanvas();
 
+
                         startMapLoop();
+
                     }
+
             });
+
 
         } else {
 
             showNotice(
+
                 "Level " +
                 levelNumber +
                 " is gekoppeld, maar is nog leeg."
+
             );
+
         }
+
 
     } catch (error) {
 
         console.error(
+
             "Probleem met " +
             fileName,
+
             error
+
         );
+
 
         showNotice(
+
             fileName +
             " kon niet worden geladen."
+
         );
+
+
+    } finally {
+
+        levelLaunchBusy =
+            false;
+
     }
 
-    levelLaunchBusy = false;
 }
 
 
@@ -1353,59 +1938,93 @@ async function launchLevel(
 // ======================================================
 
 document.addEventListener(
+
     "keydown",
+
     event => {
+
 
         const key =
             event.key.toLowerCase();
 
-        keys[key] = true;
+
+        keys[
+            key
+        ] =
+            true;
+
 
         if (
+
             [
                 "arrowup",
                 "arrowdown",
                 "arrowleft",
                 "arrowright"
-            ].includes(key)
+            ].includes(
+                key
+            )
+
         ) {
 
             event.preventDefault();
+
         }
 
 
         if (
-            event.key === "Enter" &&
+
+            event.key ===
+                "Enter" &&
+
             !event.repeat &&
+
             !storyMap.hidden &&
+
             !window.gamePaused
+
         ) {
 
             const level =
                 getPlayerLevel();
 
-            if (level) {
 
-                keys["enter"] =
+            if (
+                level
+            ) {
+
+                keys[
+                    "enter"
+                ] =
                     false;
+
 
                 launchLevel(
                     level.levelNumber
                 );
+
             }
+
         }
+
     }
+
 );
 
 
 document.addEventListener(
+
     "keyup",
+
     event => {
 
         keys[
             event.key.toLowerCase()
-        ] = false;
+        ] =
+            false;
+
     }
+
 );
 
 
@@ -1414,8 +2033,11 @@ document.addEventListener(
 // ======================================================
 
 storyButton.addEventListener(
+
     "click",
+
     async () => {
+
 
         try {
 
@@ -1423,29 +2045,37 @@ storyButton.addEventListener(
 
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                error
+            );
+
 
             alert(
                 "De map kon niet geladen worden. Open F12 → Console."
             );
 
+
             return;
+
         }
 
 
         mapGameMenu.hidden =
             true;
 
+
         storyMap.hidden =
             false;
+
 
         window.gamePaused =
             false;
 
 
-        document.body.classList.add(
-            "game-active"
-        );
+        document.body
+            .classList.add(
+                "game-active"
+            );
 
 
         const menuButton =
@@ -1453,18 +2083,19 @@ storyButton.addEventListener(
                 "menu-button"
             );
 
-        if (menuButton) {
+
+        if (
+            menuButton
+        ) {
 
             menuButton.hidden =
                 false;
+
         }
 
 
-        /*
-            Ook wanneer je Story Mode opnieuw
-            opent, start je bij het hoogste
-            behaalde level.
-        */
+        // START BIJ HOOGSTE GEHAALDE LEVEL.
+        // NIETS GEHAALD = SPAWNPOINT.
 
         respawnPlayer();
 
@@ -1484,14 +2115,19 @@ storyButton.addEventListener(
                 console.log(
                     "Fullscreen kon niet gestart worden."
                 );
+
             }
+
         }
 
 
         resizeCanvas();
 
+
         startMapLoop();
+
     }
+
 );
 
 
@@ -1502,112 +2138,164 @@ storyButton.addEventListener(
 function updatePlayer() {
 
     let moveX = 0;
+
     let moveY = 0;
 
 
     if (
+
         keys["w"] ||
         keys["arrowup"]
+
     ) {
 
         moveY -=
             player.speed;
+
     }
 
 
     if (
+
         keys["s"] ||
         keys["arrowdown"]
+
     ) {
 
         moveY +=
             player.speed;
+
     }
 
 
     if (
+
         keys["a"] ||
         keys["arrowleft"]
+
     ) {
 
         moveX -=
             player.speed;
+
     }
 
 
     if (
+
         keys["d"] ||
         keys["arrowright"]
+
     ) {
 
         moveX +=
             player.speed;
+
     }
 
 
-    // X LOS CONTROLEREN
+    // ==================================================
+    // X
+    // ==================================================
 
-    if (moveX !== 0) {
+    if (
+        moveX !== 0
+    ) {
 
         let newX =
             player.x +
             moveX;
 
+
         newX =
             Math.max(
+
                 player.size / 2,
+
                 Math.min(
+
                     WORLD_WIDTH -
-                        player.size / 2,
+                    player.size / 2,
+
                     newX
+
                 )
+
             );
 
+
         if (
+
             !positionHasCollision(
+
                 newX,
+
                 player.y
+
             )
+
         ) {
 
             player.x =
                 newX;
+
         }
+
     }
 
 
-    // Y LOS CONTROLEREN
+    // ==================================================
+    // Y
+    // ==================================================
 
-    if (moveY !== 0) {
+    if (
+        moveY !== 0
+    ) {
 
         let newY =
             player.y +
             moveY;
 
+
         newY =
             Math.max(
+
                 player.size / 2,
+
                 Math.min(
+
                     WORLD_HEIGHT -
-                        player.size / 2,
+                    player.size / 2,
+
                     newY
+
                 )
+
             );
 
+
         if (
+
             !positionHasCollision(
+
                 player.x,
+
                 newY
+
             )
+
         ) {
 
             player.y =
                 newY;
+
         }
+
     }
 
 
     checkDangerousTile();
+
 }
 
 
@@ -1621,6 +2309,7 @@ function updateCamera() {
         player.x -
         canvas.width / 2;
 
+
     camera.y =
         player.y -
         canvas.height / 2;
@@ -1628,30 +2317,49 @@ function updateCamera() {
 
     camera.x =
         Math.max(
+
             0,
+
             Math.min(
+
                 Math.max(
+
                     0,
+
                     WORLD_WIDTH -
-                        canvas.width
+                    canvas.width
+
                 ),
+
                 camera.x
+
             )
+
         );
 
 
     camera.y =
         Math.max(
+
             0,
+
             Math.min(
+
                 Math.max(
+
                     0,
+
                     WORLD_HEIGHT -
-                        canvas.height
+                    canvas.height
+
                 ),
+
                 camera.y
+
             )
+
         );
+
 }
 
 
@@ -1670,37 +2378,53 @@ function drawTile(
             rawGid
         );
 
-    if (!result) {
+
+    if (
+        !result
+    ) {
+
         return;
     }
 
+
     const tileset =
         result.tileset;
+
 
     const localTileId =
         result.gid -
         tileset.firstgid;
 
+
     const column =
         localTileId %
         tileset.columns;
 
+
     const row =
         Math.floor(
+
             localTileId /
             tileset.columns
+
         );
 
+
     const sourceX =
+
         tileset.margin +
+
         column *
         (
             tileset.tileWidth +
             tileset.spacing
         );
 
+
     const sourceY =
+
         tileset.margin +
+
         row *
         (
             tileset.tileHeight +
@@ -1723,7 +2447,9 @@ function drawTile(
 
         TILE_WIDTH,
         TILE_HEIGHT
+
     );
+
 }
 
 
@@ -1735,44 +2461,69 @@ function drawTiledMap() {
 
     const startColumn =
         Math.max(
+
             0,
+
             Math.floor(
+
                 camera.x /
                 TILE_WIDTH
+
             ) - 1
+
         );
+
 
     const endColumn =
         Math.min(
+
             tiledMap.width - 1,
+
             Math.ceil(
+
                 (
                     camera.x +
                     canvas.width
                 ) /
+
                 TILE_WIDTH
+
             ) + 1
+
         );
+
 
     const startRow =
         Math.max(
+
             0,
+
             Math.floor(
+
                 camera.y /
                 TILE_HEIGHT
+
             ) - 1
+
         );
+
 
     const endRow =
         Math.min(
+
             tiledMap.height - 1,
+
             Math.ceil(
+
                 (
                     camera.y +
                     canvas.height
                 ) /
+
                 TILE_HEIGHT
+
             ) + 1
+
         );
 
 
@@ -1782,21 +2533,33 @@ function drawTiledMap() {
     ) {
 
         if (
+
             layer.type !==
                 "tilelayer" ||
+
             !layer.visible
+
         ) {
 
             continue;
+
         }
 
+
         for (
-            let row = startRow;
-            row <= endRow;
+
+            let row =
+                startRow;
+
+            row <=
+                endRow;
+
             row++
+
         ) {
 
             for (
+
                 let column =
                     startColumn;
 
@@ -1804,33 +2567,50 @@ function drawTiledMap() {
                     endColumn;
 
                 column++
+
             ) {
 
                 const index =
+
                     row *
                     layer.width +
+
                     column;
 
-                const gid =
-                    layer.data[index];
 
-                if (!gid) {
+                const gid =
+                    layer.data[
+                        index
+                    ];
+
+
+                if (
+                    !gid
+                ) {
+
                     continue;
+
                 }
+
 
                 drawTile(
 
                     gid,
 
                     column *
-                        TILE_WIDTH,
+                    TILE_WIDTH,
 
                     row *
-                        TILE_HEIGHT
+                    TILE_HEIGHT
+
                 );
+
             }
+
         }
+
     }
+
 }
 
 
@@ -1842,52 +2622,84 @@ function getLevelTheme(
     levelNumber
 ) {
 
-    if (levelNumber <= 10) {
+    if (
+        levelNumber <= 10
+    ) {
 
         return {
+
             tileset:
                 "sand.tsx",
+
             fallback:
                 "#d4bb79"
+
         };
+
     }
 
-    if (levelNumber <= 20) {
+
+    if (
+        levelNumber <= 20
+    ) {
 
         return {
+
             tileset:
                 "grass.tsx",
+
             fallback:
                 "#72a954"
+
         };
+
     }
 
-    if (levelNumber <= 30) {
+
+    if (
+        levelNumber <= 30
+    ) {
 
         return {
+
             tileset:
                 "mountain.tsx",
+
             fallback:
                 "#777777"
+
         };
+
     }
 
-    if (levelNumber <= 40) {
+
+    if (
+        levelNumber <= 40
+    ) {
 
         return {
+
             tileset:
                 "snow.tsx",
+
             fallback:
                 "#dce8ed"
+
         };
+
     }
 
+
     return {
+
         tileset:
             "lava.tsx",
+
         fallback:
             "#9b3827"
+
     };
+
 }
 
 
@@ -1896,17 +2708,21 @@ function findTilesetByName(
 ) {
 
     return tilesets.find(
+
         tileset =>
+
             getTilesetName(
                 tileset
             ) ===
             name
+
     );
+
 }
 
 
 // ======================================================
-// STAR PATH
+// STAR
 // ======================================================
 
 function createStarPath(
@@ -1918,7 +2734,9 @@ function createStarPath(
 
     ctx.beginPath();
 
+
     const points = 10;
+
 
     for (
         let i = 0;
@@ -1927,29 +2745,50 @@ function createStarPath(
     ) {
 
         const radius =
+
             i % 2 === 0
+
                 ? outerRadius
+
                 : innerRadius;
 
+
         const angle =
+
             -Math.PI / 2 +
+
             (
                 i *
                 Math.PI /
                 5
             );
 
+
         const px =
+
             x +
-            Math.cos(angle) *
+
+            Math.cos(
+                angle
+            ) *
+
             radius;
+
 
         const py =
+
             y +
-            Math.sin(angle) *
+
+            Math.sin(
+                angle
+            ) *
+
             radius;
 
-        if (i === 0) {
+
+        if (
+            i === 0
+        ) {
 
             ctx.moveTo(
                 px,
@@ -1962,15 +2801,19 @@ function createStarPath(
                 px,
                 py
             );
+
         }
+
     }
 
+
     ctx.closePath();
+
 }
 
 
 // ======================================================
-// TEXTURE IN LEVEL MARKER
+// MARKER TEXTURE
 // ======================================================
 
 function drawMarkerTexture(
@@ -1986,6 +2829,7 @@ function drawMarkerTexture(
             levelNumber
         );
 
+
     const tileset =
         findTilesetByName(
             theme.tileset
@@ -1995,64 +2839,81 @@ function drawMarkerTexture(
     ctx.save();
 
 
-    if (boss) {
+    if (
+        boss
+    ) {
 
         createStarPath(
+
             x,
             y,
+
             radius,
-            radius * 0.53
+
+            radius *
+            0.53
+
         );
 
     } else {
 
         ctx.beginPath();
 
+
         ctx.arc(
+
             x,
             y,
+
             radius,
+
             0,
+
             Math.PI * 2
+
         );
+
     }
+
 
     ctx.clip();
 
 
-    // BASISKLEUR
-
     ctx.fillStyle =
         theme.fallback;
 
+
     ctx.fillRect(
+
         x - radius,
         y - radius,
+
         radius * 2,
         radius * 2
+
     );
 
 
-    /*
-        Gebruik daadwerkelijk de PNG
-        uit de bijbehorende tileset.
-    */
-
     if (
+
         tileset &&
         tileset.image.complete
+
     ) {
 
         const sourceX =
             tileset.margin;
 
+
         const sourceY =
             tileset.margin;
+
 
         const tileSize = 32;
 
 
         for (
+
             let py =
                 y - radius;
 
@@ -2061,9 +2922,11 @@ function drawMarkerTexture(
 
             py +=
                 tileSize
+
         ) {
 
             for (
+
                 let px =
                     x - radius;
 
@@ -2072,6 +2935,7 @@ function drawMarkerTexture(
 
                 px +=
                     tileSize
+
             ) {
 
                 ctx.drawImage(
@@ -2089,29 +2953,41 @@ function drawMarkerTexture(
 
                     tileSize,
                     tileSize
+
                 );
+
             }
+
         }
+
     }
 
 
     // BOSS DONKERDER
 
-    if (boss) {
+    if (
+        boss
+    ) {
 
         ctx.fillStyle =
             "rgba(0,0,0,0.30)";
 
+
         ctx.fillRect(
+
             x - radius,
             y - radius,
+
             radius * 2,
             radius * 2
+
         );
+
     }
 
 
     ctx.restore();
+
 }
 
 
@@ -2123,6 +2999,7 @@ function drawLevelMarkers() {
 
     const activeLevel =
         getPlayerLevel();
+
 
     for (
         const [
@@ -2137,107 +3014,300 @@ function drawLevelMarkers() {
                 levelNumber
             );
 
+
+        const unlocked =
+            StoryProgress
+                .isLevelUnlocked(
+                    levelNumber
+                );
+
+
+        const completed =
+            StoryProgress
+                .isLevelCompleted(
+                    levelNumber
+                );
+
+
         const radius =
+
             boss
+
                 ? BOSS_RADIUS
+
                 : LEVEL_RADIUS;
 
 
+        // NORMALE TEXTURE
+
         drawMarkerTexture(
+
             levelNumber,
+
             position.x,
             position.y,
+
             radius,
+
             boss
+
         );
 
 
-        // RAND
+        // ==================================================
+        // LOCKED = DONKERE LAAG
+        // ==================================================
 
-        if (boss) {
+        if (
+            !unlocked
+        ) {
+
+            ctx.save();
+
+
+            ctx.fillStyle =
+                "rgba(0,0,0,0.70)";
+
+
+            if (
+                boss
+            ) {
+
+                createStarPath(
+
+                    position.x,
+                    position.y,
+
+                    radius,
+
+                    radius *
+                    0.53
+
+                );
+
+
+                ctx.fill();
+
+            } else {
+
+                ctx.beginPath();
+
+
+                ctx.arc(
+
+                    position.x,
+                    position.y,
+
+                    radius,
+
+                    0,
+
+                    Math.PI * 2
+
+                );
+
+
+                ctx.fill();
+
+            }
+
+
+            ctx.restore();
+
+        }
+
+
+        // ==================================================
+        // RAND
+        // ==================================================
+
+        if (
+            boss
+        ) {
 
             createStarPath(
+
                 position.x,
                 position.y,
+
                 radius,
-                radius * 0.53
+
+                radius *
+                0.53
+
             );
 
         } else {
 
             ctx.beginPath();
 
+
             ctx.arc(
+
                 position.x,
                 position.y,
+
                 radius,
+
                 0,
+
                 Math.PI * 2
+
             );
+
         }
 
 
         const active =
+
             activeLevel &&
+
             activeLevel.levelNumber ===
                 levelNumber;
 
 
         ctx.strokeStyle =
+
             active
+
                 ? "white"
+
                 : "rgba(0,0,0,0.65)";
 
+
         ctx.lineWidth =
+
             active
+
                 ? 6
+
                 : 4;
+
 
         ctx.stroke();
 
 
+        // ==================================================
         // LEVELNUMMER
+        // ==================================================
 
         ctx.textAlign =
             "center";
 
+
         ctx.textBaseline =
             "middle";
 
+
         ctx.font =
+
             boss
+
                 ? "bold 24px Arial"
+
                 : "bold 22px Arial";
 
-        ctx.lineWidth = 5;
+
+        ctx.lineWidth =
+            5;
+
 
         ctx.strokeStyle =
             "rgba(0,0,0,0.80)";
 
+
         ctx.strokeText(
+
             String(
                 levelNumber
             ),
+
             position.x,
             position.y
+
         );
+
 
         ctx.fillStyle =
-            "white";
+            unlocked
+                ? "white"
+                : "#aaaaaa";
+
 
         ctx.fillText(
+
             String(
                 levelNumber
             ),
+
             position.x,
             position.y
+
         );
+
+
+        // ==================================================
+        // COMPLETED CHECKMARK
+        // ==================================================
+
+        if (
+            completed
+        ) {
+
+            ctx.font =
+                "bold 20px Arial";
+
+
+            ctx.lineWidth =
+                4;
+
+
+            ctx.strokeStyle =
+                "rgba(0,0,0,0.9)";
+
+
+            ctx.strokeText(
+
+                "✓",
+
+                position.x +
+                    radius *
+                    0.65,
+
+                position.y -
+                    radius *
+                    0.65
+
+            );
+
+
+            ctx.fillStyle =
+                "white";
+
+
+            ctx.fillText(
+
+                "✓",
+
+                position.x +
+                    radius *
+                    0.65,
+
+                position.y -
+                    radius *
+                    0.65
+
+            );
+
+        }
+
     }
+
 }
 
 
 // ======================================================
-// PLAYER DRAW
+// PLAYER
 // ======================================================
 
 function drawPlayer() {
@@ -2245,17 +3315,26 @@ function drawPlayer() {
     ctx.fillStyle =
         "blue";
 
+
     ctx.beginPath();
 
+
     ctx.arc(
+
         player.x,
         player.y,
+
         player.size / 2,
+
         0,
+
         Math.PI * 2
+
     );
 
+
     ctx.fill();
+
 }
 
 
@@ -2269,10 +3348,13 @@ function drawHud() {
         getPlayerLevel();
 
 
-    if (activeLevel) {
+    if (
+        activeLevel
+    ) {
 
         const levelNumber =
             activeLevel.levelNumber;
+
 
         const boss =
             bossLevels.has(
@@ -2280,91 +3362,193 @@ function drawHud() {
             );
 
 
+        const unlocked =
+            StoryProgress
+                .isLevelUnlocked(
+                    levelNumber
+                );
+
+
+        const completed =
+            StoryProgress
+                .isLevelCompleted(
+                    levelNumber
+                );
+
+
         ctx.fillStyle =
             "rgba(0,0,0,0.72)";
 
+
         ctx.fillRect(
+
             canvas.width / 2 -
-                190,
+            210,
+
             canvas.height -
-                135,
-            380,
-            92
+            145,
+
+            420,
+            102
+
         );
 
 
         ctx.textAlign =
             "center";
 
+
+        ctx.textBaseline =
+            "middle";
+
+
         ctx.fillStyle =
             "white";
+
 
         ctx.font =
             "bold 24px Arial";
 
-        ctx.fillText(
+
+        let title =
+
             boss
+
                 ? "BOSS LEVEL " +
                     levelNumber
+
                 : "LEVEL " +
-                    levelNumber,
+                    levelNumber;
+
+
+        if (
+            completed
+        ) {
+
+            title +=
+                " ✓";
+
+        }
+
+
+        ctx.fillText(
+
+            title,
+
             canvas.width / 2,
+
             canvas.height -
-                100
+            110
+
         );
 
 
         ctx.font =
             "18px Arial";
 
-        ctx.fillText(
-            "Press ENTER to play",
-            canvas.width / 2,
-            canvas.height -
-                68
-        );
+
+        if (
+            unlocked
+        ) {
+
+            ctx.fillText(
+
+                "Press ENTER to play",
+
+                canvas.width / 2,
+
+                canvas.height -
+                74
+
+            );
+
+        } else {
+
+            ctx.fillText(
+
+                "LOCKED - Complete Level " +
+                (
+                    levelNumber -
+                    1
+                ),
+
+                canvas.width / 2,
+
+                canvas.height -
+                74
+
+            );
+
+        }
+
     }
 
 
+    // ==================================================
+    // NOTICE
+    // ==================================================
+
     if (
+
         noticeText &&
+
         performance.now() <
-            noticeUntil
+        noticeUntil
+
     ) {
 
         ctx.fillStyle =
             "rgba(0,0,0,0.78)";
 
+
         ctx.fillRect(
+
             canvas.width / 2 -
-                240,
+            260,
+
             35,
-            480,
+
+            520,
+
             55
+
         );
+
 
         ctx.fillStyle =
             "white";
 
+
         ctx.textAlign =
             "center";
+
 
         ctx.textBaseline =
             "middle";
 
+
         ctx.font =
             "18px Arial";
 
+
         ctx.fillText(
+
             noticeText,
+
             canvas.width / 2,
+
             62
+
         );
+
 
     } else {
 
-        noticeText = "";
+        noticeText =
+            "";
+
     }
+
 }
 
 
@@ -2375,10 +3559,13 @@ function drawHud() {
 function drawWorld() {
 
     ctx.clearRect(
+
         0,
         0,
+
         canvas.width,
         canvas.height
+
     );
 
 
@@ -2386,14 +3573,19 @@ function drawWorld() {
 
 
     ctx.translate(
+
         -camera.x,
+
         -camera.y
+
     );
 
 
     drawTiledMap();
 
+
     drawLevelMarkers();
+
 
     drawPlayer();
 
@@ -2402,6 +3594,7 @@ function drawWorld() {
 
 
     drawHud();
+
 }
 
 
@@ -2415,37 +3608,51 @@ let mapLoopRunning =
 
 function startMapLoop() {
 
-    if (mapLoopRunning) {
+    if (
+        mapLoopRunning
+    ) {
+
         return;
     }
+
 
     mapLoopRunning =
         true;
 
+
     requestAnimationFrame(
         gameLoop
     );
+
 }
 
 
 function gameLoop() {
 
-    if (storyMap.hidden) {
+    if (
+        storyMap.hidden
+    ) {
 
         mapLoopRunning =
             false;
 
+
         return;
+
     }
 
 
-    if (!window.gamePaused) {
+    if (
+        !window.gamePaused
+    ) {
 
         updatePlayer();
+
     }
 
 
     updateCamera();
+
 
     drawWorld();
 
@@ -2453,4 +3660,5 @@ function gameLoop() {
     requestAnimationFrame(
         gameLoop
     );
+
 }

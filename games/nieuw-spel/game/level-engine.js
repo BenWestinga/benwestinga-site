@@ -1,214 +1,441 @@
-const engineLevelScreen =
-    document.getElementById("level-screen");
+(() => {
 
-const engineLevelCanvas =
-    document.getElementById("level-canvas");
+    const levelScreen =
+        document.getElementById("level-screen");
 
-const engineLevelCtx =
-    engineLevelCanvas.getContext("2d");
+    const canvas =
+        document.getElementById("level-canvas");
 
-
-window.levelActive = false;
-window.currentLevel = null;
-
-let nextEnemySpawn = 0;
+    const ctx =
+        canvas.getContext("2d");
 
 
-function resizeLevelCanvas() {
+    let animationFrame = null;
+    let activeContext = null;
 
-    engineLevelCanvas.width =
-        window.innerWidth;
+    let sandLoaded = false;
 
-    engineLevelCanvas.height =
-        window.innerHeight;
-}
+    const sandImage =
+        new Image();
 
+    sandImage.src =
+        new URL(
+            "sand.png",
+            window.location.href
+        ).href;
 
-window.addEventListener(
-    "resize",
-    resizeLevelCanvas
-);
-
-
-engineLevelCanvas.addEventListener(
-    "pointermove",
-    movePlayerToPointer
-);
+    sandImage.onload = () => {
+        sandLoaded = true;
+    };
 
 
-function startLevel(levelData) {
+    // ==========================================
+    // GLOBALS
+    // ==========================================
 
-    currentLevel = levelData;
-    levelActive = true;
+    window.levelActive = false;
+    window.currentLevel = null;
 
-    window.gamePaused = false;
 
-    storyMap.hidden = true;
-    engineLevelScreen.hidden = false;
+    // ==========================================
+    // RESIZE
+    // ==========================================
 
-    document.body.classList.add(
-        "game-active"
+    function resizeLevelCanvas() {
+
+        canvas.width =
+            window.innerWidth;
+
+        canvas.height =
+            window.innerHeight;
+    }
+
+
+    window.addEventListener(
+        "resize",
+        resizeLevelCanvas
     );
 
-    const menuButton =
-        document.getElementById("menu-button");
 
-    menuButton.hidden = false;
+    // ==========================================
+    // FULLSCREEN
+    // ==========================================
 
-
-    resizeLevelCanvas();
-
-    clearBullets();
-    clearEnemies();
-
-    resetPlayer();
-    resetShootingTimer();
-
-
-    nextEnemySpawn =
-        performance.now() + 700;
-
-
-    requestAnimationFrame(
-        levelLoop
-    );
-}
-
-
-function leaveCurrentLevel() {
-
-    levelActive = false;
-    currentLevel = null;
-
-    clearBullets();
-    clearEnemies();
-
-    engineLevelScreen.hidden = true;
-
-    storyMap.hidden = false;
-
-    window.gamePaused = false;
-
-
-    document
-        .getElementById("menu-button")
-        .hidden = false;
-
-
-    requestAnimationFrame(
-        gameLoop
-    );
-}
-
-
-function updateLevel(time) {
-
-    updateAutomaticShooting(time);
-
-    updateBullets();
-
-    updateEnemy1s();
-
-
-    if (
-        currentLevel &&
-        currentLevel.enemySpawnInterval
-    ) {
+    async function makeFullscreen() {
 
         if (
-            time >= nextEnemySpawn &&
-            enemies.length <
-            currentLevel.maxEnemies
+            document.fullscreenElement
         ) {
+            return;
+        }
 
-            spawnEnemy1();
+        try {
 
-            nextEnemySpawn =
-                time +
-                currentLevel.enemySpawnInterval;
+            await document
+                .documentElement
+                .requestFullscreen();
+
+        } catch (error) {
+
+            console.log(
+                "Fullscreen kon niet worden gestart.",
+                error
+            );
         }
     }
-}
 
 
-function drawLevel() {
+    // ==========================================
+    // BACKGROUND
+    // ==========================================
 
-    // Achtergrond
-    engineLevelCtx.fillStyle =
-        "#eeeeee";
+    function drawBackground() {
 
-    engineLevelCtx.fillRect(
-        0,
-        0,
-        engineLevelCanvas.width,
-        engineLevelCanvas.height
-    );
+        ctx.fillStyle =
+            "#d8c18b";
+
+        ctx.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
 
 
+        if (sandLoaded) {
+
+            ctx.save();
+
+            /*
+                Doorzichtige sand.png
+                over het HELE scherm.
+            */
+
+            ctx.globalAlpha =
+                0.58;
+
+            ctx.drawImage(
+                sandImage,
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+            ctx.restore();
+        }
+    }
+
+
+    // ==========================================
+    // BORDER
+    // ==========================================
+
+    function drawBorders() {
+
+        const border = 14;
+
+
+        // DONKERE BUITENRAND
+
+        ctx.save();
+
+        ctx.strokeStyle =
+            "rgba(20, 20, 20, 0.95)";
+
+        ctx.lineWidth =
+            border;
+
+        ctx.strokeRect(
+            border / 2,
+            border / 2,
+            canvas.width - border,
+            canvas.height - border
+        );
+
+
+        // LICHTE BINNENRAND
+
+        ctx.strokeStyle =
+            "rgba(255,255,255,0.85)";
+
+        ctx.lineWidth =
+            3;
+
+        ctx.strokeRect(
+            border,
+            border,
+            canvas.width - border * 2,
+            canvas.height - border * 2
+        );
+
+        ctx.restore();
+    }
+
+
+    // ==========================================
     // MIDDENLIJN
-    engineLevelCtx.strokeStyle =
-        "rgba(0, 0, 0, 0.55)";
+    // ==========================================
 
-    engineLevelCtx.lineWidth = 4;
+    function drawCenterLine() {
 
-    engineLevelCtx.beginPath();
+        ctx.save();
 
-    engineLevelCtx.moveTo(
-        engineLevelCanvas.width / 2,
-        0
-    );
+        ctx.beginPath();
 
-    engineLevelCtx.lineTo(
-        engineLevelCanvas.width / 2,
-        engineLevelCanvas.height
-    );
+        ctx.moveTo(
+            canvas.width / 2,
+            14
+        );
 
-    engineLevelCtx.stroke();
+        ctx.lineTo(
+            canvas.width / 2,
+            canvas.height - 14
+        );
 
+        ctx.strokeStyle =
+            "rgba(255,255,255,0.45)";
 
-    // ENEMIES
-    drawEnemy1s(
-        engineLevelCtx
-    );
+        ctx.lineWidth =
+            4;
 
+        ctx.setLineDash([
+            18,
+            18
+        ]);
 
-    // BULLETS
-    drawBullets(
-        engineLevelCtx
-    );
+        ctx.stroke();
 
-
-    // PLAYER
-    engineLevelCtx.fillStyle =
-        "blue";
-
-    engineLevelCtx.beginPath();
-
-    engineLevelCtx.arc(
-        levelPlayer.x,
-        levelPlayer.y,
-        levelPlayer.radius,
-        0,
-        Math.PI * 2
-    );
-
-    engineLevelCtx.fill();
-}
-
-
-function levelLoop(time) {
-
-    if (!levelActive) {
-        return;
+        ctx.restore();
     }
 
-    if (!window.gamePaused) {
-        updateLevel(time);
+
+    // ==========================================
+    // LEVEL TITEL
+    // ==========================================
+
+    function drawLevelTitle() {
+
+        if (
+            !window.currentLevel
+        ) {
+            return;
+        }
+
+
+        ctx.save();
+
+        ctx.textAlign =
+            "center";
+
+        ctx.textBaseline =
+            "middle";
+
+        ctx.font =
+            "bold 28px Arial";
+
+        ctx.lineWidth =
+            6;
+
+        ctx.strokeStyle =
+            "rgba(0,0,0,0.75)";
+
+        ctx.strokeText(
+            "LEVEL " +
+            window.currentLevel.number,
+            canvas.width / 2,
+            48
+        );
+
+        ctx.fillStyle =
+            "white";
+
+        ctx.fillText(
+            "LEVEL " +
+            window.currentLevel.number,
+            canvas.width / 2,
+            48
+        );
+
+        ctx.restore();
     }
 
-    drawLevel();
 
-    requestAnimationFrame(
-        levelLoop
-    );
-}
+    // ==========================================
+    // DRAW
+    // ==========================================
+
+    function drawLevel() {
+
+        ctx.clearRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        drawBackground();
+
+        drawCenterLine();
+
+        drawBorders();
+
+        drawLevelTitle();
+    }
+
+
+    // ==========================================
+    // LOOP
+    // ==========================================
+
+    function levelLoop() {
+
+        if (
+            !window.levelActive
+        ) {
+
+            animationFrame = null;
+            return;
+        }
+
+
+        if (
+            !window.gamePaused
+        ) {
+
+            /*
+                Later komt hier algemene
+                level gameplay.
+            */
+
+        }
+
+
+        drawLevel();
+
+
+        animationFrame =
+            requestAnimationFrame(
+                levelLoop
+            );
+    }
+
+
+    // ==========================================
+    // START LEVEL
+    // ==========================================
+
+    window.startStoryLevel =
+        async function(
+            config,
+            context
+        ) {
+
+            activeContext =
+                context;
+
+
+            window.currentLevel =
+                config;
+
+
+            window.levelActive =
+                true;
+
+
+            window.gamePaused =
+                false;
+
+
+            /*
+                Story map verbergen.
+            */
+
+            if (
+                context &&
+                context.hideMap
+            ) {
+
+                context.hideMap();
+            }
+
+
+            levelScreen.hidden =
+                false;
+
+
+            resizeLevelCanvas();
+
+
+            await makeFullscreen();
+
+
+            if (
+                !animationFrame
+            ) {
+
+                animationFrame =
+                    requestAnimationFrame(
+                        levelLoop
+                    );
+            }
+        };
+
+
+    // ==========================================
+    // TERUG NAAR MAP
+    // ==========================================
+
+    function returnToStoryMap() {
+
+        window.levelActive =
+            false;
+
+
+        window.gamePaused =
+            false;
+
+
+        window.currentLevel =
+            null;
+
+
+        levelScreen.hidden =
+            true;
+
+
+        if (
+            animationFrame
+        ) {
+
+            cancelAnimationFrame(
+                animationFrame
+            );
+
+            animationFrame =
+                null;
+        }
+
+
+        if (
+            activeContext &&
+            activeContext.returnToMap
+        ) {
+
+            activeContext
+                .returnToMap();
+        }
+
+
+        activeContext =
+            null;
+    }
+
+
+    window.returnToStoryMap =
+        returnToStoryMap;
+
+    window.leaveCurrentLevel =
+        returnToStoryMap;
+
+})();
