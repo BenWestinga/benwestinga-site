@@ -1,22 +1,13 @@
-const storyButton =
-    document.getElementById("story-button");
-
-const mapGameMenu =
-    document.getElementById("game-menu");
-
-const storyMap =
-    document.getElementById("story-map");
-
-const canvas =
-    document.getElementById("map-canvas");
-
-const ctx =
-    canvas.getContext("2d");
+const storyButton = document.getElementById("story-button");
+const mapGameMenu = document.getElementById("game-menu");
+const storyMap = document.getElementById("story-map");
+const canvas = document.getElementById("map-canvas");
+const ctx = canvas.getContext("2d");
 
 
-// ==========================================
+// ======================================================
 // CANVAS
-// ==========================================
+// ======================================================
 
 function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -25,15 +16,12 @@ function resizeCanvas() {
 
 resizeCanvas();
 
-window.addEventListener(
-    "resize",
-    resizeCanvas
-);
+window.addEventListener("resize", resizeCanvas);
 
 
-// ==========================================
-// TILED MAP
-// ==========================================
+// ======================================================
+// MAP
+// ======================================================
 
 let tiledMap = null;
 
@@ -46,30 +34,73 @@ let WORLD_HEIGHT = 3200;
 let tilesets = [];
 
 let mapLoaded = false;
-
 let mapLoadingPromise = null;
 
 
-// ==========================================
-// MAP PLAYER
-// ==========================================
+// ======================================================
+// LEVELS
+// ======================================================
+
+const levelPoints = new Map();
+
+let spawnPoint = {
+    x: 350,
+    y: 1768
+};
+
+const LEVEL_RADIUS = 43;
+const BOSS_RADIUS = 52;
+const LEVEL_INTERACT_RADIUS = 72;
+
+const bossLevels = new Set([
+    5,
+    10,
+    15,
+    20,
+    25,
+    30,
+    35,
+    40,
+    45,
+    49,
+    50
+]);
+
+
+// ======================================================
+// PROGRESS
+// ======================================================
+
+const PROGRESS_KEY =
+    "nieuwSpelHighestCompletedLevel";
+
+let highestCompletedLevel =
+    Number(
+        localStorage.getItem(PROGRESS_KEY)
+    ) || 0;
+
+highestCompletedLevel =
+    Math.max(
+        0,
+        Math.min(50, highestCompletedLevel)
+    );
+
+
+// ======================================================
+// PLAYER
+// ======================================================
 
 const player = {
-    x: 500,
-    y: 500,
-
+    x: 350,
+    y: 1768,
     size: 26,
-
-    speed: 4,
-
-    spawnX: 500,
-    spawnY: 500
+    speed: 4
 };
 
 
-// ==========================================
+// ======================================================
 // CAMERA
-// ==========================================
+// ======================================================
 
 const camera = {
     x: 0,
@@ -77,32 +108,39 @@ const camera = {
 };
 
 
-// ==========================================
-// LEVEL 1 LOCATION
-// ==========================================
-
-const level1 = {
-    x: 900,
-    y: 500,
-    radius: 70
-};
-
-
-// ==========================================
-// KEYS
-// ==========================================
+// ======================================================
+// INPUT
+// ======================================================
 
 const keys = {};
 
+let levelLaunchBusy = false;
 
-// ==========================================
-// TILED PROPERTY OMZETTEN
-// ==========================================
 
-function convertPropertyValue(
-    value,
-    type
-) {
+// ======================================================
+// DEATH / MESSAGE
+// ======================================================
+
+let hazardGraceUntil = 0;
+
+let noticeText = "";
+let noticeUntil = 0;
+
+function showNotice(text, duration = 2200) {
+
+    noticeText = text;
+
+    noticeUntil =
+        performance.now() +
+        duration;
+}
+
+
+// ======================================================
+// PROPERTY VALUE
+// ======================================================
+
+function convertPropertyValue(value, type) {
 
     if (type === "bool") {
         return value === "true";
@@ -119,9 +157,9 @@ function convertPropertyValue(
 }
 
 
-// ==========================================
+// ======================================================
 // TILESET LADEN
-// ==========================================
+// ======================================================
 
 async function loadTileset(
     tilesetReference,
@@ -134,26 +172,22 @@ async function loadTileset(
             mapUrl
         );
 
-
     const response =
         await fetch(tsxUrl);
-
 
     if (!response.ok) {
 
         throw new Error(
-            `Tileset kon niet geladen worden: ${tsxUrl}`
+            "Tileset niet gevonden: " +
+            tilesetReference.source
         );
     }
-
 
     const text =
         await response.text();
 
-
     const parser =
         new DOMParser();
-
 
     const xml =
         parser.parseFromString(
@@ -161,18 +195,16 @@ async function loadTileset(
             "text/xml"
         );
 
-
     const tilesetElement =
         xml.querySelector("tileset");
-
 
     if (!tilesetElement) {
 
         throw new Error(
-            `Ongeldige TSX: ${tilesetReference.source}`
+            "Ongeldige tileset: " +
+            tilesetReference.source
         );
     }
-
 
     const tileWidth =
         Number(
@@ -181,14 +213,12 @@ async function loadTileset(
             )
         );
 
-
     const tileHeight =
         Number(
             tilesetElement.getAttribute(
                 "tileheight"
             )
         );
-
 
     const spacing =
         Number(
@@ -197,14 +227,12 @@ async function loadTileset(
             ) || 0
         );
 
-
     const margin =
         Number(
             tilesetElement.getAttribute(
                 "margin"
             ) || 0
         );
-
 
     const columns =
         Number(
@@ -213,7 +241,6 @@ async function loadTileset(
             ) || 1
         );
 
-
     const tileCount =
         Number(
             tilesetElement.getAttribute(
@@ -221,26 +248,23 @@ async function loadTileset(
             ) || 0
         );
 
-
     const imageElement =
         tilesetElement.querySelector(
-            ":scope > image"
+            "image"
         );
-
 
     if (!imageElement) {
 
         throw new Error(
-            `Geen afbeelding gevonden in ${tilesetReference.source}`
+            "Geen PNG in " +
+            tilesetReference.source
         );
     }
-
 
     const imageSource =
         imageElement.getAttribute(
             "source"
         );
-
 
     const imageUrl =
         new URL(
@@ -248,14 +272,11 @@ async function loadTileset(
             tsxUrl
         );
 
-
     const image =
         new Image();
 
-
     image.src =
         imageUrl.href;
-
 
     await new Promise(
         (resolve, reject) => {
@@ -264,28 +285,26 @@ async function loadTileset(
                 resolve;
 
             image.onerror =
-                () => reject(
-                    new Error(
-                        `Afbeelding kon niet geladen worden: ${imageUrl}`
-                    )
-                );
+                () =>
+                    reject(
+                        new Error(
+                            "PNG niet geladen: " +
+                            imageUrl.href
+                        )
+                    );
         }
     );
 
 
-    // ======================================
-    // PROPERTIES VAN TILES
-    // ======================================
+    // TILE PROPERTIES
 
     const tileProperties =
         new Map();
 
-
     const tileElements =
         tilesetElement.querySelectorAll(
-            ":scope > tile"
+            "tile"
         );
-
 
     for (
         const tileElement
@@ -299,15 +318,12 @@ async function loadTileset(
                 )
             );
 
-
         const properties = {};
-
 
         const propertyElements =
             tileElement.querySelectorAll(
-                ":scope > properties > property"
+                "properties > property"
             );
-
 
         for (
             const propertyElement
@@ -319,24 +335,21 @@ async function loadTileset(
                     "name"
                 );
 
-
             const type =
                 propertyElement.getAttribute(
                     "type"
                 ) || "string";
-
 
             let value =
                 propertyElement.getAttribute(
                     "value"
                 );
 
-
             if (value === null) {
+
                 value =
                     propertyElement.textContent;
             }
-
 
             properties[name] =
                 convertPropertyValue(
@@ -344,7 +357,6 @@ async function loadTileset(
                     type
                 );
         }
-
 
         tileProperties.set(
             tileId,
@@ -364,15 +376,10 @@ async function loadTileset(
         image,
 
         tileWidth,
-
         tileHeight,
-
         spacing,
-
         margin,
-
         columns,
-
         tileCount,
 
         tileProperties
@@ -380,9 +387,95 @@ async function loadTileset(
 }
 
 
-// ==========================================
-// HELE MAP LADEN
-// ==========================================
+// ======================================================
+// LEVEL OBJECTS UIT TILED
+// ======================================================
+
+function loadLevelObjects() {
+
+    levelPoints.clear();
+
+    const levelLayer =
+        tiledMap.layers.find(
+            layer =>
+                layer.type ===
+                    "objectgroup" &&
+                layer.name.toLowerCase() ===
+                    "levels"
+        );
+
+    if (!levelLayer) {
+
+        console.error(
+            "Levels object layer niet gevonden."
+        );
+
+        return;
+    }
+
+    for (
+        const object
+        of levelLayer.objects
+    ) {
+
+        const name =
+            object.name
+                .trim()
+                .toLowerCase();
+
+
+        // Jouw JSON gebruikt "spawnpoint".
+        // "spawn" werkt ook.
+
+        if (
+            name === "spawnpoint" ||
+            name === "spawn"
+        ) {
+
+            spawnPoint = {
+                x: object.x,
+                y: object.y
+            };
+
+            continue;
+        }
+
+
+        const levelNumber =
+            Number(object.name);
+
+        if (
+            Number.isInteger(levelNumber) &&
+            levelNumber >= 1 &&
+            levelNumber <= 50
+        ) {
+
+            levelPoints.set(
+                levelNumber,
+                {
+                    x: object.x,
+                    y: object.y
+                }
+            );
+        }
+    }
+
+
+    console.log(
+        "Spawn:",
+        spawnPoint
+    );
+
+    console.log(
+        "Levels gevonden:",
+        levelPoints.size
+    );
+}
+
+
+// ======================================================
+// MAP LADEN
+// ======================================================
 
 async function loadTiledMap() {
 
@@ -390,162 +483,106 @@ async function loadTiledMap() {
         return;
     }
 
-
     if (mapLoadingPromise) {
         return mapLoadingPromise;
     }
 
-
     mapLoadingPromise =
         (async () => {
 
-            try {
+            const mapUrl =
+                new URL(
+                    "spelmap.json",
+                    window.location.href
+                );
 
-                /*
-                    spelmap.json moet in dezelfde
-                    map staan als de HTML-pagina
-                    van je game.
+            const response =
+                await fetch(mapUrl);
 
-                    Bijvoorbeeld:
+            if (!response.ok) {
 
-                    nieuw-spel/
-                    ├── index.html
-                    ├── spelmap.json
-                    ├── grass.tsx
-                    ├── water.tsx
-                    ├── lava.tsx
-                    └── ...
-                */
+                throw new Error(
+                    "spelmap.json niet gevonden."
+                );
+            }
 
-                const mapUrl =
-                    new URL(
-                        "spelmap.json",
-                        window.location.href
-                    );
+            tiledMap =
+                await response.json();
 
+            TILE_WIDTH =
+                tiledMap.tilewidth;
 
-                const response =
-                    await fetch(
+            TILE_HEIGHT =
+                tiledMap.tileheight;
+
+            WORLD_WIDTH =
+                tiledMap.width *
+                TILE_WIDTH;
+
+            WORLD_HEIGHT =
+                tiledMap.height *
+                TILE_HEIGHT;
+
+            tilesets = [];
+
+            for (
+                const reference
+                of tiledMap.tilesets
+            ) {
+
+                const tileset =
+                    await loadTileset(
+                        reference,
                         mapUrl
                     );
 
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        "spelmap.json kon niet worden geladen."
-                    );
-                }
-
-
-                tiledMap =
-                    await response.json();
-
-
-                TILE_WIDTH =
-                    tiledMap.tilewidth;
-
-                TILE_HEIGHT =
-                    tiledMap.tileheight;
-
-
-                WORLD_WIDTH =
-                    tiledMap.width *
-                    TILE_WIDTH;
-
-                WORLD_HEIGHT =
-                    tiledMap.height *
-                    TILE_HEIGHT;
-
-
-                tilesets = [];
-
-
-                for (
-                    const tilesetReference
-                    of tiledMap.tilesets
-                ) {
-
-                    const loadedTileset =
-                        await loadTileset(
-                            tilesetReference,
-                            mapUrl
-                        );
-
-
-                    tilesets.push(
-                        loadedTileset
-                    );
-                }
-
-
-                // Sorteer voor GID lookup
-                tilesets.sort(
-                    (a, b) =>
-                        a.firstgid -
-                        b.firstgid
+                tilesets.push(
+                    tileset
                 );
-
-
-                mapLoaded = true;
-
-
-                console.log(
-                    "Tiled map geladen."
-                );
-
-                console.log(
-                    "Wereld:",
-                    WORLD_WIDTH,
-                    "x",
-                    WORLD_HEIGHT
-                );
-
-            } catch (error) {
-
-                console.error(
-                    "Fout bij laden map:",
-                    error
-                );
-
-
-                alert(
-                    "De Tiled-map kon niet geladen worden. Open F12 → Console om de fout te bekijken."
-                );
-
-
-                throw error;
             }
-        })();
 
+            tilesets.sort(
+                (a, b) =>
+                    a.firstgid -
+                    b.firstgid
+            );
+
+            loadLevelObjects();
+
+            mapLoaded = true;
+
+            console.log(
+                "Map geladen:",
+                WORLD_WIDTH,
+                WORLD_HEIGHT
+            );
+        })();
 
     return mapLoadingPromise;
 }
 
 
-// ==========================================
-// TILESET VINDEN VOOR GID
-// ==========================================
+// ======================================================
+// TILESET HELPERS
+// ======================================================
 
-function getTilesetForGid(
-    rawGid
-) {
+function cleanGid(rawGid) {
 
-    /*
-        Tiled gebruikt de bovenste bits
-        soms voor flip-informatie.
+    return (
+        rawGid &
+        0x1FFFFFFF
+    );
+}
 
-        Hiermee verwijderen we die bits.
-    */
+
+function getTilesetForGid(rawGid) {
 
     const gid =
-        rawGid & 0x1FFFFFFF;
-
+        cleanGid(rawGid);
 
     if (gid === 0) {
         return null;
     }
-
 
     for (
         let i =
@@ -562,22 +599,28 @@ function getTilesetForGid(
         ) {
 
             return {
+                gid,
                 tileset:
-                    tilesets[i],
-
-                gid
+                    tilesets[i]
             };
         }
     }
-
 
     return null;
 }
 
 
-// ==========================================
-// PROPERTY VAN EEN GID
-// ==========================================
+function getTilesetName(
+    tileset
+) {
+
+    return tileset.source
+        .replaceAll("\\", "/")
+        .split("/")
+        .pop()
+        .toLowerCase();
+}
+
 
 function getPropertiesForGid(
     rawGid
@@ -588,32 +631,26 @@ function getPropertiesForGid(
             rawGid
         );
 
-
     if (!result) {
         return {};
     }
 
-
-    const tileset =
-        result.tileset;
-
-
     const localTileId =
         result.gid -
-        tileset.firstgid;
-
+        result.tileset.firstgid;
 
     return (
-        tileset.tileProperties.get(
-            localTileId
-        ) || {}
+        result.tileset
+            .tileProperties
+            .get(localTileId)
+        || {}
     );
 }
 
 
-// ==========================================
-// GID OP EEN MAP-POSITIE
-// ==========================================
+// ======================================================
+// TILE OP POSITIE
+// ======================================================
 
 function getGidsAtTile(
     tileX,
@@ -622,11 +659,9 @@ function getGidsAtTile(
 
     const gids = [];
 
-
     if (!tiledMap) {
         return gids;
     }
-
 
     if (
         tileX < 0 ||
@@ -634,9 +669,9 @@ function getGidsAtTile(
         tileX >= tiledMap.width ||
         tileY >= tiledMap.height
     ) {
+
         return gids;
     }
-
 
     for (
         const layer
@@ -648,35 +683,32 @@ function getGidsAtTile(
                 "tilelayer" ||
             !layer.visible
         ) {
+
             continue;
         }
-
 
         const index =
             tileY *
             layer.width +
             tileX;
 
-
         const gid =
             layer.data[index];
-
 
         if (gid) {
             gids.push(gid);
         }
     }
 
-
     return gids;
 }
 
 
-// ==========================================
-// PROPERTIES OP WERELD-POSITIE
-// ==========================================
+// ======================================================
+// COLLISION
+// ======================================================
 
-function getPropertiesAtPosition(
+function pointHasCollision(
     x,
     y
 ) {
@@ -686,12 +718,10 @@ function getPropertiesAtPosition(
             x / TILE_WIDTH
         );
 
-
     const tileY =
         Math.floor(
             y / TILE_HEIGHT
         );
-
 
     const gids =
         getGidsAtTile(
@@ -699,80 +729,50 @@ function getPropertiesAtPosition(
             tileY
         );
 
-
-    const combinedProperties =
-        {};
-
-
     for (
         const gid
         of gids
     ) {
 
-        Object.assign(
-            combinedProperties,
+        const result =
+            getTilesetForGid(gid);
+
+        if (!result) {
+            continue;
+        }
+
+        const source =
+            getTilesetName(
+                result.tileset
+            );
+
+
+        // ALLE BERGEN EN STENEN BLOKKEREN
+
+        if (
+            source ===
+                "mountain.tsx" ||
+            source ===
+                "rock.tsx"
+        ) {
+
+            return true;
+        }
+
+
+        // PROPERTIES BLIJVEN OOK WERKEN
+
+        const properties =
             getPropertiesForGid(
                 gid
-            )
-        );
-    }
+            );
 
+        if (
+            properties.collision === true ||
+            properties.colission === true
+        ) {
 
-    return combinedProperties;
-}
-
-
-// ==========================================
-// COLLISION CONTROLEREN
-// ==========================================
-
-function positionHasCollision(x, y) {
-
-    const half = player.size / 2;
-
-    const points = [
-        { x: x - half, y: y - half },
-        { x: x + half, y: y - half },
-        { x: x - half, y: y + half },
-        { x: x + half, y: y + half }
-    ];
-
-    for (const point of points) {
-
-        const tileX = Math.floor(point.x / TILE_WIDTH);
-        const tileY = Math.floor(point.y / TILE_HEIGHT);
-
-        const gids = getGidsAtTile(tileX, tileY);
-
-        for (const gid of gids) {
-
-            const result = getTilesetForGid(gid);
-
-            if (!result) {
-                continue;
-            }
-
-            const source =
-                result.tileset.source.toLowerCase();
-
-            // Alles uit deze tilesets blokkeert
-            if (
-                source.includes("mountain.tsx") ||
-                source.includes("rock.tsx")
-            ) {
-                return true;
-            }
-
-            // Ook normale collision-properties blijven werken
-            const properties =
-                getPropertiesForGid(gid);
-
-            if (
-                properties.collision === true ||
-                properties.colission === true
-            ) {
-                return true;
-            }
+            return true;
         }
     }
 
@@ -780,67 +780,293 @@ function positionHasCollision(x, y) {
 }
 
 
-// ==========================================
-// WATER / LAVA CONTROLEREN
-// ==========================================
+function positionHasCollision(
+    x,
+    y
+) {
+
+    const half =
+        player.size / 2;
+
+    const inset = 2;
+
+    const points = [
+
+        {
+            x:
+                x -
+                half +
+                inset,
+
+            y:
+                y -
+                half +
+                inset
+        },
+
+        {
+            x:
+                x +
+                half -
+                inset,
+
+            y:
+                y -
+                half +
+                inset
+        },
+
+        {
+            x:
+                x -
+                half +
+                inset,
+
+            y:
+                y +
+                half -
+                inset
+        },
+
+        {
+            x:
+                x +
+                half -
+                inset,
+
+            y:
+                y +
+                half -
+                inset
+        }
+
+    ];
+
+    return points.some(
+        point =>
+            pointHasCollision(
+                point.x,
+                point.y
+            )
+    );
+}
+
+
+// ======================================================
+// WATER / LAVA
+// ======================================================
+
+function pointHazard(
+    x,
+    y
+) {
+
+    const tileX =
+        Math.floor(
+            x / TILE_WIDTH
+        );
+
+    const tileY =
+        Math.floor(
+            y / TILE_HEIGHT
+        );
+
+    const gids =
+        getGidsAtTile(
+            tileX,
+            tileY
+        );
+
+    for (
+        const gid
+        of gids
+    ) {
+
+        const result =
+            getTilesetForGid(
+                gid
+            );
+
+        if (!result) {
+            continue;
+        }
+
+        const source =
+            getTilesetName(
+                result.tileset
+            );
+
+
+        // Niet afhankelijk van properties.
+        // Alles uit water.tsx is water.
+
+        if (
+            source ===
+            "water.tsx"
+        ) {
+
+            return "water";
+        }
+
+
+        // Alles uit lava.tsx is dodelijke lava.
+        // lavapath.tsx wordt NIET automatisch dodelijk.
+
+        if (
+            source ===
+            "lava.tsx"
+        ) {
+
+            return "lava";
+        }
+
+
+        const properties =
+            getPropertiesForGid(
+                gid
+            );
+
+        if (
+            properties.water === true
+        ) {
+
+            return "water";
+        }
+
+        if (
+            properties.deadly === true
+        ) {
+
+            return "lava";
+        }
+    }
+
+    return null;
+}
+
 
 function checkDangerousTile() {
 
-    const properties =
-        getPropertiesAtPosition(
-            player.x,
-            player.y
-        );
-
-
-    // LAVA
     if (
-        properties.deadly === true
+        performance.now() <
+        hazardGraceUntil
     ) {
-
-        killPlayer(
-            "lava"
-        );
 
         return;
     }
 
+    const half =
+        player.size *
+        0.28;
 
-    // WATER
-    if (
-        properties.water === true
+    const points = [
+
+        {
+            x: player.x,
+            y: player.y
+        },
+
+        {
+            x:
+                player.x -
+                half,
+
+            y:
+                player.y -
+                half
+        },
+
+        {
+            x:
+                player.x +
+                half,
+
+            y:
+                player.y -
+                half
+        },
+
+        {
+            x:
+                player.x -
+                half,
+
+            y:
+                player.y +
+                half
+        },
+
+        {
+            x:
+                player.x +
+                half,
+
+            y:
+                player.y +
+                half
+        }
+
+    ];
+
+    for (
+        const point
+        of points
     ) {
 
-        killPlayer(
-            "water"
-        );
+        const danger =
+            pointHazard(
+                point.x,
+                point.y
+            );
+
+        if (danger) {
+
+            killPlayer(
+                danger
+            );
+
+            return;
+        }
     }
 }
 
 
-// ==========================================
-// SPELER DOOD + RESPAWN
-// ==========================================
+// ======================================================
+// CHECKPOINT / RESPAWN
+// ======================================================
 
-function killPlayer(
-    cause
-) {
+function getRespawnPoint() {
 
-    console.log(
-        "Speler dood door:",
-        cause
-    );
+    if (
+        highestCompletedLevel > 0 &&
+        levelPoints.has(
+            highestCompletedLevel
+        )
+    ) {
 
+        return levelPoints.get(
+            highestCompletedLevel
+        );
+    }
+
+    return spawnPoint;
+}
+
+
+function respawnPlayer() {
+
+    const respawn =
+        getRespawnPoint();
 
     player.x =
-        player.spawnX;
+        respawn.x;
 
     player.y =
-        player.spawnY;
+        respawn.y;
 
-
-    // Toetsen leegmaken zodat
-    // je niet meteen opnieuw loopt.
+    hazardGraceUntil =
+        performance.now() +
+        1000;
 
     for (
         const key
@@ -849,12 +1075,282 @@ function killPlayer(
 
         keys[key] = false;
     }
+
+    updateCamera();
 }
 
 
-// ==========================================
+function killPlayer(cause) {
+
+    if (cause === "water") {
+
+        showNotice(
+            "Je bent verdronken!"
+        );
+
+    } else {
+
+        showNotice(
+            "Je bent in de lava gevallen!"
+        );
+    }
+
+    respawnPlayer();
+}
+
+
+// ======================================================
+// LEVEL VOLTOOID
+// ======================================================
+
+window.completeStoryLevel =
+    function(levelNumber) {
+
+        levelNumber =
+            Number(levelNumber);
+
+        if (
+            !Number.isInteger(
+                levelNumber
+            ) ||
+            levelNumber < 1 ||
+            levelNumber > 50
+        ) {
+
+            return;
+        }
+
+
+        /*
+            Alleen verhogen.
+
+            Voorbeeld:
+            3 gehaald → checkpoint 3.
+
+            Daarna level 2 opnieuw gehaald →
+            checkpoint blijft 3.
+        */
+
+        if (
+            levelNumber >
+            highestCompletedLevel
+        ) {
+
+            highestCompletedLevel =
+                levelNumber;
+
+            localStorage.setItem(
+                PROGRESS_KEY,
+                highestCompletedLevel
+            );
+
+            showNotice(
+                "Level " +
+                levelNumber +
+                " gehaald!"
+            );
+        }
+    };
+
+
+// Handig tijdens het bouwen.
+// Later kunnen we dit verwijderen.
+
+window.resetStoryProgress =
+    function() {
+
+        highestCompletedLevel = 0;
+
+        localStorage.removeItem(
+            PROGRESS_KEY
+        );
+
+        respawnPlayer();
+
+        console.log(
+            "Story progress gereset."
+        );
+    };
+
+
+// ======================================================
+// LEVEL BIJ SPELER
+// ======================================================
+
+function getPlayerLevel() {
+
+    let closest = null;
+    let closestDistance = Infinity;
+
+    for (
+        const [
+            levelNumber,
+            position
+        ]
+        of levelPoints
+    ) {
+
+        const dx =
+            player.x -
+            position.x;
+
+        const dy =
+            player.y -
+            position.y;
+
+        const distance =
+            Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
+
+        if (
+            distance <=
+                LEVEL_INTERACT_RADIUS &&
+            distance <
+                closestDistance
+        ) {
+
+            closestDistance =
+                distance;
+
+            closest = {
+                levelNumber,
+                position
+            };
+        }
+    }
+
+    return closest;
+}
+
+
+// ======================================================
+// LEVEL FILE OPENEN
+// ======================================================
+
+async function launchLevel(
+    levelNumber
+) {
+
+    if (levelLaunchBusy) {
+        return;
+    }
+
+    levelLaunchBusy = true;
+
+    const fileName =
+        "level-" +
+        String(levelNumber)
+            .padStart(2, "0") +
+        ".js";
+
+    const levelUrl =
+        new URL(
+            "levels/" +
+                fileName,
+            window.location.href
+        );
+
+    try {
+
+        const levelModule =
+            await import(
+                levelUrl.href
+            );
+
+
+        /*
+            Later kun je in bijvoorbeeld
+            level-03.js zetten:
+
+            export function startLevel(context) {
+                ...
+            }
+
+            of:
+
+            export default function(context) {
+                ...
+            }
+        */
+
+        const startFunction =
+            levelModule.startLevel ||
+            levelModule.default;
+
+
+        if (
+            typeof startFunction ===
+            "function"
+        ) {
+
+            window.gamePaused =
+                true;
+
+            await startFunction({
+
+                levelNumber,
+
+                completeLevel:
+                    () =>
+                        window
+                            .completeStoryLevel(
+                                levelNumber
+                            ),
+
+                hideMap:
+                    () => {
+
+                        storyMap.hidden =
+                            true;
+                    },
+
+                returnToMap:
+                    () => {
+
+                        storyMap.hidden =
+                            false;
+
+                        window.gamePaused =
+                            false;
+
+                        resizeCanvas();
+
+                        startMapLoop();
+                    }
+            });
+
+        } else {
+
+            showNotice(
+                "Level " +
+                levelNumber +
+                " is gekoppeld, maar is nog leeg."
+            );
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Probleem met " +
+            fileName,
+            error
+        );
+
+        showNotice(
+            fileName +
+            " kon niet worden geladen."
+        );
+    }
+
+    levelLaunchBusy = false;
+}
+
+
+// ======================================================
 // KEYBOARD
-// ==========================================
+// ======================================================
 
 document.addEventListener(
     "keydown",
@@ -863,9 +1359,7 @@ document.addEventListener(
         const key =
             event.key.toLowerCase();
 
-
         keys[key] = true;
-
 
         if (
             [
@@ -880,18 +1374,25 @@ document.addEventListener(
         }
 
 
-        // LEVEL 1 ENTER
         if (
             event.key === "Enter" &&
+            !event.repeat &&
             !storyMap.hidden &&
-            !window.gamePaused &&
-            isPlayerOnLevel1()
+            !window.gamePaused
         ) {
 
-            keys["enter"] =
-                false;
+            const level =
+                getPlayerLevel();
 
-            startLevel1();
+            if (level) {
+
+                keys["enter"] =
+                    false;
+
+                launchLevel(
+                    level.levelNumber
+                );
+            }
         }
     }
 );
@@ -908,19 +1409,28 @@ document.addEventListener(
 );
 
 
-// ==========================================
-// START STORY MODE
-// ==========================================
+// ======================================================
+// STORY MODE START
+// ======================================================
 
 storyButton.addEventListener(
     "click",
     async () => {
 
-        /*
-            Eerst de echte Tiled-map laden.
-        */
+        try {
 
-        await loadTiledMap();
+            await loadTiledMap();
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "De map kon niet geladen worden. Open F12 → Console."
+            );
+
+            return;
+        }
 
 
         mapGameMenu.hidden =
@@ -928,7 +1438,6 @@ storyButton.addEventListener(
 
         storyMap.hidden =
             false;
-
 
         window.gamePaused =
             false;
@@ -939,14 +1448,27 @@ storyButton.addEventListener(
         );
 
 
-        document
-            .getElementById(
+        const menuButton =
+            document.getElementById(
                 "menu-button"
-            )
-            .hidden = false;
+            );
+
+        if (menuButton) {
+
+            menuButton.hidden =
+                false;
+        }
 
 
-        // Fullscreen
+        /*
+            Ook wanneer je Story Mode opnieuw
+            opent, start je bij het hoogste
+            behaalde level.
+        */
+
+        respawnPlayer();
+
+
         if (
             !document.fullscreenElement
         ) {
@@ -960,7 +1482,7 @@ storyButton.addEventListener(
             } catch {
 
                 console.log(
-                    "Fullscreen could not be started."
+                    "Fullscreen kon niet gestart worden."
                 );
             }
         }
@@ -968,47 +1490,14 @@ storyButton.addEventListener(
 
         resizeCanvas();
 
-
-        requestAnimationFrame(
-            gameLoop
-        );
+        startMapLoop();
     }
 );
 
 
-// ==========================================
-// LEVEL CHECK
-// ==========================================
-
-function isPlayerOnLevel1() {
-
-    const dx =
-        player.x -
-        level1.x;
-
-
-    const dy =
-        player.y -
-        level1.y;
-
-
-    const distance =
-        Math.sqrt(
-            dx * dx +
-            dy * dy
-        );
-
-
-    return (
-        distance <
-        level1.radius
-    );
-}
-
-
-// ==========================================
-// MOVE MAP PLAYER
-// ==========================================
+// ======================================================
+// PLAYER MOVE
+// ======================================================
 
 function updatePlayer() {
 
@@ -1056,16 +1545,13 @@ function updatePlayer() {
     }
 
 
-    // ======================================
-    // X-BEWEGING
-    // ======================================
+    // X LOS CONTROLEREN
 
     if (moveX !== 0) {
 
         let newX =
             player.x +
             moveX;
-
 
         newX =
             Math.max(
@@ -1076,7 +1562,6 @@ function updatePlayer() {
                     newX
                 )
             );
-
 
         if (
             !positionHasCollision(
@@ -1091,16 +1576,13 @@ function updatePlayer() {
     }
 
 
-    // ======================================
-    // Y-BEWEGING
-    // ======================================
+    // Y LOS CONTROLEREN
 
     if (moveY !== 0) {
 
         let newY =
             player.y +
             moveY;
-
 
         newY =
             Math.max(
@@ -1111,7 +1593,6 @@ function updatePlayer() {
                     newY
                 )
             );
-
 
         if (
             !positionHasCollision(
@@ -1126,21 +1607,19 @@ function updatePlayer() {
     }
 
 
-    // Water/lava controleren
     checkDangerousTile();
 }
 
 
-// ==========================================
+// ======================================================
 // CAMERA
-// ==========================================
+// ======================================================
 
 function updateCamera() {
 
     camera.x =
         player.x -
         canvas.width / 2;
-
 
     camera.y =
         player.y -
@@ -1176,9 +1655,9 @@ function updateCamera() {
 }
 
 
-// ==========================================
-// ÉÉN TILE TEKENEN
-// ==========================================
+// ======================================================
+// TILE TEKENEN
+// ======================================================
 
 function drawTile(
     rawGid,
@@ -1191,32 +1670,26 @@ function drawTile(
             rawGid
         );
 
-
     if (!result) {
         return;
     }
 
-
     const tileset =
         result.tileset;
-
 
     const localTileId =
         result.gid -
         tileset.firstgid;
 
-
     const column =
         localTileId %
         tileset.columns;
-
 
     const row =
         Math.floor(
             localTileId /
             tileset.columns
         );
-
 
     const sourceX =
         tileset.margin +
@@ -1225,7 +1698,6 @@ function drawTile(
             tileset.tileWidth +
             tileset.spacing
         );
-
 
     const sourceY =
         tileset.margin +
@@ -1255,24 +1727,11 @@ function drawTile(
 }
 
 
-// ==========================================
-// TILED MAP TEKENEN
-// ==========================================
+// ======================================================
+// MAP TEKENEN
+// ======================================================
 
 function drawTiledMap() {
-
-    if (!mapLoaded) {
-        return;
-    }
-
-
-    /*
-        Alleen tegels tekenen die ongeveer
-        in beeld zijn.
-
-        Dit is veel sneller dan iedere frame
-        alle 10.000 tiles tekenen.
-    */
 
     const startColumn =
         Math.max(
@@ -1282,7 +1741,6 @@ function drawTiledMap() {
                 TILE_WIDTH
             ) - 1
         );
-
 
     const endColumn =
         Math.min(
@@ -1296,7 +1754,6 @@ function drawTiledMap() {
             ) + 1
         );
 
-
     const startRow =
         Math.max(
             0,
@@ -1305,7 +1762,6 @@ function drawTiledMap() {
                 TILE_HEIGHT
             ) - 1
         );
-
 
     const endRow =
         Math.min(
@@ -1334,7 +1790,6 @@ function drawTiledMap() {
             continue;
         }
 
-
         for (
             let row = startRow;
             row <= endRow;
@@ -1342,8 +1797,12 @@ function drawTiledMap() {
         ) {
 
             for (
-                let column = startColumn;
-                column <= endColumn;
+                let column =
+                    startColumn;
+
+                column <=
+                    endColumn;
+
                 column++
             ) {
 
@@ -1352,15 +1811,12 @@ function drawTiledMap() {
                     layer.width +
                     column;
 
-
                 const gid =
                     layer.data[index];
-
 
                 if (!gid) {
                     continue;
                 }
-
 
                 drawTile(
 
@@ -1378,13 +1834,546 @@ function drawTiledMap() {
 }
 
 
-// ==========================================
+// ======================================================
+// LEVEL THEME
+// ======================================================
+
+function getLevelTheme(
+    levelNumber
+) {
+
+    if (levelNumber <= 10) {
+
+        return {
+            tileset:
+                "sand.tsx",
+            fallback:
+                "#d4bb79"
+        };
+    }
+
+    if (levelNumber <= 20) {
+
+        return {
+            tileset:
+                "grass.tsx",
+            fallback:
+                "#72a954"
+        };
+    }
+
+    if (levelNumber <= 30) {
+
+        return {
+            tileset:
+                "mountain.tsx",
+            fallback:
+                "#777777"
+        };
+    }
+
+    if (levelNumber <= 40) {
+
+        return {
+            tileset:
+                "snow.tsx",
+            fallback:
+                "#dce8ed"
+        };
+    }
+
+    return {
+        tileset:
+            "lava.tsx",
+        fallback:
+            "#9b3827"
+    };
+}
+
+
+function findTilesetByName(
+    name
+) {
+
+    return tilesets.find(
+        tileset =>
+            getTilesetName(
+                tileset
+            ) ===
+            name
+    );
+}
+
+
+// ======================================================
+// STAR PATH
+// ======================================================
+
+function createStarPath(
+    x,
+    y,
+    outerRadius,
+    innerRadius
+) {
+
+    ctx.beginPath();
+
+    const points = 10;
+
+    for (
+        let i = 0;
+        i < points;
+        i++
+    ) {
+
+        const radius =
+            i % 2 === 0
+                ? outerRadius
+                : innerRadius;
+
+        const angle =
+            -Math.PI / 2 +
+            (
+                i *
+                Math.PI /
+                5
+            );
+
+        const px =
+            x +
+            Math.cos(angle) *
+            radius;
+
+        const py =
+            y +
+            Math.sin(angle) *
+            radius;
+
+        if (i === 0) {
+
+            ctx.moveTo(
+                px,
+                py
+            );
+
+        } else {
+
+            ctx.lineTo(
+                px,
+                py
+            );
+        }
+    }
+
+    ctx.closePath();
+}
+
+
+// ======================================================
+// TEXTURE IN LEVEL MARKER
+// ======================================================
+
+function drawMarkerTexture(
+    levelNumber,
+    x,
+    y,
+    radius,
+    boss
+) {
+
+    const theme =
+        getLevelTheme(
+            levelNumber
+        );
+
+    const tileset =
+        findTilesetByName(
+            theme.tileset
+        );
+
+
+    ctx.save();
+
+
+    if (boss) {
+
+        createStarPath(
+            x,
+            y,
+            radius,
+            radius * 0.53
+        );
+
+    } else {
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            y,
+            radius,
+            0,
+            Math.PI * 2
+        );
+    }
+
+    ctx.clip();
+
+
+    // BASISKLEUR
+
+    ctx.fillStyle =
+        theme.fallback;
+
+    ctx.fillRect(
+        x - radius,
+        y - radius,
+        radius * 2,
+        radius * 2
+    );
+
+
+    /*
+        Gebruik daadwerkelijk de PNG
+        uit de bijbehorende tileset.
+    */
+
+    if (
+        tileset &&
+        tileset.image.complete
+    ) {
+
+        const sourceX =
+            tileset.margin;
+
+        const sourceY =
+            tileset.margin;
+
+        const tileSize = 32;
+
+
+        for (
+            let py =
+                y - radius;
+
+            py <
+                y + radius;
+
+            py +=
+                tileSize
+        ) {
+
+            for (
+                let px =
+                    x - radius;
+
+                px <
+                    x + radius;
+
+                px +=
+                    tileSize
+            ) {
+
+                ctx.drawImage(
+
+                    tileset.image,
+
+                    sourceX,
+                    sourceY,
+
+                    tileset.tileWidth,
+                    tileset.tileHeight,
+
+                    px,
+                    py,
+
+                    tileSize,
+                    tileSize
+                );
+            }
+        }
+    }
+
+
+    // BOSS DONKERDER
+
+    if (boss) {
+
+        ctx.fillStyle =
+            "rgba(0,0,0,0.30)";
+
+        ctx.fillRect(
+            x - radius,
+            y - radius,
+            radius * 2,
+            radius * 2
+        );
+    }
+
+
+    ctx.restore();
+}
+
+
+// ======================================================
+// LEVEL MARKERS
+// ======================================================
+
+function drawLevelMarkers() {
+
+    const activeLevel =
+        getPlayerLevel();
+
+    for (
+        const [
+            levelNumber,
+            position
+        ]
+        of levelPoints
+    ) {
+
+        const boss =
+            bossLevels.has(
+                levelNumber
+            );
+
+        const radius =
+            boss
+                ? BOSS_RADIUS
+                : LEVEL_RADIUS;
+
+
+        drawMarkerTexture(
+            levelNumber,
+            position.x,
+            position.y,
+            radius,
+            boss
+        );
+
+
+        // RAND
+
+        if (boss) {
+
+            createStarPath(
+                position.x,
+                position.y,
+                radius,
+                radius * 0.53
+            );
+
+        } else {
+
+            ctx.beginPath();
+
+            ctx.arc(
+                position.x,
+                position.y,
+                radius,
+                0,
+                Math.PI * 2
+            );
+        }
+
+
+        const active =
+            activeLevel &&
+            activeLevel.levelNumber ===
+                levelNumber;
+
+
+        ctx.strokeStyle =
+            active
+                ? "white"
+                : "rgba(0,0,0,0.65)";
+
+        ctx.lineWidth =
+            active
+                ? 6
+                : 4;
+
+        ctx.stroke();
+
+
+        // LEVELNUMMER
+
+        ctx.textAlign =
+            "center";
+
+        ctx.textBaseline =
+            "middle";
+
+        ctx.font =
+            boss
+                ? "bold 24px Arial"
+                : "bold 22px Arial";
+
+        ctx.lineWidth = 5;
+
+        ctx.strokeStyle =
+            "rgba(0,0,0,0.80)";
+
+        ctx.strokeText(
+            String(
+                levelNumber
+            ),
+            position.x,
+            position.y
+        );
+
+        ctx.fillStyle =
+            "white";
+
+        ctx.fillText(
+            String(
+                levelNumber
+            ),
+            position.x,
+            position.y
+        );
+    }
+}
+
+
+// ======================================================
+// PLAYER DRAW
+// ======================================================
+
+function drawPlayer() {
+
+    ctx.fillStyle =
+        "blue";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        player.x,
+        player.y,
+        player.size / 2,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+}
+
+
+// ======================================================
+// HUD
+// ======================================================
+
+function drawHud() {
+
+    const activeLevel =
+        getPlayerLevel();
+
+
+    if (activeLevel) {
+
+        const levelNumber =
+            activeLevel.levelNumber;
+
+        const boss =
+            bossLevels.has(
+                levelNumber
+            );
+
+
+        ctx.fillStyle =
+            "rgba(0,0,0,0.72)";
+
+        ctx.fillRect(
+            canvas.width / 2 -
+                190,
+            canvas.height -
+                135,
+            380,
+            92
+        );
+
+
+        ctx.textAlign =
+            "center";
+
+        ctx.fillStyle =
+            "white";
+
+        ctx.font =
+            "bold 24px Arial";
+
+        ctx.fillText(
+            boss
+                ? "BOSS LEVEL " +
+                    levelNumber
+                : "LEVEL " +
+                    levelNumber,
+            canvas.width / 2,
+            canvas.height -
+                100
+        );
+
+
+        ctx.font =
+            "18px Arial";
+
+        ctx.fillText(
+            "Press ENTER to play",
+            canvas.width / 2,
+            canvas.height -
+                68
+        );
+    }
+
+
+    if (
+        noticeText &&
+        performance.now() <
+            noticeUntil
+    ) {
+
+        ctx.fillStyle =
+            "rgba(0,0,0,0.78)";
+
+        ctx.fillRect(
+            canvas.width / 2 -
+                240,
+            35,
+            480,
+            55
+        );
+
+        ctx.fillStyle =
+            "white";
+
+        ctx.textAlign =
+            "center";
+
+        ctx.textBaseline =
+            "middle";
+
+        ctx.font =
+            "18px Arial";
+
+        ctx.fillText(
+            noticeText,
+            canvas.width / 2,
+            62
+        );
+
+    } else {
+
+        noticeText = "";
+    }
+}
+
+
+// ======================================================
 // DRAW WORLD
-// ==========================================
+// ======================================================
 
 function drawWorld() {
 
-    // Achtergrond wissen
     ctx.clearRect(
         0,
         0,
@@ -1396,172 +2385,67 @@ function drawWorld() {
     ctx.save();
 
 
-    // CAMERA
     ctx.translate(
         -camera.x,
         -camera.y
     );
 
 
-    // ======================================
-    // ECHTE TILED MAP
-    // ======================================
-
     drawTiledMap();
 
+    drawLevelMarkers();
 
-    // ======================================
-    // LEVEL 1
-    // ======================================
-
-    const onLevel =
-        isPlayerOnLevel1();
-
-
-    ctx.fillStyle =
-        onLevel
-            ? "rgba(40, 40, 40, 0.85)"
-            : "rgba(80, 80, 80, 0.75)";
-
-
-    ctx.beginPath();
-
-
-    ctx.arc(
-        level1.x,
-        level1.y,
-        level1.radius,
-        0,
-        Math.PI * 2
-    );
-
-
-    ctx.fill();
-
-
-    // LEVEL NUMBER
-    ctx.fillStyle =
-        "white";
-
-
-    ctx.font =
-        "bold 40px Arial";
-
-
-    ctx.textAlign =
-        "center";
-
-
-    ctx.textBaseline =
-        "middle";
-
-
-    ctx.fillText(
-        "1",
-        level1.x,
-        level1.y
-    );
-
-
-    // ======================================
-    // MAP PLAYER
-    // ======================================
-
-    ctx.fillStyle =
-        "blue";
-
-
-    ctx.beginPath();
-
-
-    ctx.arc(
-        player.x,
-        player.y,
-        player.size / 2,
-        0,
-        Math.PI * 2
-    );
-
-
-    ctx.fill();
+    drawPlayer();
 
 
     ctx.restore();
 
 
-    // ======================================
-    // LEVEL INFORMATION
-    // ======================================
-
-    if (onLevel) {
-
-        ctx.fillStyle =
-            "rgba(0, 0, 0, 0.65)";
-
-
-        ctx.fillRect(
-            canvas.width / 2 - 180,
-            canvas.height - 130,
-            360,
-            90
-        );
-
-
-        ctx.fillStyle =
-            "white";
-
-
-        ctx.textAlign =
-            "center";
-
-
-        ctx.font =
-            "bold 25px Arial";
-
-
-        ctx.fillText(
-            "LEVEL 1",
-            canvas.width / 2,
-            canvas.height - 95
-        );
-
-
-        ctx.font =
-            "18px Arial";
-
-
-        ctx.fillText(
-            "Press ENTER to play",
-            canvas.width / 2,
-            canvas.height - 65
-        );
-    }
+    drawHud();
 }
 
 
-// ==========================================
-// MAP LOOP
-// ==========================================
+// ======================================================
+// LOOP
+// ======================================================
+
+let mapLoopRunning =
+    false;
+
+
+function startMapLoop() {
+
+    if (mapLoopRunning) {
+        return;
+    }
+
+    mapLoopRunning =
+        true;
+
+    requestAnimationFrame(
+        gameLoop
+    );
+}
+
 
 function gameLoop() {
 
-    /*
-        Stop wanneer we bijvoorbeeld
-        een level ingaan.
-    */
-
     if (storyMap.hidden) {
+
+        mapLoopRunning =
+            false;
+
         return;
     }
 
 
     if (!window.gamePaused) {
+
         updatePlayer();
     }
 
 
     updateCamera();
-
 
     drawWorld();
 
