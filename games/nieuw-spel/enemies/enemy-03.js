@@ -10,7 +10,7 @@ export default {
 
     speed: "medium",
 
-    tracking: 0.5,
+    tracking: 0.3,
 
     behavior: "bomb-chase",
 

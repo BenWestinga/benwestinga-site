@@ -127,13 +127,13 @@ export const config = {
                 "sandBomb",
 
             count:
-                10,
+                40,
 
             start:
                 70,
 
             duration:
-                30
+                60
         },
 
 
