@@ -91,6 +91,13 @@ function openPauseMenu() {
         true;
 
 
+    // Zorg dat het pauzemenu zelf toetsen ontvangt
+    pauseMenu.tabIndex = -1;
+
+    pauseMenu.focus({
+        preventScroll: true
+    });
+
     leaveLevelButton.hidden =
         !inLevel;
 }
@@ -120,7 +127,28 @@ function closePauseMenu() {
         !onMap &&
         !inLevel;
 }
+pauseMenu.addEventListener(
+    "keydown",
+    event => {
 
+        const isEnter =
+            event.key === "Enter" ||
+            event.code === "Enter" ||
+            event.code === "NumpadEnter";
+
+
+        if (!isEnter) {
+            return;
+        }
+
+
+        event.preventDefault();
+        event.stopPropagation();
+
+
+        closePauseMenu();
+    }
+);
 
 // ======================================================
 // MENU BUTTON
@@ -148,33 +176,6 @@ window.addEventListener(
             typeof event.key === "string"
                 ? event.key.toLowerCase()
                 : "";
-
-
-        // ==============================================
-        // ENTER = PAUSE MENU SLUITEN
-        // ==============================================
-
-        if (
-            (
-                key === "enter" ||
-                event.code === "Enter" ||
-                event.code === "NumpadEnter"
-            ) &&
-            pauseMenu.hidden === false
-        ) {
-
-            event.preventDefault();
-
-            event.stopPropagation();
-
-            event.stopImmediatePropagation();
-
-
-            closePauseMenu();
-
-            return;
-        }
-
 
         // ==============================================
         // SPACE = PAUSE MENU OPENEN
