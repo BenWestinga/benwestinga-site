@@ -8,7 +8,7 @@ export default {
 
     size: 2,
 
-    speed: "medium",
+    speed: "fast",
 
     tracking: 0.3,
 
