@@ -1204,9 +1204,7 @@ function drawWindOverlay() {
     if (
         isWindFullyCleared()
     ) {
-
         return;
-
     }
 
 
@@ -1215,140 +1213,209 @@ function drawWindOverlay() {
 
 
     windCtx.clearRect(
-
         0,
         0,
-
         windOverlayCanvas.width,
         windOverlayCanvas.height
-
     );
 
 
-    // Witte basis zodat onbekend gebied
-    // echt nauwelijks zichtbaar is.
+    // ==========================================
+    // LICHTE MISTBASIS
+    // ==========================================
 
     windCtx.fillStyle =
-        "rgba(245, 248, 252, 0.94)";
-
+        "rgba(245, 248, 252, 0.90)";
 
     windCtx.fillRect(
-
         0,
         0,
-
         windOverlayCanvas.width,
         windOverlayCanvas.height
-
     );
 
 
-    // ==================================================
-    // BEWEGENDE WIND.PNG
-    // ==================================================
+    // ==========================================
+    // VLOEIENDE WIND
+    // ==========================================
 
     if (
-        windImageLoaded
+        windImageLoaded &&
+        windImage.width > 0 &&
+        windImage.height > 0
     ) {
 
-        const tileWidth =
-            440;
-
-
-        const tileHeight =
-
-            tileWidth *
-
-            (
-                windImage.height /
-                windImage.width
-            );
-
-
         const time =
-            performance.now();
+            performance.now() /
+            1000;
 
 
-        const offsetX =
+        /*
+            Tekent 1 GROTE windlaag.
 
-            (
-                time *
-                0.018
-            ) %
-            tileWidth;
+            Dus niet meer:
+            [plaatje][plaatje][plaatje]
 
+            Hierdoor verdwijnen de
+            zichtbare tegelranden.
+        */
 
-        const offsetY =
-
-            (
-                time *
-                0.007
-            ) %
-            tileHeight;
-
-
-        windCtx.save();
-
-
-        windCtx.globalAlpha =
-            0.72;
-
-
-        for (
-
-            let y =
-                -tileHeight -
-                offsetY;
-
-            y <
-                canvas.height +
-                tileHeight;
-
-            y +=
-                tileHeight
-
+        function drawWindLayer(
+            alpha,
+            zoom,
+            speedX,
+            speedY,
+            phase
         ) {
 
-            for (
+            const coverScale =
+                Math.max(
 
-                let x =
-                    -tileWidth +
-                    offsetX;
+                    canvas.width /
+                    windImage.width,
 
-                x <
-                    canvas.width +
-                    tileWidth;
-
-                x +=
-                    tileWidth
-
-            ) {
-
-                windCtx.drawImage(
-
-                    windImage,
-
-                    x,
-                    y,
-
-                    tileWidth,
-                    tileHeight
+                    canvas.height /
+                    windImage.height
 
                 );
 
-            }
 
+            const scale =
+                coverScale *
+                zoom;
+
+
+            const drawWidth =
+                windImage.width *
+                scale;
+
+
+            const drawHeight =
+                windImage.height *
+                scale;
+
+
+            const extraX =
+                Math.max(
+                    0,
+                    (
+                        drawWidth -
+                        canvas.width
+                    ) /
+                    2
+                );
+
+
+            const extraY =
+                Math.max(
+                    0,
+                    (
+                        drawHeight -
+                        canvas.height
+                    ) /
+                    2
+                );
+
+
+            /*
+                Heel langzaam heen en weer.
+
+                Omdat het plaatje groter is
+                dan het scherm zie je nooit
+                een harde rand.
+            */
+
+            const movementX =
+                Math.sin(
+                    time *
+                    speedX +
+                    phase
+                ) *
+                extraX *
+                0.70;
+
+
+            const movementY =
+                Math.cos(
+                    time *
+                    speedY +
+                    phase
+                ) *
+                extraY *
+                0.70;
+
+
+            const x =
+                (
+                    canvas.width -
+                    drawWidth
+                ) /
+                2 +
+                movementX;
+
+
+            const y =
+                (
+                    canvas.height -
+                    drawHeight
+                ) /
+                2 +
+                movementY;
+
+
+            windCtx.save();
+
+
+            windCtx.globalAlpha =
+                alpha;
+
+
+            windCtx.drawImage(
+                windImage,
+                x,
+                y,
+                drawWidth,
+                drawHeight
+            );
+
+
+            windCtx.restore();
         }
 
 
-        windCtx.restore();
+        /*
+            Twee verschillende lagen.
 
+            Daardoor lijkt de wind minder
+            op één stil PNG-plaatje.
+        */
+
+        drawWindLayer(
+            0.55,
+            1.45,
+            0.16,
+            0.11,
+            0
+        );
+
+
+        drawWindLayer(
+            0.28,
+            1.80,
+            0.09,
+            0.14,
+            2.4
+        );
     }
 
 
-    // ==================================================
-    // GATEN UIT WIND SNIJDEN
-    // ==================================================
+    // ==========================================
+    // OPEN GEBIEDEN UIT WIND HALEN
+    // ==========================================
+
+    const revealCenters =
+        getWindRevealCenters();
+
 
     windCtx.save();
 
@@ -1357,16 +1424,33 @@ function drawWindOverlay() {
         "destination-out";
 
 
+    // ==========================================
+    // ZACHTE RAND
+    // ==========================================
+
+    /*
+        Eerst dezelfde gaten licht geblurd.
+
+        Hierdoor krijg je geen messcherpe
+        overgang van map naar wind.
+    */
+
+    windCtx.filter =
+        "blur(22px)";
+
+
+    windCtx.globalAlpha =
+        0.72;
+
+
     for (
         const center
-        of getWindRevealCenters()
+        of revealCenters
     ) {
 
         createWindRevealPath(
-
             windCtx,
             center
-
         );
 
 
@@ -1375,26 +1459,52 @@ function drawWindOverlay() {
 
 
         windCtx.fill();
+    }
 
+
+    // ==========================================
+    // BINNENKANT VOLLEDIG VRIJ
+    // ==========================================
+
+    windCtx.filter =
+        "none";
+
+
+    windCtx.globalAlpha =
+        1;
+
+
+    for (
+        const center
+        of revealCenters
+    ) {
+
+        createWindRevealPath(
+            windCtx,
+            center
+        );
+
+
+        windCtx.fillStyle =
+            "black";
+
+
+        windCtx.fill();
     }
 
 
     windCtx.restore();
 
 
-    // ==================================================
-    // OVER MAP TEKENEN
-    // ==================================================
+    // ==========================================
+    // WIND OVER MAP TEKENEN
+    // ==========================================
 
     ctx.drawImage(
-
         windOverlayCanvas,
-
         0,
         0
-
     );
-
 }
 
 // ======================================================

@@ -1362,6 +1362,156 @@
     // DRAW ENEMIES
     // ==========================================
 
+    function drawEnemyFace(
+        enemy
+    ) {
+
+        const x =
+            enemy.x;
+
+        const y =
+            enemy.y;
+
+        const r =
+            enemy.radius;
+
+
+        ctx.save();
+
+
+        ctx.lineCap =
+            "round";
+
+        ctx.lineJoin =
+            "round";
+
+
+        // ==========================================
+        // OGEN
+        // ==========================================
+
+        const eyeOffsetX =
+            r * 0.28;
+
+        const eyeY =
+            y -
+            r * 0.08;
+
+        const eyeRadius =
+            Math.max(
+                2,
+                r * 0.09
+            );
+
+
+        ctx.fillStyle =
+            "#111111";
+
+
+        // LINKEROOG
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x - eyeOffsetX,
+            eyeY,
+            eyeRadius,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+
+        // RECHTEROOG
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x + eyeOffsetX,
+            eyeY,
+            eyeRadius,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+
+        // ==========================================
+        // BOZE WENKBRAUWEN
+        // ==========================================
+
+        ctx.strokeStyle =
+            "#111111";
+
+        ctx.lineWidth =
+            Math.max(
+                2.5,
+                r * 0.10
+            );
+
+
+        // LINKS
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x - r * 0.48,
+            y - r * 0.34
+        );
+
+        ctx.lineTo(
+            x - r * 0.10,
+            y - r * 0.18
+        );
+
+        ctx.stroke();
+
+
+        // RECHTS
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x + r * 0.48,
+            y - r * 0.34
+        );
+
+        ctx.lineTo(
+            x + r * 0.10,
+            y - r * 0.18
+        );
+
+        ctx.stroke();
+
+
+        // ==========================================
+        // BOZE MOND
+        // ==========================================
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x - r * 0.32,
+            y + r * 0.42
+        );
+
+
+        ctx.quadraticCurveTo(
+            x,
+            y + r * 0.16,
+            x + r * 0.32,
+            y + r * 0.42
+        );
+
+
+        ctx.stroke();
+
+
+        ctx.restore();
+    }
+
     function drawEnemies() {
 
         for (
@@ -1398,6 +1548,10 @@
                 "rgba(0,0,0,0.7)";
 
             ctx.stroke();
+
+            drawEnemyFace(
+                enemy
+            );
 
 
             // HP BAR
