@@ -16,6 +16,36 @@ const leaveStoryButton =
 
 window.gamePaused = false;
 
+const enterHint =
+    document.createElement("div");
+
+enterHint.textContent =
+    "ENTER - Continue";
+
+enterHint.style.position =
+    "absolute";
+
+enterHint.style.right =
+    "30px";
+
+enterHint.style.bottom =
+    "25px";
+
+enterHint.style.color =
+    "white";
+
+enterHint.style.font =
+    "bold 18px Arial";
+
+enterHint.style.opacity =
+    "0.85";
+
+enterHint.style.pointerEvents =
+    "none";
+
+pauseMenu.appendChild(
+    enterHint
+);
 
 function openPauseMenu() {
 
@@ -86,17 +116,21 @@ document.addEventListener(
     }
 );
 
+function resumeGame() {
+
+    pauseMenu.hidden = true;
+
+    window.gamePaused = false;
+
+    pauseMenuButton.hidden = false;
+}
+
+
 continueButton.addEventListener(
     "click",
-    () => {
-
-        pauseMenu.hidden = true;
-
-        window.gamePaused = false;
-
-        pauseMenuButton.hidden = false;
-    }
+    resumeGame
 );
+
 
 document.addEventListener(
     "keydown",
@@ -118,9 +152,7 @@ document.addEventListener(
         event.preventDefault();
         event.stopImmediatePropagation();
 
-        pauseMenu.hidden = true;
-        window.gamePaused = false;
-        pauseMenuButton.hidden = false;
+        resumeGame();
     },
     true
 );
