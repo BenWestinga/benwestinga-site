@@ -18,5 +18,5 @@ export default {
 
     explosionDuration: 0.1,
 
-    color: "#f1d84b"
+    color: "#645806"
 };

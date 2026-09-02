@@ -144,13 +144,13 @@ export const config = {
                 "grassGoon",
 
             count:
-                60,
+                40,
 
             start:
-                80,
+                70,
 
             duration:
-                50
+                30
         },
 
 
@@ -168,13 +168,13 @@ export const config = {
                 "grassBomb",
 
             count:
-                10,
+                6,
 
             start:
-                80,
+                70,
 
             duration:
-                50
+                30
         }
     ]
 };
