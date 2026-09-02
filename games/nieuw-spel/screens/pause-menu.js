@@ -16,6 +16,11 @@ const leaveStoryButton =
 
 window.gamePaused = false;
 
+
+// ======================================================
+// ENTER HINT
+// ======================================================
+
 const enterHint =
     document.createElement("div");
 
@@ -23,7 +28,7 @@ enterHint.textContent =
     "ENTER - Continue";
 
 enterHint.style.position =
-    "absolute";
+    "fixed";
 
 enterHint.style.right =
     "30px";
@@ -40,12 +45,20 @@ enterHint.style.font =
 enterHint.style.opacity =
     "0.85";
 
+enterHint.style.zIndex =
+    "99999";
+
 enterHint.style.pointerEvents =
     "none";
 
 pauseMenu.appendChild(
     enterHint
 );
+
+
+// ======================================================
+// PAUSE MENU OPENEN
+// ======================================================
 
 function openPauseMenu() {
 
@@ -56,20 +69,26 @@ function openPauseMenu() {
         window.levelActive === true;
 
 
-    // Niet in Story Mode?
-    if (!onMap && !inLevel) {
+    if (
+        !onMap &&
+        !inLevel
+    ) {
 
-        pauseMenuButton.hidden = true;
+        pauseMenuButton.hidden =
+            true;
 
         return;
     }
 
 
-    window.gamePaused = true;
+    window.gamePaused =
+        true;
 
-    pauseMenu.hidden = false;
+    pauseMenu.hidden =
+        false;
 
-    pauseMenuButton.hidden = true;
+    pauseMenuButton.hidden =
+        true;
 
 
     leaveLevelButton.hidden =
@@ -77,143 +96,237 @@ function openPauseMenu() {
 }
 
 
-pauseMenuButton.addEventListener(
-    "click",
-    openPauseMenu
-);
+// ======================================================
+// PAUSE MENU SLUITEN
+// ======================================================
+
+function closePauseMenu() {
+
+    pauseMenu.hidden =
+        true;
+
+    window.gamePaused =
+        false;
 
 
-document.addEventListener(
-    "keydown",
-    event => {
+    const onMap =
+        !storyMap.hidden;
 
-        if (
-            event.code !== "Space" ||
-            event.repeat
-        ) {
-            return;
-        }
+    const inLevel =
+        window.levelActive === true;
 
 
-        const onMap =
-            !storyMap.hidden;
-
-        const inLevel =
-            window.levelActive === true;
-
-
-        if (!onMap && !inLevel) {
-            return;
-        }
-
-
-        event.preventDefault();
-
-
-        if (pauseMenu.hidden) {
-            openPauseMenu();
-        }
-    }
-);
-
-function resumeGame() {
-
-    pauseMenu.hidden = true;
-
-    window.gamePaused = false;
-
-    pauseMenuButton.hidden = false;
+    pauseMenuButton.hidden =
+        !onMap &&
+        !inLevel;
 }
 
 
-continueButton.addEventListener(
+// ======================================================
+// MENU BUTTON
+// ======================================================
+
+pauseMenuButton.addEventListener(
     "click",
-    resumeGame
+    () => {
+
+        openPauseMenu();
+
+    }
 );
 
 
-document.addEventListener(
+// ======================================================
+// KEYBOARD
+// ======================================================
+
+window.addEventListener(
     "keydown",
     event => {
 
-        const isEnter =
-            event.key === "Enter" ||
-            event.code === "Enter" ||
-            event.code === "NumpadEnter";
+        const key =
+            typeof event.key === "string"
+                ? event.key.toLowerCase()
+                : "";
+
+
+        // ==============================================
+        // ENTER = PAUSE MENU SLUITEN
+        // ==============================================
 
         if (
-            !isEnter ||
-            event.repeat ||
-            pauseMenu.hidden
+            (
+                key === "enter" ||
+                event.code === "Enter" ||
+                event.code === "NumpadEnter"
+            ) &&
+            pauseMenu.hidden === false
         ) {
+
+            event.preventDefault();
+
+            event.stopPropagation();
+
+            event.stopImmediatePropagation();
+
+
+            closePauseMenu();
+
             return;
         }
 
-        event.preventDefault();
-        event.stopImmediatePropagation();
 
-        resumeGame();
+        // ==============================================
+        // SPACE = PAUSE MENU OPENEN
+        // ==============================================
+
+        if (
+            event.code === "Space" &&
+            !event.repeat
+        ) {
+
+            const onMap =
+                !storyMap.hidden;
+
+            const inLevel =
+                window.levelActive === true;
+
+
+            if (
+                !onMap &&
+                !inLevel
+            ) {
+                return;
+            }
+
+
+            event.preventDefault();
+
+
+            if (
+                pauseMenu.hidden
+            ) {
+
+                openPauseMenu();
+
+            }
+
+        }
+
     },
     true
 );
 
 
+// ======================================================
+// CONTINUE BUTTON
+// ======================================================
+
+continueButton.addEventListener(
+    "click",
+    () => {
+
+        closePauseMenu();
+
+    }
+);
+
+
+// ======================================================
+// LEAVE LEVEL
+// ======================================================
+
 leaveLevelButton.addEventListener(
     "click",
     () => {
 
-        if (!window.levelActive) {
+        if (
+            !window.levelActive
+        ) {
             return;
         }
 
-        pauseMenu.hidden = true;
 
-        window.gamePaused = false;
+        pauseMenu.hidden =
+            true;
+
+        window.gamePaused =
+            false;
+
 
         leaveCurrentLevel();
     }
 );
 
 
+// ======================================================
+// LEAVE STORY MODE
+// ======================================================
+
 leaveStoryButton.addEventListener(
     "click",
     async () => {
 
-        pauseMenu.hidden = true;
+        pauseMenu.hidden =
+            true;
 
-        pauseMenuButton.hidden = true;
+        pauseMenuButton.hidden =
+            true;
 
-        window.gamePaused = false;
+        window.gamePaused =
+            false;
 
 
-        if (window.levelActive) {
+        if (
+            window.levelActive
+        ) {
 
-            window.levelActive = false;
-            window.currentLevel = null;
+            window.levelActive =
+                false;
+
+            window.currentLevel =
+                null;
+
 
             clearBullets();
+
             clearEnemies();
 
+
             document
-                .getElementById("level-screen")
-                .hidden = true;
+                .getElementById(
+                    "level-screen"
+                )
+                .hidden =
+                    true;
         }
 
 
-        storyMap.hidden = true;
+        storyMap.hidden =
+            true;
 
-        mapGameMenu.hidden = false;
-
-        document.body.classList.remove(
-            "game-active"
-        );
+        mapGameMenu.hidden =
+            false;
 
 
-        if (document.fullscreenElement) {
+        document.body
+            .classList.remove(
+                "game-active"
+            );
+
+
+        if (
+            document.fullscreenElement
+        ) {
 
             try {
-                await document.exitFullscreen();
+
+                await document
+                    .exitFullscreen();
+
             } catch {}
+
         }
+
     }
 );
