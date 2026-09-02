@@ -16,7 +16,7 @@ export default {
         2 betekent dat hij duidelijk
         wat trager draait.
     */
-    tracking: 2,
+    tracking: 0.8,
 
     behavior: "chase",
 

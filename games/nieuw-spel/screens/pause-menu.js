@@ -102,8 +102,13 @@ document.addEventListener(
     "keydown",
     event => {
 
+        const isEnter =
+            event.key === "Enter" ||
+            event.code === "Enter" ||
+            event.code === "NumpadEnter";
+
         if (
-            event.key !== "Enter" ||
+            !isEnter ||
             event.repeat ||
             pauseMenu.hidden
         ) {
@@ -111,9 +116,13 @@ document.addEventListener(
         }
 
         event.preventDefault();
+        event.stopImmediatePropagation();
 
-        continueButton.click();
-    }
+        pauseMenu.hidden = true;
+        window.gamePaused = false;
+        pauseMenuButton.hidden = false;
+    },
+    true
 );
 
 
