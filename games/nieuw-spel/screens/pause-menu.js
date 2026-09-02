@@ -127,7 +127,7 @@ function closePauseMenu() {
         !onMap &&
         !inLevel;
 }
-pauseMenu.addEventListener(
+document.addEventListener(
     "keydown",
     event => {
 
@@ -137,17 +137,23 @@ pauseMenu.addEventListener(
             event.code === "NumpadEnter";
 
 
-        if (!isEnter) {
+        if (
+            !isEnter ||
+            event.repeat ||
+            pauseMenu.hidden
+        ) {
             return;
         }
 
 
         event.preventDefault();
         event.stopPropagation();
+        event.stopImmediatePropagation();
 
 
         closePauseMenu();
-    }
+    },
+    true
 );
 
 // ======================================================
