@@ -133,7 +133,7 @@ export const config = {
                 "bigsandGoon",
 
             count:
-                6,
+                3,
 
             start:
                 60,
@@ -151,13 +151,13 @@ export const config = {
                 "sandGoon",
 
             count:
-                50,
+                100,
 
             start:
                 70,
 
             duration:
-                30
+                100
         },
 
 
@@ -190,6 +190,22 @@ export const config = {
 
             duration:
                 35
+        },
+
+
+        {
+
+            enemy:
+                "bigsandGoon",
+
+            count:
+                3,
+
+            start:
+                120,
+
+            duration:
+                5
         },
 
 

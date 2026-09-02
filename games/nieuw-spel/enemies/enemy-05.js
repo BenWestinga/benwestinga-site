@@ -57,14 +57,14 @@ export default {
 
     // 3 seconden speler volgen
     chaseDuration:
-        3,
+        6,
 
     chaseTracking:
         0.4,
 
     // Daarna 3 seconden rond bewegen
     wanderDuration:
-        3,
+        2,
 
     // Hoe snel zijn beweging tijdens
     // de ronde fase van richting draait.
