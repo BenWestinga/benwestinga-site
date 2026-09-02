@@ -12,18 +12,9 @@ export const config = {
 
     name: "Level 5",
 
-
-    // Eerste 5 seconden:
-    // geen enemies
-    // geen shooting
-
     startDelayMs:
         5000,
 
-
-    // ==========================================
-    // BACKGROUND
-    // ==========================================
 
     background: {
 
@@ -37,10 +28,6 @@ export const config = {
             "#d8c18b"
     },
 
-
-    // ==========================================
-    // ENEMY TYPES
-    // ==========================================
 
     enemyTypes: {
 
@@ -58,13 +45,8 @@ export const config = {
     },
 
 
-    // ==========================================
-    // LEVEL 5 SPAWNS
-    // ==========================================
-
     spawnGroups: [
 
-        // 1
         {
             enemy: "sandWorm",
             count: 4,
@@ -73,7 +55,6 @@ export const config = {
         },
 
 
-        // 2
         {
             enemy: "sandBomb",
             count: 30,
@@ -82,7 +63,6 @@ export const config = {
         },
 
 
-        // 3
         {
             enemy: "sandShooter",
             count: 10,
@@ -91,7 +71,6 @@ export const config = {
         },
 
 
-        // 4
         {
             enemy: "bigsandGoon",
             count: 5,
@@ -100,7 +79,6 @@ export const config = {
         },
 
 
-        // 5
         {
             enemy: "sandWorm",
             count: 2,
@@ -109,7 +87,6 @@ export const config = {
         },
 
 
-        // 6
         {
             enemy: "sandBomb",
             count: 60,
@@ -118,16 +95,14 @@ export const config = {
         },
 
 
-        // 7
         {
             enemy: "sandShooter",
             count: 150,
             start: 150,
-            duration: 250
+            duration: 600
         },
 
 
-        // 8
         {
             enemy: "sandBen",
             count: 1,
@@ -137,10 +112,6 @@ export const config = {
     ]
 };
 
-
-// ==========================================
-// START LEVEL
-// ==========================================
 
 export async function start(
     context = {}
