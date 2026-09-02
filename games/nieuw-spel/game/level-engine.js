@@ -15,11 +15,14 @@
     // ==========================================
 
     const ENEMY_SPEEDS = {
+        verySlow: 70,
         slow: 100,
+        mediumSlow: 140,
         medium: 180,
-        fast: 250
+        mediumFast: 215,
+        fast: 250,
+        veryFast: 300
     };
-
 
     // ==========================================
     // ENEMY SIZES

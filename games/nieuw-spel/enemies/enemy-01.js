@@ -4,7 +4,7 @@ export default {
 
     hp: 2,
     size: 2,
-    speed: "medium",
+    speed: "mediumSlow",
 
     behavior: "straight-through",
 
