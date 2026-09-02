@@ -4,7 +4,7 @@ export default {
 
     name: "Big Grass Goon",
 
-    hp: 14,
+    hp: 8,
 
     size: 5,
 

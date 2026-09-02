@@ -77,7 +77,7 @@ export const config = {
                 "grassGoon",
 
             count:
-                40,
+                50,
 
             start:
                 5,
@@ -99,13 +99,13 @@ export const config = {
                 "grassBomb",
 
             count:
-                4,
+                8,
 
             start:
                 25,
 
             duration:
-                10
+                15
         },
 
 
@@ -127,7 +127,7 @@ export const config = {
                 40,
 
             duration:
-                10
+                20
         },
 
 
@@ -145,7 +145,7 @@ export const config = {
                 "grassGoon",
 
             count:
-                50,
+                60,
 
             start:
                 80,
@@ -169,7 +169,7 @@ export const config = {
                 "grassBomb",
 
             count:
-                8,
+                10,
 
             start:
                 80,
