@@ -2140,6 +2140,90 @@
                     true;
             }
 
+            // ==================================
+            // SAND SHOOTER STAYS IN ARENA
+            // ==================================
+
+            if (
+                enemy.behavior ===
+                    "sand-shooter" &&
+
+                enemy.enteredArena
+            ) {
+
+                const margin =
+                    enemy.radius + 14;
+
+
+                // LEFT
+
+                if (
+                    enemy.x < margin
+                ) {
+
+                    enemy.x =
+                        margin;
+
+                    enemy.vx =
+                        Math.abs(
+                            enemy.vx
+                        );
+                }
+
+
+                // RIGHT
+
+                if (
+                    enemy.x >
+                        canvas.width -
+                        margin
+                ) {
+
+                    enemy.x =
+                        canvas.width -
+                        margin;
+
+                    enemy.vx =
+                        -Math.abs(
+                            enemy.vx
+                        );
+                }
+
+
+                // TOP
+
+                if (
+                    enemy.y < margin
+                ) {
+
+                    enemy.y =
+                        margin;
+
+                    enemy.vy =
+                        Math.abs(
+                            enemy.vy
+                        );
+                }
+
+
+                // BOTTOM
+
+                if (
+                    enemy.y >
+                        canvas.height -
+                        margin
+                ) {
+
+                    enemy.y =
+                        canvas.height -
+                        margin;
+
+                    enemy.vy =
+                        -Math.abs(
+                            enemy.vy
+                        );
+                }
+            }
 
             // ==================================
             // STRAIGHT ENEMY LEAVES MAP
