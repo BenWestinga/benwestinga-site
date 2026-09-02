@@ -1,12 +1,6 @@
-import grassGoon
-    from "../enemies/enemy-01.js?v=4";
-
-import bigGrassGoon
-    from "../enemies/enemy-02.js?v=4";
-
-import grassBomb
-    from "../enemies/enemy-03.js?v=4";
-
+import grassGoon from "../enemies/enemy-01.js";
+import bigGrassGoon from "../enemies/enemy-02.js";
+import grassBomb from "../enemies/enemy-03.js";
 
 export const config = {
 

@@ -2539,11 +2539,6 @@ async function launchLevel(
 
     try {
 
-        levelUrl.searchParams.set(
-            "v",
-            "3"
-        );
-
         const levelModule =
             await import(
                 levelUrl.href
