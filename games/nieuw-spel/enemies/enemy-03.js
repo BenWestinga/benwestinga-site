@@ -1,8 +1,8 @@
 export default {
 
-    id: "grass-bomb",
+    id: "sand-bomb",
 
-    name: "Grass Bomb",
+    name: "Sand Bomb",
 
     hp: 1,
 
@@ -18,5 +18,5 @@ export default {
 
     explosionDuration: 0.1,
 
-    color: "#645806"
+    color: "#675804"
 };

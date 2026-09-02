@@ -1,10 +1,14 @@
 export default {
-    id: "grass-goon",
-    name: "Grass Goon",
+
+    id: "sand-goon",
+
+    name: "Sand Goon",
 
     hp: 2,
+
     size: 2,
-    speed: "mediumSlow",
+
+    speed: "medium",
 
     behavior: "straight-through",
 

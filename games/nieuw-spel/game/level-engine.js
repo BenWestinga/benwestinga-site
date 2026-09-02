@@ -1,5 +1,4 @@
 (() => {
-
     const levelScreen =
         document.getElementById("level-screen");
 
@@ -23,6 +22,7 @@
         fast: 250,
         veryFast: 300
     };
+
 
     // ==========================================
     // ENEMY SIZES
@@ -53,6 +53,10 @@
 
         enemies: [],
 
+        enemyProjectiles: [],
+
+        worms: [],
+
         explosions: [],
 
         spawnEvents: [],
@@ -60,6 +64,8 @@
         spawnIndex: 0,
 
         nextEnemyId: 1,
+
+        nextWormId: 1,
 
         completionSent: false
     };
@@ -136,6 +142,58 @@
     // ==========================================
     // BACKGROUND
     // ==========================================
+
+    function getDefaultLevelBackground(
+        levelNumber
+    ) {
+
+        if (levelNumber <= 10) {
+
+            return {
+                image: "sand.png",
+                color: "#d8c18b",
+                alpha: 0.58
+            };
+        }
+
+
+        if (levelNumber <= 20) {
+
+            return {
+                image: "grass.png",
+                color: "#6f9f4d",
+                alpha: 0.58
+            };
+        }
+
+
+        if (levelNumber <= 30) {
+
+            return {
+                image: "mountain.png",
+                color: "#777777",
+                alpha: 0.58
+            };
+        }
+
+
+        if (levelNumber <= 40) {
+
+            return {
+                image: "snow.png",
+                color: "#dce8ed",
+                alpha: 0.58
+            };
+        }
+
+
+        return {
+            image: "lava.png",
+            color: "#9b3827",
+            alpha: 0.58
+        };
+    }
+
 
     async function loadBackground(config) {
 
@@ -461,10 +519,6 @@
         }
 
 
-        // DEAD
-
-
-
         // WIN
 
         if (
@@ -718,6 +772,739 @@
 
 
     // ==========================================
+    // SAND WORM
+    // ==========================================
+
+    function spawnSandWorm(
+        definition,
+        position
+    ) {
+
+        const worm = {
+
+            id:
+                state.nextWormId++,
+
+            parts: [],
+
+            speed:
+                getEnemySpeed(
+                    definition.speed
+                ),
+
+            chaseDuration:
+                definition.chaseDuration ?? 3,
+
+            wanderDuration:
+                definition.wanderDuration ?? 3,
+
+            chaseTracking:
+                definition.chaseTracking ?? 0.4,
+
+            turnSpeed:
+                definition.turnSpeed ?? 0.75,
+
+            bodyOverlap:
+                definition.bodyOverlap ?? 4,
+
+            modeTime: 0,
+
+            wanderDirection:
+                Math.random() < 0.5
+                    ? -1
+                    : 1,
+
+            angle:
+                Math.atan2(
+                    window.levelPlayer.y -
+                        position.y,
+                    window.levelPlayer.x -
+                        position.x
+                )
+        };
+
+
+        const partHp =
+            definition.partHp ?? 4;
+
+
+        const totalParts =
+            1 +
+            (definition.segmentCount ?? 4);
+
+
+        const headRadius =
+            getEnemyRadius(
+                definition.headSize ?? 3
+            );
+
+
+        const segmentRadius =
+            getEnemyRadius(
+                definition.segmentSize ?? 2.3
+            );
+
+
+        for (
+            let i = 0;
+            i < totalParts;
+            i++
+        ) {
+
+            const isHead =
+                i === 0;
+
+
+            const radius =
+                isHead
+                    ? headRadius
+                    : segmentRadius;
+
+
+            const spacing =
+                headRadius +
+                segmentRadius -
+                worm.bodyOverlap;
+
+
+            const part = {
+
+                id:
+                    state.nextEnemyId++,
+
+                type:
+                    definition.id,
+
+                name:
+                    definition.name,
+
+                behavior:
+                    "sand-worm-part",
+
+                isWormPart:
+                    true,
+
+                isWormHead:
+                    isHead,
+
+                wormId:
+                    worm.id,
+
+                color:
+                    isHead
+                        ? (
+                            definition.headColor ||
+                            "#c7a92f"
+                        )
+                        : (
+                            definition.segmentColor ||
+                            "#d8bc3c"
+                        ),
+
+                headColor:
+                    definition.headColor ||
+                    "#c7a92f",
+
+                segmentColor:
+                    definition.segmentColor ||
+                    "#d8bc3c",
+
+                headRadius,
+
+                segmentRadius,
+
+                x:
+                    position.x -
+                    Math.cos(
+                        worm.angle
+                    ) *
+                    spacing *
+                    i,
+
+                y:
+                    position.y -
+                    Math.sin(
+                        worm.angle
+                    ) *
+                    spacing *
+                    i,
+
+                radius,
+
+                speed:
+                    worm.speed,
+
+                tracking:
+                    worm.chaseTracking,
+
+                vx:
+                    Math.cos(
+                        worm.angle
+                    ) *
+                    worm.speed,
+
+                vy:
+                    Math.sin(
+                        worm.angle
+                    ) *
+                    worm.speed,
+
+                hp:
+                    partHp,
+
+                maxHp:
+                    partHp,
+
+                enteredArena:
+                    false,
+
+                explosionRadius: 0,
+
+                explosionDuration: 0
+            };
+
+
+            worm.parts.push(
+                part
+            );
+
+
+            state.enemies.push(
+                part
+            );
+        }
+
+
+        state.worms.push(
+            worm
+        );
+    }
+
+
+    function removeSandWormPart(
+        enemy
+    ) {
+
+        const worm =
+            state.worms.find(
+                item =>
+                    item.id ===
+                    enemy.wormId
+            );
+
+
+        removeEnemyById(
+            enemy.id
+        );
+
+
+        if (!worm) {
+            return;
+        }
+
+
+        const partIndex =
+            worm.parts.findIndex(
+                part =>
+                    part.id ===
+                    enemy.id
+            );
+
+
+        if (partIndex === -1) {
+            return;
+        }
+
+
+        worm.parts.splice(
+            partIndex,
+            1
+        );
+
+
+        if (
+            worm.parts.length === 0
+        ) {
+
+            const wormIndex =
+                state.worms.findIndex(
+                    item =>
+                        item.id ===
+                        worm.id
+                );
+
+
+            if (
+                wormIndex !== -1
+            ) {
+
+                state.worms.splice(
+                    wormIndex,
+                    1
+                );
+            }
+
+
+            return;
+        }
+
+
+        if (
+            partIndex === 0
+        ) {
+
+            const newHead =
+                worm.parts[0];
+
+
+            newHead.isWormHead =
+                true;
+
+
+            newHead.radius =
+                newHead.headRadius;
+
+
+            newHead.color =
+                newHead.headColor;
+
+
+            newHead.vx =
+                Math.cos(
+                    worm.angle
+                ) *
+                worm.speed;
+
+
+            newHead.vy =
+                Math.sin(
+                    worm.angle
+                ) *
+                worm.speed;
+        }
+    }
+
+
+    function updateSandWorms(dt) {
+
+        for (
+            const worm
+            of state.worms
+        ) {
+
+            if (
+                worm.parts.length === 0
+            ) {
+                continue;
+            }
+
+
+            const head =
+                worm.parts[0];
+
+
+            head.isWormHead =
+                true;
+
+
+            const cycleLength =
+                worm.chaseDuration +
+                worm.wanderDuration;
+
+
+            const previousMode =
+                worm.modeTime <
+                worm.chaseDuration
+                    ? "chase"
+                    : "wander";
+
+
+            worm.modeTime +=
+                dt;
+
+
+            if (
+                worm.modeTime >=
+                cycleLength
+            ) {
+
+                worm.modeTime %=
+                    cycleLength;
+            }
+
+
+            const mode =
+                worm.modeTime <
+                worm.chaseDuration
+                    ? "chase"
+                    : "wander";
+
+
+            if (
+                previousMode === "chase" &&
+                mode === "wander"
+            ) {
+
+                worm.wanderDirection =
+                    Math.random() < 0.5
+                        ? -1
+                        : 1;
+
+
+                worm.angle =
+                    Math.atan2(
+                        head.vy,
+                        head.vx
+                    );
+            }
+
+
+            if (
+                mode === "chase"
+            ) {
+
+                const dx =
+                    window.levelPlayer.x -
+                    head.x;
+
+
+                const dy =
+                    window.levelPlayer.y -
+                    head.y;
+
+
+                const distance =
+                    Math.hypot(
+                        dx,
+                        dy
+                    ) || 1;
+
+
+                const desiredVx =
+                    dx /
+                    distance *
+                    worm.speed;
+
+
+                const desiredVy =
+                    dy /
+                    distance *
+                    worm.speed;
+
+
+                const steering =
+                    1 -
+                    Math.exp(
+                        -worm.chaseTracking *
+                        dt
+                    );
+
+
+                head.vx +=
+                    (
+                        desiredVx -
+                        head.vx
+                    ) *
+                    steering;
+
+
+                head.vy +=
+                    (
+                        desiredVy -
+                        head.vy
+                    ) *
+                    steering;
+
+
+                worm.angle =
+                    Math.atan2(
+                        head.vy,
+                        head.vx
+                    );
+
+            } else {
+
+                worm.angle +=
+                    worm.turnSpeed *
+                    worm.wanderDirection *
+                    dt;
+
+
+                head.vx =
+                    Math.cos(
+                        worm.angle
+                    ) *
+                    worm.speed;
+
+
+                head.vy =
+                    Math.sin(
+                        worm.angle
+                    ) *
+                    worm.speed;
+            }
+
+
+            head.x +=
+                head.vx * dt;
+
+
+            head.y +=
+                head.vy * dt;
+
+
+            for (
+                let i = 1;
+                i < worm.parts.length;
+                i++
+            ) {
+
+                const previous =
+                    worm.parts[i - 1];
+
+
+                const part =
+                    worm.parts[i];
+
+
+                part.isWormHead =
+                    false;
+
+
+                part.radius =
+                    part.segmentRadius;
+
+
+                part.color =
+                    part.segmentColor;
+
+
+                const dx =
+                    part.x -
+                    previous.x;
+
+
+                const dy =
+                    part.y -
+                    previous.y;
+
+
+                const distance =
+                    Math.hypot(
+                        dx,
+                        dy
+                    ) || 1;
+
+
+                const wantedDistance =
+                    Math.max(
+                        2,
+                        previous.radius +
+                        part.radius -
+                        worm.bodyOverlap
+                    );
+
+
+                part.x =
+                    previous.x +
+                    dx /
+                    distance *
+                    wantedDistance;
+
+
+                part.y =
+                    previous.y +
+                    dy /
+                    distance *
+                    wantedDistance;
+
+
+                part.vx =
+                    head.vx;
+
+
+                part.vy =
+                    head.vy;
+            }
+        }
+    }
+
+
+    // ==========================================
+    // ENEMY PROJECTILES
+    // ==========================================
+
+    function shootEnemyProjectile(
+        enemy
+    ) {
+
+        const dx =
+            window.levelPlayer.x -
+            enemy.x;
+
+
+        const dy =
+            window.levelPlayer.y -
+            enemy.y;
+
+
+        const distance =
+            Math.hypot(
+                dx,
+                dy
+            ) || 1;
+
+
+        const speed =
+            enemy.projectileSpeed ||
+            260;
+
+
+        state.enemyProjectiles.push({
+
+            x:
+                enemy.x,
+
+            y:
+                enemy.y,
+
+            vx:
+                dx /
+                distance *
+                speed,
+
+            vy:
+                dy /
+                distance *
+                speed,
+
+            radius:
+                enemy.projectileRadius ||
+                6,
+
+            color:
+                enemy.projectileColor ||
+                "#e32626"
+        });
+    }
+
+
+    function updateEnemyProjectiles(dt) {
+
+        for (
+            let i =
+                state.enemyProjectiles.length - 1;
+            i >= 0;
+            i--
+        ) {
+
+            const projectile =
+                state.enemyProjectiles[i];
+
+
+            projectile.x +=
+                projectile.vx * dt;
+
+
+            projectile.y +=
+                projectile.vy * dt;
+
+
+            if (
+                window.LevelPlayer
+                    .touchesCircle(
+                        projectile.x,
+                        projectile.y,
+                        projectile.radius
+                    )
+            ) {
+
+                state.enemyProjectiles.splice(
+                    i,
+                    1
+                );
+
+
+                killPlayer();
+
+                return;
+            }
+
+
+            const margin =
+                projectile.radius +
+                40;
+
+
+            if (
+                projectile.x < -margin ||
+
+                projectile.x >
+                    canvas.width +
+                    margin ||
+
+                projectile.y < -margin ||
+
+                projectile.y >
+                    canvas.height +
+                    margin
+            ) {
+
+                state.enemyProjectiles.splice(
+                    i,
+                    1
+                );
+            }
+        }
+    }
+
+
+    function drawEnemyProjectiles() {
+
+        for (
+            const projectile
+            of state.enemyProjectiles
+        ) {
+
+            ctx.save();
+
+
+            ctx.beginPath();
+
+
+            ctx.arc(
+                projectile.x,
+                projectile.y,
+                projectile.radius,
+                0,
+                Math.PI * 2
+            );
+
+
+            ctx.fillStyle =
+                projectile.color;
+
+
+            ctx.fill();
+
+
+            ctx.lineWidth =
+                2;
+
+
+            ctx.strokeStyle =
+                "rgba(80,0,0,0.85)";
+
+
+            ctx.stroke();
+
+
+            ctx.restore();
+        }
+    }
+
+
+    // ==========================================
     // SPAWN ENEMY
     // ==========================================
 
@@ -737,6 +1524,7 @@
                 typeId
             );
 
+
             return;
         }
 
@@ -753,6 +1541,21 @@
             );
 
 
+        if (
+            definition.behavior ===
+            "sand-worm"
+        ) {
+
+            spawnSandWorm(
+                definition,
+                position
+            );
+
+
+            return;
+        }
+
+
         const enemy = {
 
             id:
@@ -767,10 +1570,13 @@
             behavior:
                 definition.behavior,
 
+            shape:
+                definition.shape ||
+                "circle",
+
             color:
                 definition.color ||
                 "#d73535",
-
 
             x:
                 position.x,
@@ -778,30 +1584,19 @@
             y:
                 position.y,
 
-
             radius,
-
 
             speed:
                 getEnemySpeed(
                     definition.speed
                 ),
 
-
-            /*
-                Hoe sterk hij jouw
-                beweging volgt.
-
-                Lager = loggere beweging.
-            */
-
             tracking:
                 definition.tracking ?? 3,
 
-
             vx: 0,
-            vy: 0,
 
+            vy: 0,
 
             hp:
                 definition.hp,
@@ -809,38 +1604,46 @@
             maxHp:
                 definition.hp,
 
-
             enteredArena:
                 false,
-
 
             explosionRadius:
                 definition.explosionRadius ||
                 0,
 
-
             explosionDuration:
                 definition.explosionDuration ||
-                0
+                0,
+
+            shootInterval:
+                definition.shootInterval ||
+                0,
+
+            shootTimer:
+                0,
+
+            projectileRadius:
+                definition.projectileRadius ||
+                6,
+
+            projectileSpeed:
+                definition.projectileSpeed ||
+                260,
+
+            projectileColor:
+                definition.projectileColor ||
+                "#e32626"
         };
 
 
         // ======================================
-        // GRASS GOON
+        // STRAIGHT-THROUGH ENEMY
         // ======================================
 
         if (
             definition.behavior ===
             "straight-through"
         ) {
-
-            /*
-                Hij kijkt één keer naar
-                de huidige spelerpositie.
-
-                Daarna verandert zijn
-                richting nooit meer.
-            */
 
             const dx =
                 window.levelPlayer.x -
@@ -872,6 +1675,45 @@
                     dy /
                     distance
                 ) *
+                enemy.speed;
+        }
+
+
+        // ======================================
+        // SAND SHOOTER
+        // ======================================
+
+        if (
+            definition.behavior ===
+            "sand-shooter"
+        ) {
+
+            const dx =
+                window.levelPlayer.x -
+                enemy.x;
+
+
+            const dy =
+                window.levelPlayer.y -
+                enemy.y;
+
+
+            const distance =
+                Math.hypot(
+                    dx,
+                    dy
+                ) || 1;
+
+
+            enemy.vx =
+                dx /
+                distance *
+                enemy.speed;
+
+
+            enemy.vy =
+                dy /
+                distance *
                 enemy.speed;
         }
 
@@ -1029,6 +1871,19 @@
 
     function killEnemy(enemy) {
 
+        if (
+            enemy.isWormPart
+        ) {
+
+            removeSandWormPart(
+                enemy
+            );
+
+
+            return;
+        }
+
+
         removeEnemyById(
             enemy.id
         );
@@ -1068,7 +1923,8 @@
         }
 
 
-        enemy.hp -= damage;
+        enemy.hp -=
+            damage;
 
 
         if (
@@ -1098,12 +1954,17 @@
         state.status =
             "dead";
 
+
         state.statusTimer =
             0;
 
 
         window.levelPlayer.alive =
             false;
+
+
+        state.enemyProjectiles.length =
+            0;
 
 
         window.LevelCombat.clear();
@@ -1115,6 +1976,11 @@
     // ==========================================
 
     function updateEnemies(dt) {
+
+        updateSandWorms(
+            dt
+        );
+
 
         for (
             let i =
@@ -1128,16 +1994,31 @@
 
 
             // ==================================
-            // GRASS GOON
+            // WORM PART
             // ==================================
 
             if (
+                enemy.isWormPart
+            ) {
+
+                /*
+                    Wormdelen worden allemaal
+                    centraal bewogen door
+                    updateSandWorms().
+                */
+
+            } else if (
                 enemy.behavior ===
                 "straight-through"
             ) {
 
+                // ==================================
+                // STRAIGHT THROUGH
+                // ==================================
+
                 enemy.x +=
                     enemy.vx * dt;
+
 
                 enemy.y +=
                     enemy.vy * dt;
@@ -1165,11 +2046,6 @@
                     ) || 1;
 
 
-                /*
-                    Waar hij eigenlijk
-                    naartoe wil bewegen.
-                */
-
                 const desiredVx =
                     (
                         dx /
@@ -1185,17 +2061,6 @@
                     ) *
                     enemy.speed;
 
-
-                /*
-                    Dit voorkomt dat enemies
-                    100% direct jouw muis volgen.
-
-                    tracking 1 = heel log
-                    tracking 2 = behoorlijk log
-                    tracking 3 = normaal
-                    tracking 5 = sterk
-                    tracking 10 = bijna direct
-                */
 
                 const steering =
                     1 -
@@ -1231,6 +2096,37 @@
 
 
             // ==================================
+            // SAND SHOOTER SHOOTING
+            // ==================================
+
+            if (
+                enemy.behavior ===
+                    "sand-shooter" &&
+
+                enemy.shootInterval > 0
+            ) {
+
+                enemy.shootTimer +=
+                    dt;
+
+
+                if (
+                    enemy.shootTimer >=
+                    enemy.shootInterval
+                ) {
+
+                    enemy.shootTimer %=
+                        enemy.shootInterval;
+
+
+                    shootEnemyProjectile(
+                        enemy
+                    );
+                }
+            }
+
+
+            // ==================================
             // ENTERED ARENA
             // ==================================
 
@@ -1246,7 +2142,7 @@
 
 
             // ==================================
-            // GRASS GOON LEAVES MAP
+            // STRAIGHT ENEMY LEAVES MAP
             // ==================================
 
             if (
@@ -1264,6 +2160,7 @@
                     i,
                     1
                 );
+
 
                 continue;
             }
@@ -1305,6 +2202,7 @@
 
 
                 killPlayer();
+
 
                 return;
             }
@@ -1362,7 +2260,7 @@
 
 
     // ==========================================
-    // DRAW ENEMIES
+    // DRAW ENEMY FACE
     // ==========================================
 
     function drawEnemyFace(
@@ -1372,8 +2270,10 @@
         const x =
             enemy.x;
 
+
         const y =
             enemy.y;
+
 
         const r =
             enemy.radius;
@@ -1385,20 +2285,21 @@
         ctx.lineCap =
             "round";
 
+
         ctx.lineJoin =
             "round";
 
 
-        // ==========================================
         // OGEN
-        // ==========================================
 
         const eyeOffsetX =
             r * 0.28;
 
+
         const eyeY =
             y -
             r * 0.08;
+
 
         const eyeRadius =
             Math.max(
@@ -1410,8 +2311,6 @@
         ctx.fillStyle =
             "#111111";
 
-
-        // LINKEROOG
 
         ctx.beginPath();
 
@@ -1426,8 +2325,6 @@
         ctx.fill();
 
 
-        // RECHTEROOG
-
         ctx.beginPath();
 
         ctx.arc(
@@ -1441,12 +2338,11 @@
         ctx.fill();
 
 
-        // ==========================================
         // BOZE WENKBRAUWEN
-        // ==========================================
 
         ctx.strokeStyle =
             "#111111";
+
 
         ctx.lineWidth =
             Math.max(
@@ -1454,8 +2350,6 @@
                 r * 0.10
             );
 
-
-        // LINKS
 
         ctx.beginPath();
 
@@ -1472,8 +2366,6 @@
         ctx.stroke();
 
 
-        // RECHTS
-
         ctx.beginPath();
 
         ctx.moveTo(
@@ -1489,9 +2381,7 @@
         ctx.stroke();
 
 
-        // ==========================================
         // BOZE MOND
-        // ==========================================
 
         ctx.beginPath();
 
@@ -1515,6 +2405,11 @@
         ctx.restore();
     }
 
+
+    // ==========================================
+    // DRAW ENEMIES
+    // ==========================================
+
     function drawEnemies() {
 
         for (
@@ -1528,13 +2423,36 @@
             ctx.beginPath();
 
 
-            ctx.arc(
-                enemy.x,
-                enemy.y,
-                enemy.radius,
-                0,
-                Math.PI * 2
-            );
+            // SAND SHOOTER = VIERKANT
+
+            if (
+                enemy.shape ===
+                "square"
+            ) {
+
+                ctx.rect(
+
+                    enemy.x -
+                        enemy.radius,
+
+                    enemy.y -
+                        enemy.radius,
+
+                    enemy.radius * 2,
+
+                    enemy.radius * 2
+                );
+
+            } else {
+
+                ctx.arc(
+                    enemy.x,
+                    enemy.y,
+                    enemy.radius,
+                    0,
+                    Math.PI * 2
+                );
+            }
 
 
             ctx.fillStyle =
@@ -1547,17 +2465,37 @@
             ctx.lineWidth =
                 2;
 
+
             ctx.strokeStyle =
                 "rgba(0,0,0,0.7)";
 
+
             ctx.stroke();
 
-            drawEnemyFace(
-                enemy
-            );
+
+            /*
+                Normale enemies:
+                gezicht tekenen.
+
+                Worm:
+                alleen het hoofd krijgt
+                een gezicht.
+            */
+
+            if (
+                !enemy.isWormPart ||
+                enemy.isWormHead
+            ) {
+
+                drawEnemyFace(
+                    enemy
+                );
+            }
 
 
+            // ==================================
             // HP BAR
+            // ==================================
 
             const barWidth =
                 enemy.radius * 2;
@@ -1580,12 +2518,16 @@
 
 
             ctx.fillRect(
+
                 enemy.x -
                     barWidth / 2,
+
                 enemy.y -
                     enemy.radius -
                     11,
+
                 barWidth,
+
                 barHeight
             );
 
@@ -1595,13 +2537,17 @@
 
 
             ctx.fillRect(
+
                 enemy.x -
                     barWidth / 2,
+
                 enemy.y -
                     enemy.radius -
                     11,
+
                 barWidth *
                     hpRatio,
+
                 barHeight
             );
 
@@ -1684,6 +2630,8 @@
 
             state.enemies.length === 0 &&
 
+            state.enemyProjectiles.length === 0 &&
+
             state.explosions.length === 0
 
         ) {
@@ -1715,6 +2663,10 @@
 
 
         window.LevelCombat.clear();
+
+
+        state.enemyProjectiles.length =
+            0;
 
 
         if (
@@ -1769,6 +2721,14 @@
             0;
 
 
+        state.enemyProjectiles.length =
+            0;
+
+
+        state.worms.length =
+            0;
+
+
         state.explosions.length =
             0;
 
@@ -1787,6 +2747,10 @@
 
 
         state.nextEnemyId =
+            1;
+
+
+        state.nextWormId =
             1;
 
 
@@ -1880,7 +2844,21 @@
         }
 
 
-        // COMBAT
+        // ENEMY PROJECTILES
+
+        updateEnemyProjectiles(
+            dt
+        );
+
+
+        if (
+            state.status !== "playing"
+        ) {
+            return;
+        }
+
+
+        // PLAYER COMBAT
 
         window.LevelCombat.update(
 
@@ -1895,6 +2873,7 @@
         checkWin();
     }
 
+
     // ==========================================
     // GAME OVER SCREEN
     // ==========================================
@@ -1902,8 +2881,12 @@
     function getGameOverButton() {
 
         return {
-            width: 240,
-            height: 65,
+
+            width:
+                240,
+
+            height:
+                65,
 
             x:
                 canvas.width / 2 -
@@ -1928,10 +2911,9 @@
         ctx.save();
 
 
-        // Donkere overlay
-
         ctx.fillStyle =
             "rgba(0, 0, 0, 0.72)";
+
 
         ctx.fillRect(
             0,
@@ -1946,17 +2928,22 @@
         ctx.textAlign =
             "center";
 
+
         ctx.textBaseline =
             "middle";
+
 
         ctx.font =
             "bold 72px Arial";
 
+
         ctx.lineWidth =
             9;
 
+
         ctx.strokeStyle =
             "black";
+
 
         ctx.strokeText(
             "GAME OVER",
@@ -1967,6 +2954,7 @@
 
         ctx.fillStyle =
             "white";
+
 
         ctx.fillText(
             "GAME OVER",
@@ -1984,6 +2972,7 @@
         ctx.fillStyle =
             "rgba(255,255,255,0.95)";
 
+
         ctx.fillRect(
             button.x,
             button.y,
@@ -1995,8 +2984,10 @@
         ctx.strokeStyle =
             "black";
 
+
         ctx.lineWidth =
             4;
+
 
         ctx.strokeRect(
             button.x,
@@ -2008,6 +2999,7 @@
 
         ctx.fillStyle =
             "black";
+
 
         ctx.font =
             "bold 26px Arial";
@@ -2024,6 +3016,7 @@
         ctx.restore();
     }
 
+
     function handleGameOverClick(event) {
 
         if (
@@ -2032,31 +3025,49 @@
             return;
         }
 
+
         const rect =
             canvas.getBoundingClientRect();
+
 
         const x =
             (event.clientX - rect.left) *
             (canvas.width / rect.width);
 
+
         const y =
             (event.clientY - rect.top) *
             (canvas.height / rect.height);
 
+
         const button =
             getGameOverButton();
 
-        const insideButton =
-            x >= button.x &&
-            x <= button.x + button.width &&
-            y >= button.y &&
-            y <= button.y + button.height;
 
-        if (!insideButton) {
+        const insideButton =
+
+            x >= button.x &&
+
+            x <=
+                button.x +
+                button.width &&
+
+            y >= button.y &&
+
+            y <=
+                button.y +
+                button.height;
+
+
+        if (
+            !insideButton
+        ) {
             return;
         }
 
+
         event.preventDefault();
+
 
         returnToStoryMap();
     }
@@ -2066,6 +3077,7 @@
         "pointerdown",
         handleGameOverClick
     );
+
 
     // ==========================================
     // DRAW LEVEL
@@ -2083,9 +3095,14 @@
 
         drawBackground();
 
+
         drawCenterLine();
 
+
         drawEnemies();
+
+
+        drawEnemyProjectiles();
 
 
         window.LevelCombat.draw(
@@ -2102,7 +3119,9 @@
 
         drawBorders();
 
+
         drawHud();
+
 
         drawGameOver();
     }
@@ -2120,6 +3139,7 @@
 
             animationFrame =
                 null;
+
 
             return;
         }
@@ -2181,8 +3201,23 @@
             context = {}
         ) {
 
-            activeConfig =
-                config;
+            const defaultBackground =
+                getDefaultLevelBackground(
+                    config.number
+                );
+
+
+            activeConfig = {
+
+                ...config,
+
+                background: {
+
+                    ...defaultBackground,
+
+                    ...(config.background || {})
+                }
+            };
 
 
             activeContext =
@@ -2190,7 +3225,7 @@
 
 
             window.currentLevel =
-                config;
+                activeConfig;
 
 
             window.levelActive =
@@ -2228,7 +3263,7 @@
 
 
             await loadBackground(
-                config
+                activeConfig
             );
 
 
@@ -2307,6 +3342,14 @@
 
 
         state.enemies.length =
+            0;
+
+
+        state.enemyProjectiles.length =
+            0;
+
+
+        state.worms.length =
             0;
 
 

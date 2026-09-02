@@ -1,8 +1,8 @@
 export default {
 
-    id: "big-grass-goon",
+    id: "big-sand-goon",
 
-    name: "Big Grass Goon",
+    name: "Big Sand Goon",
 
     hp: 8,
 
@@ -10,12 +10,6 @@ export default {
 
     speed: "slow",
 
-    /*
-        Lager = minder sterke tracking.
-
-        2 betekent dat hij duidelijk
-        wat trager draait.
-    */
     tracking: 0.8,
 
     behavior: "chase",

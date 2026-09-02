@@ -1,6 +1,6 @@
-import grassGoon from "../enemies/enemy-01.js";
-import bigGrassGoon from "../enemies/enemy-02.js";
-import grassBomb from "../enemies/enemy-03.js";
+import sandGoon from "../enemies/enemy-01.js";
+import bigsandGoon from "../enemies/enemy-02.js";
+import sandBomb from "../enemies/enemy-03.js";
 
 export const config = {
 
@@ -43,11 +43,11 @@ export const config = {
 
     enemyTypes: {
 
-        grassGoon,
+        sandGoon,
 
-        bigGrassGoon,
+        bigsandGoon,
 
-        grassBomb
+        sandBomb
     },
 
 
@@ -57,23 +57,10 @@ export const config = {
 
     spawnGroups: [
 
-        /*
-            40 Grass Goons
-
-            Start:
-            5 seconden
-
-            Verspreid over:
-            60 seconden
-
-            Dus ongeveer tussen:
-            5s - 65s
-        */
-
         {
 
             enemy:
-                "grassGoon",
+                "sandGoon",
 
             count:
                 50,
@@ -86,16 +73,10 @@ export const config = {
         },
 
 
-        /*
-            4 Grass Bombs
-
-            25s - 35s
-        */
-
         {
 
             enemy:
-                "grassBomb",
+                "sandBomb",
 
             count:
                 8,
@@ -107,17 +88,10 @@ export const config = {
                 15
         },
 
-
-        /*
-            6 Big Grass Goons
-
-            40s - 50s
-        */
-
         {
 
             enemy:
-                "bigGrassGoon",
+                "bigsandGoon",
 
             count:
                 6,
@@ -130,18 +104,10 @@ export const config = {
         },
 
 
-        /*
-            Tweede grote groep:
-
-            50 Grass Goons
-
-            80s - 130s
-        */
-
         {
 
             enemy:
-                "grassGoon",
+                "sandGoon",
 
             count:
                 40,
@@ -153,19 +119,10 @@ export const config = {
                 30
         },
 
-
-        /*
-            Tegelijk met bovenstaande:
-
-            8 Grass Bombs
-
-            80s - 130s
-        */
-
         {
 
             enemy:
-                "grassBomb",
+                "sandBomb",
 
             count:
                 6,
