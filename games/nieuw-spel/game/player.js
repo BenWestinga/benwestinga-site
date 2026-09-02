@@ -43,20 +43,23 @@
             return;
         }
 
+    // 14px = de donkere arena-rand.
+    // Hierdoor kan de bal nooit half buiten de arena komen.
+        const margin =
+            player.radius + 14;
 
         player.x = Math.max(
-            player.radius,
+            margin,
             Math.min(
-                canvas.width - player.radius,
+                canvas.width - margin,
                 player.x
             )
         );
 
-
         player.y = Math.max(
-            player.radius,
+            margin,
             Math.min(
-                canvas.height - player.radius,
+                canvas.height - margin,
                 player.y
             )
         );

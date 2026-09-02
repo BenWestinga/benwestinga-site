@@ -20,5 +20,5 @@ export default {
 
     behavior: "chase",
 
-    color: "#4f7e2f"
+    color: "#f1d84b"
 };

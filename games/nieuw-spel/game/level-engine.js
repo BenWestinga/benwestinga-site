@@ -460,36 +460,6 @@
 
         // DEAD
 
-        if (
-            state.status === "dead"
-        ) {
-
-            ctx.textAlign =
-                "center";
-
-            ctx.font =
-                "bold 58px Arial";
-
-            ctx.lineWidth = 8;
-
-
-            ctx.strokeText(
-                "HIT! RESTARTING...",
-                canvas.width / 2,
-                canvas.height / 2
-            );
-
-
-            ctx.fillStyle =
-                "white";
-
-
-            ctx.fillText(
-                "HIT! RESTARTING...",
-                canvas.width / 2,
-                canvas.height / 2
-            );
-        }
 
 
         // WIN
@@ -1686,20 +1656,6 @@
         if (
             state.status === "dead"
         ) {
-
-            state.statusTimer +=
-                dt;
-
-
-            if (
-                state.statusTimer >=
-                0.9
-            ) {
-
-                resetRuntime();
-            }
-
-
             return;
         }
 
@@ -1782,6 +1738,177 @@
         checkWin();
     }
 
+    // ==========================================
+    // GAME OVER SCREEN
+    // ==========================================
+
+    function getGameOverButton() {
+
+        return {
+            width: 240,
+            height: 65,
+
+            x:
+                canvas.width / 2 -
+                120,
+
+            y:
+                canvas.height / 2 +
+                55
+        };
+    }
+
+
+    function drawGameOver() {
+
+        if (
+            state.status !== "dead"
+        ) {
+            return;
+        }
+
+
+        ctx.save();
+
+
+        // Donkere overlay
+
+        ctx.fillStyle =
+            "rgba(0, 0, 0, 0.72)";
+
+        ctx.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        // GAME OVER
+
+        ctx.textAlign =
+            "center";
+
+        ctx.textBaseline =
+            "middle";
+
+        ctx.font =
+            "bold 72px Arial";
+
+        ctx.lineWidth =
+            9;
+
+        ctx.strokeStyle =
+            "black";
+
+        ctx.strokeText(
+            "GAME OVER",
+            canvas.width / 2,
+            canvas.height / 2 - 45
+        );
+
+
+        ctx.fillStyle =
+            "white";
+
+        ctx.fillText(
+            "GAME OVER",
+            canvas.width / 2,
+            canvas.height / 2 - 45
+        );
+
+
+        // CONTINUE BUTTON
+
+        const button =
+            getGameOverButton();
+
+
+        ctx.fillStyle =
+            "rgba(255,255,255,0.95)";
+
+        ctx.fillRect(
+            button.x,
+            button.y,
+            button.width,
+            button.height
+        );
+
+
+        ctx.strokeStyle =
+            "black";
+
+        ctx.lineWidth =
+            4;
+
+        ctx.strokeRect(
+            button.x,
+            button.y,
+            button.width,
+            button.height
+        );
+
+
+        ctx.fillStyle =
+            "black";
+
+        ctx.font =
+            "bold 26px Arial";
+
+
+        ctx.fillText(
+            "CONTINUE",
+            canvas.width / 2,
+            button.y +
+                button.height / 2
+        );
+
+
+        ctx.restore();
+    }
+
+    function handleGameOverClick(event) {
+
+        if (
+            state.status !== "dead"
+        ) {
+            return;
+        }
+
+        const rect =
+            canvas.getBoundingClientRect();
+
+        const x =
+            (event.clientX - rect.left) *
+            (canvas.width / rect.width);
+
+        const y =
+            (event.clientY - rect.top) *
+            (canvas.height / rect.height);
+
+        const button =
+            getGameOverButton();
+
+        const insideButton =
+            x >= button.x &&
+            x <= button.x + button.width &&
+            y >= button.y &&
+            y <= button.y + button.height;
+
+        if (!insideButton) {
+            return;
+        }
+
+        event.preventDefault();
+
+        returnToStoryMap();
+    }
+
+
+    canvas.addEventListener(
+        "pointerdown",
+        handleGameOverClick
+    );
 
     // ==========================================
     // DRAW LEVEL
@@ -1812,14 +1939,15 @@
         drawExplosions();
 
 
-        window.LevelPlayer.draw(
-            ctx
-        );
+        window.LevelPlayer
+            .draw(ctx);
 
 
         drawBorders();
 
         drawHud();
+
+        drawGameOver();
     }
 
 

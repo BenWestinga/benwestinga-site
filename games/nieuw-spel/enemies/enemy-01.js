@@ -8,5 +8,5 @@ export default {
 
     behavior: "straight-through",
 
-    color: "#7cab46"
+    color: "#f1d84b"
 };
