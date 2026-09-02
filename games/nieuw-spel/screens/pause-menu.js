@@ -98,6 +98,24 @@ continueButton.addEventListener(
     }
 );
 
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key !== "Enter" ||
+            event.repeat ||
+            pauseMenu.hidden
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+
+        continueButton.click();
+    }
+);
+
 
 leaveLevelButton.addEventListener(
     "click",
