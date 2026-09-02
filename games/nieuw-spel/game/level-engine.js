@@ -2630,16 +2630,20 @@
 
             state.enemies.length === 0 &&
 
-            state.enemyProjectiles.length === 0 &&
-
             state.explosions.length === 0
 
         ) {
 
+            // Oude enemy-projectiles mogen
+            // het winnen niet tegenhouden.
+
+            state.enemyProjectiles.length =
+                0;
+
+
             winLevel();
         }
     }
-
 
     // ==========================================
     // WIN LEVEL

@@ -61,7 +61,7 @@ export const config = {
                 "sandGoon",
 
             count:
-                55,
+                65,
 
             start:
                 5,
@@ -77,13 +77,13 @@ export const config = {
                 "sandBomb",
 
             count:
-                6,
+                30,
 
             start:
-                20,
+                5,
 
             duration:
-                20
+                30
         },
 
 
@@ -93,13 +93,13 @@ export const config = {
                 "sandShooter",
 
             count:
-                4,
+                10,
 
             start:
-                35,
+                5,
 
             duration:
-                30
+                100
         },
 
 
@@ -111,13 +111,13 @@ export const config = {
                 "sandGoon",
 
             count:
-                45,
+                65,
 
             start:
                 60,
 
             duration:
-                30
+                35
         },
 
 
@@ -127,10 +127,10 @@ export const config = {
                 "sandBomb",
 
             count:
-                8,
+                10,
 
             start:
-                65,
+                70,
 
             duration:
                 30
@@ -143,13 +143,13 @@ export const config = {
                 "sandShooter",
 
             count:
-                5,
+                8,
 
             start:
                 75,
 
             duration:
-                30
+                35
         }
     ]
 };

@@ -95,7 +95,7 @@ export const config = {
                 "bigsandGoon",
 
             count:
-                5,
+                8,
 
             start:
                 40,
