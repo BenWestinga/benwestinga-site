@@ -1,6 +1,12 @@
-import grassGoon from "../enemies/enemy-01.js?v=2";
-import bigGrassGoon from "../enemies/enemy-02.js?v=2";
-import grassBomb from "../enemies/enemy-03.js?v=2";
+import grassGoon
+    from "../enemies/enemy-01.js?v=2";
+
+import bigGrassGoon
+    from "../enemies/enemy-02.js?v=2";
+
+import grassBomb
+    from "../enemies/enemy-03.js?v=2";
+
 
 export const config = {
 
@@ -9,11 +15,20 @@ export const config = {
     name: "Level 1",
 
 
-    // Eerste 5 seconden:
-    // geen enemies en geen shooting.
+    /*
+        Eerste 5 seconden:
+
+        geen enemies
+        geen shooting
+    */
+
     startDelayMs:
         5000,
 
+
+    // ==========================================
+    // BACKGROUND
+    // ==========================================
 
     background: {
 
@@ -28,6 +43,10 @@ export const config = {
     },
 
 
+    // ==========================================
+    // ENEMY TYPES
+    // ==========================================
+
     enemyTypes: {
 
         grassGoon,
@@ -38,19 +57,32 @@ export const config = {
     },
 
 
+    // ==========================================
+    // LEVEL 1 SPAWNS
+    // ==========================================
+
     spawnGroups: [
 
         /*
             40 Grass Goons
-            tussen 5s en 65s.
+
+            Start:
+            5 seconden
+
+            Verspreid over:
+            60 seconden
+
+            Dus ongeveer tussen:
+            5s - 65s
         */
 
         {
+
             enemy:
                 "grassGoon",
 
             count:
-                50,
+                40,
 
             start:
                 5,
@@ -62,15 +94,17 @@ export const config = {
 
         /*
             4 Grass Bombs
-            tussen 25s en 35s.
+
+            25s - 35s
         */
 
         {
+
             enemy:
                 "grassBomb",
 
             count:
-                8,
+                4,
 
             start:
                 25,
@@ -82,10 +116,12 @@ export const config = {
 
         /*
             6 Big Grass Goons
-            tussen 40s en 50s.
+
+            40s - 50s
         */
 
         {
+
             enemy:
                 "bigGrassGoon",
 
@@ -101,13 +137,15 @@ export const config = {
 
 
         /*
-            Laatste grote wave.
+            Tweede grote groep:
 
             50 Grass Goons
-            tussen 80s en 130s.
+
+            80s - 130s
         */
 
         {
+
             enemy:
                 "grassGoon",
 
@@ -123,16 +161,20 @@ export const config = {
 
 
         /*
-            Tegelijkertijd
-            8 Grass Bombs.
+            Tegelijk met bovenstaande:
+
+            8 Grass Bombs
+
+            80s - 130s
         */
 
         {
+
             enemy:
                 "grassBomb",
 
             count:
-                12,
+                8,
 
             start:
                 80,
@@ -143,6 +185,10 @@ export const config = {
     ]
 };
 
+
+// ==========================================
+// START LEVEL
+// ==========================================
 
 export async function start(
     context = {}
@@ -155,11 +201,6 @@ export async function start(
         );
 }
 
-
-/*
-    Voor compatibility
-    met verschillende loaders.
-*/
 
 export async function startLevel(
     context = {}

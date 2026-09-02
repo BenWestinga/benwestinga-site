@@ -1,55 +1,41 @@
 (() => {
 
     const levelScreen =
-        document.getElementById(
-            "level-screen"
-        );
+        document.getElementById("level-screen");
 
     const canvas =
-        document.getElementById(
-            "level-canvas"
-        );
+        document.getElementById("level-canvas");
 
     const ctx =
         canvas.getContext("2d");
 
 
-    /*
-        Deze waardes definiëren voorlopig
-        wat slow / medium / fast betekent.
-    */
+    // ==========================================
+    // ENEMY SPEEDS
+    // ==========================================
 
     const ENEMY_SPEEDS = {
-
         slow: 100,
-
         medium: 180,
-
         fast: 250
     };
 
 
-    /*
-        size 2 = radius 18
-        size 5 = radius 30
-    */
+    // ==========================================
+    // ENEMY SIZES
+    // ==========================================
 
     const ENEMY_SIZE_BASE = 10;
-
     const ENEMY_SIZE_STEP = 4;
 
 
     let animationFrame = null;
 
     let activeContext = null;
-
     let activeConfig = null;
 
-
     let backgroundImage = null;
-
     let backgroundLoaded = false;
-
 
     let lastFrameTime = 0;
 
@@ -77,7 +63,6 @@
 
 
     window.levelActive = false;
-
     window.currentLevel = null;
 
 
@@ -99,8 +84,7 @@
             window.LevelPlayer
         ) {
 
-            window.LevelPlayer
-                .clamp();
+            window.LevelPlayer.clamp();
         }
     }
 
@@ -150,14 +134,10 @@
     // BACKGROUND
     // ==========================================
 
-    async function loadBackground(
-        config
-    ) {
+    async function loadBackground(config) {
 
         backgroundImage = null;
-
-        backgroundLoaded =
-            false;
+        backgroundLoaded = false;
 
 
         if (
@@ -179,7 +159,7 @@
 
 
         await new Promise(
-            (resolve) => {
+            resolve => {
 
                 image.onload =
                     () => {
@@ -206,8 +186,7 @@
                     };
 
 
-                image.src =
-                    url;
+                image.src = url;
             }
         );
     }
@@ -216,13 +195,12 @@
     function drawBackground() {
 
         const background =
-            activeConfig?.background ||
-            {};
+            activeConfig?.background || {};
 
 
         ctx.fillStyle =
             background.color ||
-            "#6f9f4d";
+            "#d8c18b";
 
 
         ctx.fillRect(
@@ -242,8 +220,7 @@
 
 
             ctx.globalAlpha =
-                background.alpha ??
-                0.55;
+                background.alpha ?? 0.58;
 
 
             ctx.drawImage(
@@ -296,10 +273,8 @@
         ctx.strokeRect(
             border,
             border,
-            canvas.width -
-                border * 2,
-            canvas.height -
-                border * 2
+            canvas.width - border * 2,
+            canvas.height - border * 2
         );
 
 
@@ -330,7 +305,6 @@
         ctx.strokeStyle =
             "rgba(255,255,255,0.45)";
 
-
         ctx.lineWidth = 4;
 
 
@@ -341,7 +315,6 @@
 
 
         ctx.stroke();
-
 
         ctx.restore();
     }
@@ -361,11 +334,8 @@
         ctx.save();
 
 
-        ctx.textAlign =
-            "center";
-
-        ctx.textBaseline =
-            "middle";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
 
         ctx.font =
             "bold 28px Arial";
@@ -443,10 +413,8 @@
 
 
         if (
-            state.status ===
-                "playing" &&
-            state.elapsedMs <
-                delayMs
+            state.status === "playing" &&
+            state.elapsedMs < delayMs
         ) {
 
             const remaining =
@@ -490,9 +458,10 @@
         }
 
 
+        // DEAD
+
         if (
-            state.status ===
-            "dead"
+            state.status === "dead"
         ) {
 
             ctx.textAlign =
@@ -523,9 +492,10 @@
         }
 
 
+        // WIN
+
         if (
-            state.status ===
-            "won"
+            state.status === "won"
         ) {
 
             ctx.textAlign =
@@ -564,9 +534,7 @@
     // ENEMY HELPERS
     // ==========================================
 
-    function getEnemyRadius(
-        size
-    ) {
+    function getEnemyRadius(size) {
 
         return (
             ENEMY_SIZE_BASE +
@@ -576,13 +544,10 @@
     }
 
 
-    function getEnemySpeed(
-        speed
-    ) {
+    function getEnemySpeed(speed) {
 
         if (
-            typeof speed ===
-            "number"
+            typeof speed === "number"
         ) {
             return speed;
         }
@@ -613,31 +578,19 @@
 
 
         const startMs =
-            startSeconds *
-            1000;
+            startSeconds * 1000;
 
 
         const durationMs =
-            durationSeconds *
-            1000;
+            durationSeconds * 1000;
 
 
         const slotSize =
-            durationMs /
-            count;
+            durationMs / count;
 
 
         const times = [];
 
-
-        /*
-            Niet lineair.
-
-            Iedere enemy krijgt een
-            willekeurig moment binnen
-            zijn eigen deel van het
-            tijdsvenster.
-        */
 
         for (
             let i = 0;
@@ -649,8 +602,7 @@
 
                 startMs +
 
-                i *
-                slotSize +
+                i * slotSize +
 
                 Math.random() *
                 slotSize
@@ -669,8 +621,7 @@
 
         for (
             const group
-            of activeConfig.spawnGroups ||
-            []
+            of activeConfig.spawnGroups || []
         ) {
 
             const times =
@@ -712,17 +663,10 @@
 
 
     // ==========================================
-    // SPAWN POSITION
+    // RANDOM SPAWN POSITION
     // ==========================================
 
-    function randomSpawnPosition(
-        radius
-    ) {
-
-        /*
-            Enemy begint ver genoeg
-            buiten beeld.
-        */
+    function randomSpawnPosition(radius) {
 
         const margin =
             Math.max(
@@ -804,9 +748,7 @@
     // SPAWN ENEMY
     // ==========================================
 
-    function spawnEnemy(
-        typeId
-    ) {
+    function spawnEnemy(typeId) {
 
         const definition =
             activeConfig
@@ -828,8 +770,7 @@
 
         const radius =
             getEnemyRadius(
-                definition.size ||
-                1
+                definition.size || 1
             );
 
 
@@ -874,6 +815,21 @@
                 ),
 
 
+            /*
+                Hoe sterk hij jouw
+                beweging volgt.
+
+                Lager = loggere beweging.
+            */
+
+            tracking:
+                definition.tracking ?? 3,
+
+
+            vx: 0,
+            vy: 0,
+
+
             hp:
                 definition.hp,
 
@@ -886,33 +842,32 @@
 
 
             explosionRadius:
-                definition
-                    .explosionRadius ||
+                definition.explosionRadius ||
                 0,
 
 
             explosionDuration:
-                definition
-                    .explosionDuration ||
+                definition.explosionDuration ||
                 0
         };
 
 
-        /*
-            Grass Goon:
-
-            Richt zich ALLEEN bij spawn
-            op de positie waar de speler
-            op dat moment staat.
-
-            Daarna blijft hij eeuwig
-            in precies die richting gaan.
-        */
+        // ======================================
+        // GRASS GOON
+        // ======================================
 
         if (
             definition.behavior ===
             "straight-through"
         ) {
+
+            /*
+                Hij kijkt één keer naar
+                de huidige spelerpositie.
+
+                Daarna verandert zijn
+                richting nooit meer.
+            */
 
             const dx =
                 window.levelPlayer.x -
@@ -986,12 +941,10 @@
 
 
     // ==========================================
-    // MAP CHECKS
+    // ARENA CHECKS
     // ==========================================
 
-    function isInsideArena(
-        enemy
-    ) {
+    function isInsideArena(enemy) {
 
         return (
 
@@ -1009,32 +962,21 @@
     }
 
 
-    function isFullyOutsideArena(
-        enemy
-    ) {
-
-        /*
-            Extra 120px zodat hij
-            zichtbaar echt helemaal
-            uit beeld verdwenen is.
-        */
+    function isFullyOutsideArena(enemy) {
 
         const margin =
-            enemy.radius +
-            120;
+            enemy.radius + 120;
 
 
         return (
 
-            enemy.x <
-                -margin ||
+            enemy.x < -margin ||
 
             enemy.x >
                 canvas.width +
                 margin ||
 
-            enemy.y <
-                -margin ||
+            enemy.y < -margin ||
 
             enemy.y >
                 canvas.height +
@@ -1045,19 +987,16 @@
 
 
     // ==========================================
-    // ENEMY DEATH
+    // REMOVE ENEMY
     // ==========================================
 
-    function removeEnemyById(
-        id
-    ) {
+    function removeEnemyById(id) {
 
         const index =
             state.enemies
                 .findIndex(
                     enemy =>
-                        enemy.id ===
-                        id
+                        enemy.id === id
                 );
 
 
@@ -1087,9 +1026,7 @@
         state.explosions.push({
 
             x,
-
             y,
-
             radius,
 
             remaining:
@@ -1098,8 +1035,7 @@
 
 
         if (
-            state.status ===
-                "playing" &&
+            state.status === "playing" &&
 
             window.LevelPlayer
                 .touchesCircle(
@@ -1114,26 +1050,22 @@
     }
 
 
-    function killEnemy(
-        enemy
-    ) {
+    // ==========================================
+    // ENEMY DAMAGE
+    // ==========================================
+
+    function killEnemy(enemy) {
 
         removeEnemyById(
             enemy.id
         );
 
 
-        /*
-            Grass Bomb ontploft
-            wanneer hij doodgaat.
-        */
-
         if (
             enemy.behavior ===
                 "bomb-chase" &&
 
-            enemy.explosionRadius >
-                0
+            enemy.explosionRadius > 0
         ) {
 
             createExplosion(
@@ -1144,8 +1076,7 @@
 
                 enemy.explosionRadius,
 
-                enemy
-                    .explosionDuration ||
+                enemy.explosionDuration ||
                 0.1
             );
         }
@@ -1158,15 +1089,13 @@
     ) {
 
         if (
-            state.status !==
-            "playing"
+            state.status !== "playing"
         ) {
             return;
         }
 
 
-        enemy.hp -=
-            damage;
+        enemy.hp -= damage;
 
 
         if (
@@ -1187,8 +1116,7 @@
     function killPlayer() {
 
         if (
-            state.status !==
-            "playing"
+            state.status !== "playing"
         ) {
             return;
         }
@@ -1205,8 +1133,7 @@
             false;
 
 
-        window.LevelCombat
-            .clear();
+        window.LevelCombat.clear();
     }
 
 
@@ -1214,14 +1141,11 @@
     // ENEMY MOVEMENT
     // ==========================================
 
-    function updateEnemies(
-        dt
-    ) {
+    function updateEnemies(dt) {
 
         for (
             let i =
-                state.enemies.length -
-                1;
+                state.enemies.length - 1;
             i >= 0;
             i--
         ) {
@@ -1230,10 +1154,9 @@
                 state.enemies[i];
 
 
-            /*
-                Grass Goon:
-                rechte lijn.
-            */
+            // ==================================
+            // GRASS GOON
+            // ==================================
 
             if (
                 enemy.behavior ===
@@ -1248,12 +1171,9 @@
 
             } else {
 
-                /*
-                    Big Grass Goon +
-                    Grass Bomb:
-
-                    constant speler volgen.
-                */
+                // ==================================
+                // CHASING ENEMIES
+                // ==================================
 
                 const dx =
                     window.levelPlayer.x -
@@ -1272,24 +1192,74 @@
                     ) || 1;
 
 
-                enemy.x +=
+                /*
+                    Waar hij eigenlijk
+                    naartoe wil bewegen.
+                */
+
+                const desiredVx =
                     (
                         dx /
                         distance
                     ) *
-                    enemy.speed *
-                    dt;
+                    enemy.speed;
 
 
-                enemy.y +=
+                const desiredVy =
                     (
                         dy /
                         distance
                     ) *
-                    enemy.speed *
-                    dt;
+                    enemy.speed;
+
+
+                /*
+                    Dit voorkomt dat enemies
+                    100% direct jouw muis volgen.
+
+                    tracking 1 = heel log
+                    tracking 2 = behoorlijk log
+                    tracking 3 = normaal
+                    tracking 5 = sterk
+                    tracking 10 = bijna direct
+                */
+
+                const steering =
+                    1 -
+                    Math.exp(
+                        -enemy.tracking *
+                        dt
+                    );
+
+
+                enemy.vx +=
+                    (
+                        desiredVx -
+                        enemy.vx
+                    ) *
+                    steering;
+
+
+                enemy.vy +=
+                    (
+                        desiredVy -
+                        enemy.vy
+                    ) *
+                    steering;
+
+
+                enemy.x +=
+                    enemy.vx * dt;
+
+
+                enemy.y +=
+                    enemy.vy * dt;
             }
 
+
+            // ==================================
+            // ENTERED ARENA
+            // ==================================
 
             if (
                 isInsideArena(
@@ -1302,12 +1272,9 @@
             }
 
 
-            /*
-                Alleen Grass Goon
-                verdwijnt nadat hij
-                HELEMAAL door de arena
-                heen is gegaan.
-            */
+            // ==================================
+            // GRASS GOON LEAVES MAP
+            // ==================================
 
             if (
                 enemy.behavior ===
@@ -1329,10 +1296,9 @@
             }
 
 
-            /*
-                ELKE enemy aanraken =
-                instant death.
-            */
+            // ==================================
+            // PLAYER COLLISION
+            // ==================================
 
             if (
                 window.LevelPlayer
@@ -1342,11 +1308,6 @@
                         enemy.radius
                     )
             ) {
-
-                /*
-                    Grass Bomb geeft
-                    ook zijn explosie.
-                */
 
                 if (
                     enemy.behavior ===
@@ -1362,11 +1323,9 @@
 
                         enemy.y,
 
-                        enemy
-                            .explosionRadius,
+                        enemy.explosionRadius,
 
-                        enemy
-                            .explosionDuration ||
+                        enemy.explosionDuration ||
                         0.1
                     );
                 }
@@ -1380,14 +1339,15 @@
     }
 
 
-    function updateExplosions(
-        dt
-    ) {
+    // ==========================================
+    // UPDATE EXPLOSIONS
+    // ==========================================
+
+    function updateExplosions(dt) {
 
         for (
             let i =
-                state.explosions.length -
-                1;
+                state.explosions.length - 1;
             i >= 0;
             i--
         ) {
@@ -1400,17 +1360,8 @@
                 dt;
 
 
-            /*
-                Ook als je pas NA
-                de explosie begint
-                erin te bewegen
-                tijdens die 0.1 sec,
-                ga je dood.
-            */
-
             if (
-                state.status ===
-                    "playing" &&
+                state.status === "playing" &&
 
                 window.LevelPlayer
                     .touchesCircle(
@@ -1425,8 +1376,7 @@
 
 
             if (
-                explosion.remaining <=
-                0
+                explosion.remaining <= 0
             ) {
 
                 state.explosions.splice(
@@ -1454,6 +1404,7 @@
 
             ctx.beginPath();
 
+
             ctx.arc(
                 enemy.x,
                 enemy.y,
@@ -1466,10 +1417,12 @@
             ctx.fillStyle =
                 enemy.color;
 
+
             ctx.fill();
 
 
-            ctx.lineWidth = 2;
+            ctx.lineWidth =
+                2;
 
             ctx.strokeStyle =
                 "rgba(0,0,0,0.7)";
@@ -1477,14 +1430,11 @@
             ctx.stroke();
 
 
-            /*
-                Tijdelijke HP bar.
-                Later kunnen PNG's
-                dit vervangen.
-            */
+            // HP BAR
 
             const barWidth =
                 enemy.radius * 2;
+
 
             const barHeight =
                 5;
@@ -1534,6 +1484,10 @@
     }
 
 
+    // ==========================================
+    // DRAW EXPLOSIONS
+    // ==========================================
+
     function drawExplosions() {
 
         for (
@@ -1545,6 +1499,7 @@
 
 
             ctx.beginPath();
+
 
             ctx.arc(
                 explosion.x,
@@ -1558,13 +1513,17 @@
             ctx.fillStyle =
                 "rgba(255,120,20,0.45)";
 
+
             ctx.fill();
 
 
-            ctx.lineWidth = 4;
+            ctx.lineWidth =
+                4;
+
 
             ctx.strokeStyle =
                 "rgba(255,230,100,0.9)";
+
 
             ctx.stroke();
 
@@ -1575,14 +1534,13 @@
 
 
     // ==========================================
-    // WIN
+    // WIN CHECK
     // ==========================================
 
     function checkWin() {
 
         if (
-            state.status !==
-            "playing"
+            state.status !== "playing"
         ) {
             return;
         }
@@ -1597,11 +1555,9 @@
 
             allSpawnsFinished &&
 
-            state.enemies.length ===
-                0 &&
+            state.enemies.length === 0 &&
 
-            state.explosions.length ===
-                0
+            state.explosions.length === 0
 
         ) {
 
@@ -1610,11 +1566,14 @@
     }
 
 
+    // ==========================================
+    // WIN LEVEL
+    // ==========================================
+
     function winLevel() {
 
         if (
-            state.status !==
-            "playing"
+            state.status !== "playing"
         ) {
             return;
         }
@@ -1623,12 +1582,12 @@
         state.status =
             "won";
 
+
         state.statusTimer =
             0;
 
 
-        window.LevelCombat
-            .clear();
+        window.LevelCombat.clear();
 
 
         if (
@@ -1688,8 +1647,8 @@
 
 
         /*
-            Nieuwe random spawnmomenten
-            bij iedere restart.
+            Spawnmomenten worden iedere
+            poging opnieuw random gemaakt.
         */
 
         state.spawnEvents =
@@ -1704,38 +1663,28 @@
             1;
 
 
-        window.LevelPlayer
-            .reset();
+        window.LevelPlayer.reset();
 
 
-        window.LevelCombat
-            .reset();
+        window.LevelCombat.reset();
     }
 
 
     // ==========================================
-    // UPDATE
+    // UPDATE LEVEL
     // ==========================================
 
-    function updateLevel(
-        dt
-    ) {
+    function updateLevel(dt) {
 
         updateExplosions(
             dt
         );
 
 
-        /*
-            DEAD
-
-            Na 0.9 sec wordt het
-            HELE level opnieuw gestart.
-        */
+        // DEAD
 
         if (
-            state.status ===
-            "dead"
+            state.status === "dead"
         ) {
 
             state.statusTimer +=
@@ -1755,13 +1704,10 @@
         }
 
 
-        /*
-            WON
-        */
+        // WON
 
         if (
-            state.status ===
-            "won"
+            state.status === "won"
         ) {
 
             state.statusTimer +=
@@ -1785,14 +1731,12 @@
             dt * 1000;
 
 
-        /*
-            Eerste 5 seconden:
-            helemaal niets.
-        */
+        // ======================================
+        // FIRST 5 SECONDS
+        // ======================================
 
         const delayMs =
-            activeConfig
-                .startDelayMs ||
+            activeConfig.startDelayMs ||
             0;
 
 
@@ -1804,8 +1748,12 @@
         }
 
 
+        // SPAWNS
+
         processSpawns();
 
+
+        // ENEMIES
 
         updateEnemies(
             dt
@@ -1813,22 +1761,22 @@
 
 
         if (
-            state.status !==
-            "playing"
+            state.status !== "playing"
         ) {
             return;
         }
 
 
-        window.LevelCombat
-            .update(
+        // COMBAT
 
-                dt,
+        window.LevelCombat.update(
 
-                state.enemies,
+            dt,
 
-                damageEnemy
-            );
+            state.enemies,
+
+            damageEnemy
+        );
 
 
         checkWin();
@@ -1836,7 +1784,7 @@
 
 
     // ==========================================
-    // DRAW
+    // DRAW LEVEL
     // ==========================================
 
     function drawLevel() {
@@ -1856,15 +1804,17 @@
         drawEnemies();
 
 
-        window.LevelCombat
-            .draw(ctx);
+        window.LevelCombat.draw(
+            ctx
+        );
 
 
         drawExplosions();
 
 
-        window.LevelPlayer
-            .draw(ctx);
+        window.LevelPlayer.draw(
+            ctx
+        );
 
 
         drawBorders();
@@ -1874,12 +1824,10 @@
 
 
     // ==========================================
-    // LOOP
+    // GAME LOOP
     // ==========================================
 
-    function levelLoop(
-        time
-    ) {
+    function levelLoop(time) {
 
         if (
             !window.levelActive
@@ -1892,17 +1840,14 @@
         }
 
 
-        if (!lastFrameTime) {
+        if (
+            !lastFrameTime
+        ) {
 
             lastFrameTime =
                 time;
         }
 
-
-        /*
-            Max 0.05 voorkomt rare
-            grote sprongen bij tab switch.
-        */
 
         const dt =
             Math.min(
@@ -1942,7 +1887,7 @@
 
 
     // ==========================================
-    // START
+    // START LEVEL
     // ==========================================
 
     window.startStoryLevel =
@@ -2092,8 +2037,7 @@
             0;
 
 
-        window.LevelCombat
-            .clear();
+        window.LevelCombat.clear();
 
 
         levelScreen.hidden =
@@ -2144,11 +2088,6 @@
     window.leaveCurrentLevel =
         returnToStoryMap;
 
-
-    /*
-        Handig voor toekomstige
-        enemy projectiles.
-    */
 
     window.LevelEngine = {
 
