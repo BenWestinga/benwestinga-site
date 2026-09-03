@@ -1,7 +1,7 @@
 (() => {
 
     const SAVE_KEY =
-        "nieuw-spel-story-progress-v2";
+        "nieuw-spel-story-progress-v3";
 
 
     const WEAPONS = {

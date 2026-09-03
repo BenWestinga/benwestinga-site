@@ -71,8 +71,8 @@ const windOverlayCtx =
     );
 
 
-let WIND_REVEAL_RADIUS =
-    450;
+const WIND_REVEAL_MIN_RADIUS =
+    220;
 
 const WIND_MIN_EDGE_FACTOR =
     0.91;
@@ -705,8 +705,6 @@ function loadLevelObjects() {
 
     }
 
-    recalculateWindRevealRadius();
-
     console.log(
 
         "Spawn:",
@@ -730,97 +728,54 @@ function loadLevelObjects() {
 // WIND REVEAL SYSTEM
 // ======================================================
 
-function recalculateWindRevealRadius() {
+function getWindRevealRadius(
+    fromPoint,
+    toPoint,
+    targetLevelNumber
+) {
 
-    let maximumDistance =
-        0;
-
-
-    let previousPoint =
-        spawnPoint;
-
-
-    // Spawn -> Level 1
-    // Level 1 -> Level 2
-    // ...
-    // Level 48 -> Level 49
-    //
-    // Na Level 49 verdwijnt alle wind.
-
-    for (
-        let levelNumber = 1;
-        levelNumber <= 49;
-        levelNumber++
+    if (
+        !fromPoint ||
+        !toPoint
     ) {
 
-        const point =
-            levelPoints.get(
-                levelNumber
-            );
-
-
-        if (!point) {
-
-            continue;
-
-        }
-
-
-        const distance =
-            Math.hypot(
-
-                point.x -
-                    previousPoint.x,
-
-                point.y -
-                    previousPoint.y
-
-            );
-
-
-        maximumDistance =
-            Math.max(
-
-                maximumDistance,
-                distance
-
-            );
-
-
-        previousPoint =
-            point;
-
+        return WIND_REVEAL_MIN_RADIUS;
     }
 
 
-    // Extra ruimte zorgt ervoor dat ook
-    // de hele level-marker zichtbaar blijft.
-    //
-    // Delen door 0.91 compenseert voor
-    // de naar binnen lopende spikes.
+    const distance =
+        Math.hypot(
 
-    WIND_REVEAL_RADIUS =
-        Math.max(
+            toPoint.x -
+                fromPoint.x,
 
-            360,
-
-            (
-                maximumDistance +
-                BOSS_RADIUS +
-                90
-            ) /
-            WIND_MIN_EDGE_FACTOR
-
+            toPoint.y -
+                fromPoint.y
         );
 
 
-    console.log(
-        "Wind reveal radius:",
-        Math.round(
-            WIND_REVEAL_RADIUS
-        )
-    );
+    const targetRadius =
 
+        bossLevels.has(
+            targetLevelNumber
+        )
+
+            ? BOSS_RADIUS
+
+            : LEVEL_RADIUS;
+
+
+    return Math.max(
+
+        WIND_REVEAL_MIN_RADIUS,
+
+        (
+            distance +
+            targetRadius +
+            70
+        ) /
+        WIND_MIN_EDGE_FACTOR
+    );
 }
 
 
@@ -850,14 +805,38 @@ function isWindFullyCleared() {
 
 function getWindRevealCenters() {
 
-    const centers = [
+    const centers =
+        [];
 
-        {
-            x: spawnPoint.x,
-            y: spawnPoint.y
-        }
 
-    ];
+    // ==================================================
+    // SPAWN -> LEVEL 1
+    // ==================================================
+
+    const level1Point =
+        levelPoints.get(
+            1
+        );
+
+
+    centers.push({
+
+        x:
+            spawnPoint.x,
+
+        y:
+            spawnPoint.y,
+
+        radius:
+            getWindRevealRadius(
+
+                spawnPoint,
+
+                level1Point,
+
+                1
+            )
+    });
 
 
     if (
@@ -865,9 +844,21 @@ function getWindRevealCenters() {
     ) {
 
         return centers;
-
     }
 
+
+    // ==================================================
+    // COMPLETED LEVEL -> NEXT LEVEL
+    // ==================================================
+    //
+    // Level 1 completed:
+    // reveal from Level 1 toward Level 2.
+    //
+    // Level 2 completed:
+    // reveal from Level 2 toward Level 3.
+    //
+    // etc.
+    // ==================================================
 
     for (
         let levelNumber = 1;
@@ -883,7 +874,6 @@ function getWindRevealCenters() {
         ) {
 
             continue;
-
         }
 
 
@@ -893,22 +883,43 @@ function getWindRevealCenters() {
             );
 
 
-        if (point) {
+        const nextPoint =
+            levelPoints.get(
+                levelNumber + 1
+            );
 
-            centers.push({
 
-                x: point.x,
-                y: point.y
+        if (
+            !point ||
+            !nextPoint
+        ) {
 
-            });
-
+            continue;
         }
 
+
+        centers.push({
+
+            x:
+                point.x,
+
+            y:
+                point.y,
+
+            radius:
+                getWindRevealRadius(
+
+                    point,
+
+                    nextPoint,
+
+                    levelNumber + 1
+                )
+        });
     }
 
 
     return centers;
-
 }
 
 
@@ -1010,7 +1021,7 @@ function isPointRevealedByWind(
 
         const edgeRadius =
 
-            WIND_REVEAL_RADIUS *
+            center.radius *
 
             getWindEdgeFactor(
                 center,
@@ -1139,7 +1150,7 @@ function createWindRevealPath(
 
         const radius =
 
-            WIND_REVEAL_RADIUS *
+            center.radius *
 
             getWindEdgeFactor(
                 center,
@@ -2432,7 +2443,7 @@ window.completeStoryLevel =
 
                 "Level " +
                 levelNumber +
-                " Beaten again. No extra book gained",
+                " Beaten again. No extra books gained",
 
                 3000
 
@@ -2450,7 +2461,9 @@ window.completeStoryLevel =
 
             "Level " +
             levelNumber +
-            " You beat it! +1 book";
+            " beaten! +" +
+            result.booksEarned +
+            " books";
 
 
         if (
@@ -2502,6 +2515,26 @@ window.resetStoryProgress =
 // LEVEL BIJ SPELER
 // ======================================================
 
+function isLevelMarkerVisible(
+    levelNumber
+) {
+
+    if (
+        !window.StoryProgress
+    ) {
+
+        return (
+            levelNumber === 1
+        );
+    }
+
+
+    return StoryProgress
+        .isLevelUnlocked(
+            levelNumber
+        );
+}
+
 function getPlayerLevel() {
 
     let closest =
@@ -2519,6 +2552,15 @@ function getPlayerLevel() {
         ]
         of levelPoints
     ) {
+
+        if (
+            !isLevelMarkerVisible(
+                levelNumber
+            )
+        ) {
+
+            continue;
+        }
 
         const dx =
             player.x -
@@ -3873,6 +3915,15 @@ function drawLevelMarkers() {
         ]
         of levelPoints
     ) {
+
+        if (
+            !isLevelMarkerVisible(
+                levelNumber
+            )
+        ) {
+
+            continue;
+        }
 
         const boss =
             bossLevels.has(
