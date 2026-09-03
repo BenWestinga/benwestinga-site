@@ -712,6 +712,13 @@
                 bullets[i];
 
 
+            if (
+                !bullet
+            ) {
+
+                continue;
+            }
+
             const stepX =
                 bullet.vx *
                 dt;
@@ -901,6 +908,12 @@
                         enemyDamage
                     );
 
+                    if (
+                        !window.levelPlayer?.alive
+                    ) {
+
+                        return;
+                    }
 
                     bullet.remainingPierce--;
 
