@@ -21,7 +21,7 @@ const sandGuy = {
 
 
     color:
-        "#e6c94a",
+        "#3e3612",
 
 
     onSpawn(

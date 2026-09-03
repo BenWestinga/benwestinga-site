@@ -69,16 +69,16 @@ export const config = {
 
         {
             enemy: "sandGuy",
-            count: 20,
+            count: 40,
             start: 10,
-            duration: 50
+            duration: 80
         },
 
         {
             enemy: "sandGoon",
-            count: 20,
+            count: 60,
             start: 20,
-            duration: 40
+            duration: 80
         },
 
         {
@@ -94,8 +94,8 @@ export const config = {
 
             formation: {
                 type: "row",
-                count: 5,
-                side: "top",
+                count: 15,
+                side: "left",
                 spacing: 80
             }
         },
@@ -115,24 +115,29 @@ export const config = {
         },
 
         {
-            enemy: "",
-            count: 0,
-            start: 0,
-            duration: 0
+            enemy: "sandGuy",
+            start: 90,
+
+            formation: {
+                type: "row",
+                count: 15,
+                side: "right",
+                spacing: 80
+            }
         },
 
         {
-            enemy: "",
-            count: 0,
-            start: 0,
-            duration: 0
+            enemy: "bigsandGoon",
+            count: 4,
+            start: 100,
+            duration: 120
         },
 
         {
-            enemy: "",
-            count: 0,
-            start: 0,
-            duration: 0
+            enemy: "sandBomb",
+            count: 50,
+            start: 90,
+            duration: 140
         }
     ]
 };
