@@ -38,21 +38,22 @@ export const config = {
 
     spawnGroups: [
 
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
+        { enemy: "sandGoon", count: 50, start: 5, duration: 45},
+        { enemy: "sandBomb", count: 40, start: 5, duration: 75 },
+        { enemy: "bigsandGoon", count: 5, start: 5, duration: 75 },
+        { enemy: "sandguardianWorm", count: 1, start: 60, duration: 1 },
+        { enemy: "sandGuy", count: 60, start: 50, duration: 90 },
+        { enemy: "sandShooter", count: 20, start: 60, duration: 80 },
+        { enemy: "sandWorm", count: 5, start: 100, duration: 180 },
+        { enemy: "sandBomb", count: 80, start: 130, duration: 170 },
+        { enemy: "sandBall", count: 50, start: 5, duration: 300 },
+        { enemy: "sandShooter", count: 140, start: 280, duration: 500 },
 
         {
             enemy: "sandBen",
             count: 1,
-            start: 0,
-            duration: 0
+            start: 300,
+            duration: 1
         }
     ]
 };
