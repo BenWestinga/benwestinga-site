@@ -35,7 +35,7 @@ export const config = {
 
     spawnGroups: [
 
-        { enemy: "sandShooter", count: 120, start: 5, duration: 380 },
+        { enemy: "sandShooter", count: 60, start: 5, duration: 180 },
         { enemy: "sandWorm", count: 10, start: 5, duration: 200 },
         {
                     enemy: "sandGuy",
@@ -84,50 +84,6 @@ export const config = {
         {
                     enemy: "sandGuy",
                     start: 240,
-        
-                    formation: {
-                        type: "column",
-                        count: 15,
-                        side: "right",
-                        spacing: 80
-                    }
-                },
-        {
-                    enemy: "sandGuy",
-                    start: 280,
-        
-                    formation: {
-                        type: "column",
-                        count: 15,
-                        side: "left",
-                        spacing: 80
-                    }
-                },
-        {
-                    enemy: "sandGuy",
-                    start: 300,
-        
-                    formation: {
-                        type: "column",
-                        count: 15,
-                        side: "right",
-                        spacing: 80
-                    }
-                },
-        {
-                    enemy: "sandGuy",
-                    start: 340,
-        
-                    formation: {
-                        type: "column",
-                        count: 15,
-                        side: "left",
-                        spacing: 80
-                    }
-                },
-        {
-                    enemy: "sandGuy",
-                    start: 380,
         
                     formation: {
                         type: "column",
