@@ -35,16 +35,16 @@ export const config = {
 
     spawnGroups: [
 
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 }
+        { enemy: "sandBall", count: 350, start: 5, duration: 210 },
+        { enemy: "bigsandGoon", count: 1, start: 20, duration: 1 },
+        { enemy: "bigsandGoon", count: 1, start: 40, duration: 1 },
+        { enemy: "bigsandGoon", count: 1, start: 60, duration: 1 },
+        { enemy: "bigsandGoon", count: 1, start: 80, duration: 1 },
+        { enemy: "bigsandGoon", count: 1, start: 100, duration: 1 },
+        { enemy: "bigsandGoon", count: 1, start: 120, duration: 1 },
+        { enemy: "bigsandGoon", count: 1, start: 140, duration: 1 },
+        { enemy: "bigsandGoon", count: 1, start: 160, duration: 1 },
+        { enemy: "bigsandGoon", count: 1, start: 180, duration: 1 }
     ]
 };
 
