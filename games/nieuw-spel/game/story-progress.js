@@ -1569,9 +1569,13 @@
                 hasUpgrade(
                     "shockPop"
                 )
-
-                    ? 6
-
+                    ? (
+                        hasUpgrade(
+                            "stormBurst"
+                        )
+                            ? 3
+                            : 6
+                    )
                     : null,
 
 
