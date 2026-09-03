@@ -11,7 +11,8 @@
         medium: 180,
         mediumFast: 215,
         fast: 250,
-        veryFast: 300
+        veryFast: 300,
+        extremelyFast: 400
     };
 
     const ENEMY_SIZE_BASE = 10;
@@ -1637,6 +1638,317 @@
         drawEnemyFace
     };
 
+    function createFormationPositions(
+        formation,
+        enemyType
+    ) {
+
+        const definition =
+            activeConfig
+                ?.enemyTypes
+                ?.[enemyType];
+
+
+        const radius =
+            getEnemyRadius(
+                definition?.spawnSize ??
+                definition?.size ??
+                1
+            );
+
+
+        const margin =
+            Math.max(
+                90,
+                radius * 2 + 30
+            );
+
+
+        const spacing =
+            Number(
+                formation.spacing
+            ) || 70;
+
+
+        const side =
+            formation.side ||
+            "left";
+
+
+        const type =
+            formation.type ||
+            "row";
+
+
+        const positions =
+            [];
+
+
+        function centeredStart(
+            totalSize,
+            arenaSize
+        ) {
+
+            return (
+                arenaSize / 2 -
+                totalSize / 2
+            );
+        }
+
+
+        if (
+            type ===
+            "row"
+        ) {
+
+            const count =
+                Math.max(
+                    1,
+                    Number(
+                        formation.count
+                    ) || 5
+                );
+
+
+            const totalWidth =
+                (
+                    count - 1
+                ) *
+                spacing;
+
+
+            const startX =
+                centeredStart(
+                    totalWidth,
+                    canvas.width
+                );
+
+
+            const y =
+                side === "bottom"
+                    ? canvas.height + margin
+                    : -margin;
+
+
+            for (
+                let i = 0;
+                i < count;
+                i++
+            ) {
+
+                positions.push({
+
+                    x:
+                        startX +
+                        i * spacing,
+
+                    y
+                });
+            }
+
+
+            return positions;
+        }
+
+
+        if (
+            type ===
+            "column"
+        ) {
+
+            const count =
+                Math.max(
+                    1,
+                    Number(
+                        formation.count
+                    ) || 5
+                );
+
+
+            const totalHeight =
+                (
+                    count - 1
+                ) *
+                spacing;
+
+
+            const startY =
+                centeredStart(
+                    totalHeight,
+                    canvas.height
+                );
+
+
+            const x =
+                side === "right"
+                    ? canvas.width + margin
+                    : -margin;
+
+
+            for (
+                let i = 0;
+                i < count;
+                i++
+            ) {
+
+                positions.push({
+
+                    x,
+
+                    y:
+                        startY +
+                        i * spacing
+                });
+            }
+
+
+            return positions;
+        }
+
+
+        if (
+            type ===
+            "grid"
+        ) {
+
+            const rows =
+                Math.max(
+                    1,
+                    Number(
+                        formation.rows
+                    ) || 5
+                );
+
+
+            const columns =
+                Math.max(
+                    1,
+                    Number(
+                        formation.columns
+                    ) || 5
+                );
+
+
+            const totalWidth =
+                (
+                    columns - 1
+                ) *
+                spacing;
+
+
+            const totalHeight =
+                (
+                    rows - 1
+                ) *
+                spacing;
+
+
+            if (
+                side === "left" ||
+                side === "right"
+            ) {
+
+                const startY =
+                    centeredStart(
+                        totalHeight,
+                        canvas.height
+                    );
+
+
+                for (
+                    let column = 0;
+                    column < columns;
+                    column++
+                ) {
+
+                    for (
+                        let row = 0;
+                        row < rows;
+                        row++
+                    ) {
+
+                        positions.push({
+
+                            x:
+                                side === "left"
+
+                                    ? (
+                                        -margin -
+                                        column *
+                                        spacing
+                                    )
+
+                                    : (
+                                        canvas.width +
+                                        margin +
+                                        column *
+                                        spacing
+                                    ),
+
+                            y:
+                                startY +
+                                row *
+                                spacing
+                        });
+                    }
+                }
+
+            } else {
+
+                const startX =
+                    centeredStart(
+                        totalWidth,
+                        canvas.width
+                    );
+
+
+                for (
+                    let row = 0;
+                    row < rows;
+                    row++
+                ) {
+
+                    for (
+                        let column = 0;
+                        column < columns;
+                        column++
+                    ) {
+
+                        positions.push({
+
+                            x:
+                                startX +
+                                column *
+                                spacing,
+
+                            y:
+                                side === "bottom"
+
+                                    ? (
+                                        canvas.height +
+                                        margin +
+                                        row *
+                                        spacing
+                                    )
+
+                                    : (
+                                        -margin -
+                                        row *
+                                        spacing
+                                    )
+                        });
+                    }
+                }
+            }
+
+
+            return positions;
+        }
+
+
+        return positions;
+    }
+
     function createJitteredTimes(
         count,
         startSeconds,
@@ -1681,8 +1993,10 @@
     }
 
     function buildSpawnEvents() {
+
         const events =
             [];
+
 
         for (
             const group
@@ -1690,25 +2004,80 @@
                 .spawnGroups ||
             []
         ) {
+
+            if (
+                group.formation
+            ) {
+
+                const positions =
+                    createFormationPositions(
+
+                        group.formation,
+
+                        group.enemy
+                    );
+
+
+                const startMs =
+                    (
+                        Number(
+                            group.start
+                        ) || 0
+                    ) *
+                    1000;
+
+
+                for (
+                    const position
+                    of positions
+                ) {
+
+                    events.push({
+
+                        timeMs:
+                            startMs,
+
+                        enemyType:
+                            group.enemy,
+
+                        position
+                    });
+                }
+
+
+                continue;
+            }
+
+
             const times =
                 createJitteredTimes(
+
                     group.count,
+
                     group.start,
+
                     group.duration
                 );
+
 
             for (
                 const timeMs
                 of times
             ) {
+
                 events.push({
+
                     timeMs,
 
                     enemyType:
-                        group.enemy
+                        group.enemy,
+
+                    position:
+                        null
                 });
             }
         }
+
 
         events.sort(
             (
@@ -1718,6 +2087,7 @@
                 a.timeMs -
                 b.timeMs
         );
+
 
         return events;
     }
@@ -1733,11 +2103,19 @@
             ].timeMs <=
                 state.elapsedMs
         ) {
-            spawnEnemy(
-                state.spawnEvents[
-                    state.spawnIndex
-                ].enemyType
-            );
+            const spawnEvent =
+            state.spawnEvents[
+                state.spawnIndex
+            ];
+
+
+        spawnEnemy(
+
+            spawnEvent.enemyType,
+
+            spawnEvent.position ||
+                null
+        );
 
             state.spawnIndex++;
         }
