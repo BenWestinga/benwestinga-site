@@ -372,6 +372,30 @@ const sandWorm = {
                 head.vy *
                 dt;
 
+            if (
+                !head.enteredArena &&
+                api.isInsideArena(
+                    head
+                )
+            ) {
+                head.enteredArena =
+                    true;
+            }
+
+            if (
+                head.enteredArena
+            ) {
+                api.keepInsideArena(
+                    head
+                );
+
+                worm.angle =
+                    Math.atan2(
+                        head.vy,
+                        head.vx
+                    );
+            }
+
             for (
                 let i = 1;
                 i <

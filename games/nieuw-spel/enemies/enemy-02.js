@@ -93,6 +93,29 @@ const bigsandGoon = {
             );
 
 
+            if (
+                !enemy.enteredArena &&
+
+                api.isInsideArena(
+                    enemy
+                )
+            ) {
+
+                enemy.enteredArena =
+                    true;
+            }
+
+
+            if (
+                enemy.enteredArena
+            ) {
+
+                api.keepInsideArena(
+                    enemy
+                );
+            }
+
+
             return;
         }
 
@@ -115,6 +138,29 @@ const bigsandGoon = {
             enemy,
             dt
         );
+
+
+        if (
+            !enemy.enteredArena &&
+
+            api.isInsideArena(
+                enemy
+            )
+        ) {
+
+            enemy.enteredArena =
+                true;
+        }
+
+
+        if (
+            enemy.enteredArena
+        ) {
+
+            api.keepInsideArena(
+                enemy
+            );
+        }
     },
 
 

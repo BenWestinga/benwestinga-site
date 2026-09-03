@@ -100,6 +100,29 @@ const sandBomb = {
             );
 
 
+            if (
+                !enemy.enteredArena &&
+
+                api.isInsideArena(
+                    enemy
+                )
+            ) {
+
+                enemy.enteredArena =
+                    true;
+            }
+
+
+            if (
+                enemy.enteredArena
+            ) {
+
+                api.keepInsideArena(
+                    enemy
+                );
+            }
+
+
             return;
         }
 
@@ -117,6 +140,29 @@ const sandBomb = {
             enemy,
             dt
         );
+
+
+        if (
+            !enemy.enteredArena &&
+
+            api.isInsideArena(
+                enemy
+            )
+        ) {
+
+            enemy.enteredArena =
+                true;
+        }
+
+
+        if (
+            enemy.enteredArena
+        ) {
+
+            api.keepInsideArena(
+                enemy
+            );
+        }
     },
 
 

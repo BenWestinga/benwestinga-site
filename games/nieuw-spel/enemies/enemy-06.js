@@ -59,6 +59,9 @@ const sandGuy = {
             0
         ) {
 
+            enemy.spawnSide =
+                "left";
+
             enemy.vx =
                 enemy.speed;
 
@@ -70,6 +73,9 @@ const sandGuy = {
             enemy.x >
             canvas.width
         ) {
+
+            enemy.spawnSide =
+                "right";
 
             enemy.vx =
                 -enemy.speed;
@@ -83,6 +89,9 @@ const sandGuy = {
             0
         ) {
 
+            enemy.spawnSide =
+                "top";
+
             enemy.vx =
                 0;
 
@@ -91,6 +100,9 @@ const sandGuy = {
 
 
         } else {
+
+            enemy.spawnSide =
+                "bottom";
 
             enemy.vx =
                 0;
@@ -126,12 +138,54 @@ const sandGuy = {
         }
 
 
-        if (
-            enemy.enteredArena &&
+        const canvas =
+            api.getCanvas();
 
-            api.isFullyOutsideArena(
-                enemy
-            )
+
+        const margin =
+            enemy.radius +
+            120;
+
+
+        const passedArena =
+
+            (
+                enemy.spawnSide ===
+                    "left" &&
+
+                enemy.x >
+                    canvas.width +
+                    margin
+            ) ||
+
+            (
+                enemy.spawnSide ===
+                    "right" &&
+
+                enemy.x <
+                    -margin
+            ) ||
+
+            (
+                enemy.spawnSide ===
+                    "top" &&
+
+                enemy.y >
+                    canvas.height +
+                    margin
+            ) ||
+
+            (
+                enemy.spawnSide ===
+                    "bottom" &&
+
+                enemy.y <
+                    -margin
+            );
+
+
+        if (
+            passedArena
         ) {
 
             api.removeEnemy(

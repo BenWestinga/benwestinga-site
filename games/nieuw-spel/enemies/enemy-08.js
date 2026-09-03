@@ -684,6 +684,36 @@ const sandguardianWorm = {
                 dt;
 
 
+            if (
+                !head.enteredArena &&
+
+                api.isInsideArena(
+                    head
+                )
+            ) {
+
+                head.enteredArena =
+                    true;
+            }
+
+
+            if (
+                head.enteredArena
+            ) {
+
+                api.keepInsideArena(
+                    head
+                );
+
+
+                guardian.angle =
+                    Math.atan2(
+                        head.vy,
+                        head.vx
+                    );
+            }
+
+
             /*
                 BODY VOLGT HEAD
             */
