@@ -33,17 +33,12 @@
         );
 
         return;
-
     }
 
 
     let selectedUpgradeId =
         null;
 
-
-    // =====================================================
-    // RENDER
-    // =====================================================
 
     function renderUpgrades() {
 
@@ -60,10 +55,6 @@
         tree.className =
             "upgrade-tree";
 
-
-        // =================================================
-        // TOP BAR
-        // =================================================
 
         const topBar =
             document.createElement(
@@ -92,10 +83,6 @@
             topBar
         );
 
-
-        // =================================================
-        // CONNECTION LINES
-        // =================================================
 
         const svg =
             document.createElementNS(
@@ -135,10 +122,11 @@
                     );
 
 
-            if (!childVisible) {
+            if (
+                !childVisible
+            ) {
 
                 continue;
-
             }
 
 
@@ -157,7 +145,6 @@
                 if (!parent) {
 
                     continue;
-
                 }
 
 
@@ -168,10 +155,11 @@
                         );
 
 
-                if (!parentVisible) {
+                if (
+                    !parentVisible
+                ) {
 
                     continue;
-
                 }
 
 
@@ -216,16 +204,13 @@
                     line.classList.add(
                         "active"
                     );
-
                 }
 
 
                 svg.appendChild(
                     line
                 );
-
             }
-
         }
 
 
@@ -233,10 +218,6 @@
             svg
         );
 
-
-        // =================================================
-        // UPGRADE NODES
-        // =================================================
 
         for (
             const upgrade
@@ -252,10 +233,11 @@
                     );
 
 
-            if (!visible) {
+            if (
+                !visible
+            ) {
 
                 continue;
-
             }
 
 
@@ -321,7 +303,6 @@
                 node.classList.add(
                     "not-affordable"
                 );
-
             }
 
 
@@ -333,7 +314,6 @@
                 node.classList.add(
                     "focused"
                 );
-
             }
 
 
@@ -386,7 +366,6 @@
 
                 price.textContent =
                     `📕 ${upgrade.cost}`;
-
             }
 
 
@@ -416,7 +395,6 @@
                     updateInfoPanel(
                         upgrade
                     );
-
                 }
             );
 
@@ -437,7 +415,6 @@
                     if (owned) {
 
                         return;
-
                     }
 
 
@@ -459,7 +436,6 @@
                         renderUpgrades();
 
                         return;
-
                     }
 
 
@@ -471,7 +447,6 @@
                         showTemporaryMessage(
                             "Not enough books."
                         );
-
                     }
 
 
@@ -483,9 +458,7 @@
                         showTemporaryMessage(
                             "You need to buy the previous upgrade first."
                         );
-
                     }
-
                 }
             );
 
@@ -493,13 +466,8 @@
             tree.appendChild(
                 node
             );
-
         }
 
-
-        // =================================================
-        // INFO PANEL
-        // =================================================
 
         const info =
             document.createElement(
@@ -537,15 +505,9 @@
         } else {
 
             showDefaultInfo();
-
         }
-
     }
 
-
-    // =====================================================
-    // ICONS
-    // =====================================================
 
     function getUpgradeIcon(
         upgradeId
@@ -560,11 +522,12 @@
             upgradeId ===
                 "splitBurst" ||
             upgradeId ===
+                "critLine" ||
+            upgradeId ===
                 "overclockCore"
         ) {
 
             return "⚡";
-
         }
 
 
@@ -572,9 +535,8 @@
             upgradeId.includes(
                 "frost"
             ) ||
-            upgradeId.includes(
-                "Freeze"
-            ) ||
+            upgradeId ===
+                "deepFreeze" ||
             upgradeId ===
                 "coldShards" ||
             upgradeId ===
@@ -582,7 +544,6 @@
         ) {
 
             return "❄";
-
         }
 
 
@@ -598,7 +559,6 @@
         ) {
 
             return "💥";
-
         }
 
 
@@ -614,11 +574,12 @@
         ) {
 
             return "ϟ";
-
         }
 
 
         if (
+            upgradeId ===
+                "armorCrack" ||
             upgradeId ===
                 "piercingTip" ||
             upgradeId ===
@@ -628,18 +589,29 @@
         ) {
 
             return "➤";
+        }
 
+
+        if (
+            upgradeId ===
+                "heavyAmmo1" ||
+            upgradeId ===
+                "heavyAmmo2" ||
+            upgradeId ===
+                "brutalForce" ||
+            upgradeId ===
+                "bossHunter" ||
+            upgradeId ===
+                "titanShells"
+        ) {
+
+            return "●";
         }
 
 
         return "●";
-
     }
 
-
-    // =====================================================
-    // INFO
-    // =====================================================
 
     function showDefaultInfo() {
 
@@ -652,7 +624,6 @@
         if (!info) {
 
             return;
-
         }
 
 
@@ -672,7 +643,6 @@
             </small>
 
         `;
-
     }
 
 
@@ -689,7 +659,6 @@
         if (!info) {
 
             return;
-
         }
 
 
@@ -708,7 +677,6 @@
 
             status =
                 "✓ OWNED";
-
         }
 
 
@@ -727,13 +695,8 @@
             </small>
 
         `;
-
     }
 
-
-    // =====================================================
-    // MESSAGE
-    // =====================================================
 
     function showTemporaryMessage(
         text
@@ -748,7 +711,6 @@
         if (!message) {
 
             return;
-
         }
 
 
@@ -766,19 +728,12 @@
 
                     message.textContent =
                         "";
-
                 }
-
             },
             1800
         );
-
     }
 
-
-    // =====================================================
-    // OPEN
-    // =====================================================
 
     function openUpgrades() {
 
@@ -795,13 +750,8 @@
 
         upgradesScreen.hidden =
             false;
-
     }
 
-
-    // =====================================================
-    // CLOSE
-    // =====================================================
 
     function closeUpgrades() {
 
@@ -811,13 +761,8 @@
 
         window.gamePaused =
             false;
-
     }
 
-
-    // =====================================================
-    // EVENTS
-    // =====================================================
 
     upgradesButton.addEventListener(
         "click",
@@ -840,9 +785,7 @@
             ) {
 
                 renderUpgrades();
-
             }
-
         }
     );
 
