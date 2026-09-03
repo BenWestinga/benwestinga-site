@@ -35,7 +35,7 @@ export const config = {
 
     spawnGroups: [
 
-        { enemy: "sandBall", count: 350, start: 5, duration: 210 },
+        { enemy: "sandBall", count: 250, start: 5, duration: 210 },
         { enemy: "bigsandGoon", count: 1, start: 20, duration: 1 },
         { enemy: "bigsandGoon", count: 1, start: 40, duration: 1 },
         { enemy: "bigsandGoon", count: 1, start: 60, duration: 1 },
