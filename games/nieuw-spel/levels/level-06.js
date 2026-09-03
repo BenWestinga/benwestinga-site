@@ -93,7 +93,7 @@ export const config = {
             start: 70,
 
             formation: {
-                type: "row",
+                type: "column",
                 count: 15,
                 side: "left",
                 spacing: 80
@@ -110,8 +110,8 @@ export const config = {
         {
             enemy: "sandBomb",
             count: 20,
-            start: 90,
-            duration: 10
+            start: 50,
+            duration: 20
         },
 
         {
@@ -119,7 +119,7 @@ export const config = {
             start: 90,
 
             formation: {
-                type: "row",
+                type: "column",
                 count: 15,
                 side: "right",
                 spacing: 80
@@ -130,14 +130,14 @@ export const config = {
             enemy: "bigsandGoon",
             count: 4,
             start: 100,
-            duration: 120
+            duration: 20
         },
 
         {
             enemy: "sandBomb",
             count: 50,
             start: 90,
-            duration: 140
+            duration: 50
         }
     ]
 };
