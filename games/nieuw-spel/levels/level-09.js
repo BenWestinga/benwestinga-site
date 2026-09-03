@@ -35,16 +35,107 @@ export const config = {
 
     spawnGroups: [
 
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 },
-        { enemy: "", count: 0, start: 0, duration: 0 }
+        { enemy: "sandShooter", count: 120, start: 5, duration: 380 },
+        { enemy: "sandWorm", count: 10, start: 5, duration: 200 },
+        {
+                    enemy: "sandGoon",
+                    start: 40,
+        
+                    formation: {
+                        type: "column",
+                        count: 15,
+                        side: "right",
+                        spacing: 80
+                    }
+                },
+        {
+                    enemy: "sandGoon",
+                    start: 90,
+        
+                    formation: {
+                        type: "column",
+                        count: 15,
+                        side: "left",
+                        spacing: 80
+                    }
+                },
+        {
+                    enemy: "sandGoon",
+                    start: 150,
+        
+                    formation: {
+                        type: "column",
+                        count: 15,
+                        side: "right",
+                        spacing: 80
+                    }
+                },
+        {
+                    enemy: "sandGoon",
+                    start: 200,
+        
+                    formation: {
+                        type: "column",
+                        count: 15,
+                        side: "left",
+                        spacing: 80
+                    }
+                },
+        {
+                    enemy: "sandGoon",
+                    start: 240,
+        
+                    formation: {
+                        type: "column",
+                        count: 15,
+                        side: "right",
+                        spacing: 80
+                    }
+                },
+        {
+                    enemy: "sandGoon",
+                    start: 280,
+        
+                    formation: {
+                        type: "column",
+                        count: 15,
+                        side: "left",
+                        spacing: 80
+                    }
+                },
+        {
+                    enemy: "sandGoon",
+                    start: 300,
+        
+                    formation: {
+                        type: "column",
+                        count: 15,
+                        side: "right",
+                        spacing: 80
+                    }
+                },
+        {
+                    enemy: "sandGoon",
+                    start: 340,
+        
+                    formation: {
+                        type: "column",
+                        count: 15,
+                        side: "left",
+                        spacing: 80
+                    }
+                },
+        {
+                    enemy: "sandGoon",
+                    start: 380,
+        
+                    formation: {
+                        type: "column",
+                        count: 15,
+                        side: "right",
+                        spacing: 80
+                    }
+                }
     ]
 };
 
