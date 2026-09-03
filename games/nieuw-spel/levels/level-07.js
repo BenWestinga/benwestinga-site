@@ -39,12 +39,12 @@ export const config = {
         { enemy: "sandguardianWorm", count: 1, start: 10, duration: 1 },
         { enemy: "sandGuy", count: 100, start: 12, duration: 100 },
         { enemy: "sandWorm", count: 1, start: 30, duration: 1 },
-        { enemy: "sandGoon", count: 50, start: 20, duration: 40 },
+        { enemy: "sandGoon", count: 50, start: 20, duration: 20 },
         { enemy: "sandWorm", count: 1, start: 60, duration: 1 },
-        { enemy: "sandGoon", count: 50, start: 60, duration: 80 },
+        { enemy: "sandGoon", count: 50, start: 60, duration: 20 },
         { enemy: "sandWorm", count: 1, start: 90, duration: 1 },
-        { enemy: "sandGoon", count: 50, start: 100, duration: 120 },
-        { enemy: "sandGoon", count: 50, start: 140, duration: 1 }
+        { enemy: "sandGoon", count: 50, start: 100, duration: 20 },
+        { enemy: "sandGoon", count: 160, start: 80, duration: 60 }
     ]
 };
 
