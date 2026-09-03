@@ -38,7 +38,7 @@ export const config = {
         { enemy: "sandShooter", count: 120, start: 5, duration: 380 },
         { enemy: "sandWorm", count: 10, start: 5, duration: 200 },
         {
-                    enemy: "sandGoon",
+                    enemy: "sandGuy",
                     start: 40,
         
                     formation: {
@@ -49,7 +49,7 @@ export const config = {
                     }
                 },
         {
-                    enemy: "sandGoon",
+                    enemy: "sandGuy",
                     start: 90,
         
                     formation: {
@@ -60,7 +60,7 @@ export const config = {
                     }
                 },
         {
-                    enemy: "sandGoon",
+                    enemy: "sandGuy",
                     start: 150,
         
                     formation: {
@@ -71,7 +71,7 @@ export const config = {
                     }
                 },
         {
-                    enemy: "sandGoon",
+                    enemy: "sandGuy",
                     start: 200,
         
                     formation: {
@@ -82,7 +82,7 @@ export const config = {
                     }
                 },
         {
-                    enemy: "sandGoon",
+                    enemy: "sandGuy",
                     start: 240,
         
                     formation: {
@@ -93,7 +93,7 @@ export const config = {
                     }
                 },
         {
-                    enemy: "sandGoon",
+                    enemy: "sandGuy",
                     start: 280,
         
                     formation: {
@@ -104,7 +104,7 @@ export const config = {
                     }
                 },
         {
-                    enemy: "sandGoon",
+                    enemy: "sandGuy",
                     start: 300,
         
                     formation: {
@@ -115,7 +115,7 @@ export const config = {
                     }
                 },
         {
-                    enemy: "sandGoon",
+                    enemy: "sandGuy",
                     start: 340,
         
                     formation: {
@@ -126,7 +126,7 @@ export const config = {
                     }
                 },
         {
-                    enemy: "sandGoon",
+                    enemy: "sandGuy",
                     start: 380,
         
                     formation: {

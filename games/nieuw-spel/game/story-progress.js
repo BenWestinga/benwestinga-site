@@ -801,7 +801,7 @@
 
 
         data.books +=
-            1;
+            2;
 
 
         let weaponUnlocked =
@@ -834,7 +834,7 @@
         return {
             success: true,
             firstTime: true,
-            booksEarned: 1,
+            booksEarned: 2,
             weaponUnlocked,
 
             highestCompletedLevel:
