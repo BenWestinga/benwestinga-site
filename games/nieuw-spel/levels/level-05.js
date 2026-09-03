@@ -89,7 +89,7 @@ export const config = {
 
         {
             enemy: "sandBomb",
-            count: 60,
+            count: 40,
             start: 100,
             duration: 50
         },
@@ -99,7 +99,7 @@ export const config = {
             enemy: "sandShooter",
             count: 150,
             start: 150,
-            duration: 600
+            duration: 800
         },
 
 
