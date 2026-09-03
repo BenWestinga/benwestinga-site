@@ -425,6 +425,7 @@
                     SAVE_KEY
                 );
 
+
             if (!saved) {
 
                 return createDefaultData();
@@ -441,20 +442,30 @@
                 Array.isArray(
                     parsed.completedLevels
                 )
+
                     ? parsed.completedLevels
+
                     : [];
 
 
             completedLevels =
                 completedLevels
-                    .map(Number)
+                    .map(
+                        Number
+                    )
                     .filter(
+
                         level =>
+
                             Number.isInteger(
                                 level
                             ) &&
-                            level >= 1 &&
-                            level <= 50
+
+                            level >=
+                                1 &&
+
+                            level <=
+                                50
                     );
 
 
@@ -463,10 +474,15 @@
                     ...new Set(
                         completedLevels
                     )
-                ].sort(
-                    (a, b) =>
-                        a - b
-                );
+                ]
+                    .sort(
+                        (
+                            a,
+                            b
+                        ) =>
+                            a -
+                            b
+                    );
 
 
             let books =
@@ -476,13 +492,17 @@
 
 
             if (
+
                 !Number.isFinite(
                     books
                 ) ||
-                books < 0
+
+                books <
+                0
             ) {
 
-                books = 0;
+                books =
+                    0;
             }
 
 
@@ -490,16 +510,19 @@
                 Array.isArray(
                     parsed.purchasedUpgrades
                 )
+
                     ? [
                         ...new Set(
                             parsed.purchasedUpgrades
                         )
                     ]
+
                     : [];
 
 
             purchasedUpgrades =
                 purchasedUpgrades.map(
+
                     upgradeId => {
 
                         if (
@@ -535,7 +558,9 @@
 
             purchasedUpgrades =
                 purchasedUpgrades.filter(
+
                     upgradeId =>
+
                         UPGRADES[
                             upgradeId
                         ]
@@ -543,9 +568,14 @@
 
 
             let selectedWeapon =
-                typeof parsed.selectedWeapon ===
+
+                typeof parsed
+                    .selectedWeapon ===
                 "string"
-                    ? parsed.selectedWeapon
+
+                    ? parsed
+                        .selectedWeapon
+
                     : "pistol";
 
 
@@ -561,19 +591,28 @@
 
 
             return {
+
                 completedLevels,
+
                 books,
+
                 selectedWeapon,
+
                 purchasedUpgrades
             };
 
 
-        } catch (error) {
+        } catch (
+            error
+        ) {
 
             console.error(
+
                 "Story progress could not be loaded:",
+
                 error
             );
+
 
             return createDefaultData();
         }
@@ -629,7 +668,9 @@
     function saveData() {
 
         localStorage.setItem(
+
             SAVE_KEY,
+
             JSON.stringify(
                 data
             )
@@ -642,7 +683,9 @@
         window.dispatchEvent(
 
             new CustomEvent(
+
                 "story-progress-changed",
+
                 {
                     detail:
                         getData()
@@ -681,11 +724,16 @@
 
 
         if (
+
             !Number.isInteger(
                 levelNumber
             ) ||
-            levelNumber < 1 ||
-            levelNumber > 50
+
+            levelNumber <
+                1 ||
+
+            levelNumber >
+                50
         ) {
 
             return false;
@@ -712,7 +760,8 @@
 
 
         return isLevelCompleted(
-            levelNumber - 1
+            levelNumber -
+            1
         );
     }
 
@@ -720,7 +769,9 @@
     function getHighestCompletedLevel() {
 
         if (
-            data.completedLevels.length ===
+            data
+                .completedLevels
+                .length ===
             0
         ) {
 
@@ -745,16 +796,25 @@
 
 
         if (
+
             !Number.isInteger(
                 levelNumber
             ) ||
-            levelNumber < 1 ||
-            levelNumber > 50
+
+            levelNumber <
+                1 ||
+
+            levelNumber >
+                50
         ) {
 
             return {
-                success: false,
-                reason: "invalid"
+
+                success:
+                    false,
+
+                reason:
+                    "invalid"
             };
         }
 
@@ -766,8 +826,12 @@
         ) {
 
             return {
-                success: false,
-                reason: "locked"
+
+                success:
+                    false,
+
+                reason:
+                    "locked"
             };
         }
 
@@ -779,10 +843,19 @@
         ) {
 
             return {
-                success: true,
-                firstTime: false,
-                booksEarned: 0,
-                weaponUnlocked: null,
+
+                success:
+                    true,
+
+                firstTime:
+                    false,
+
+                booksEarned:
+                    0,
+
+                weaponUnlocked:
+                    null,
+
                 highestCompletedLevel:
                     getHighestCompletedLevel()
             };
@@ -795,8 +868,12 @@
 
 
         data.completedLevels.sort(
-            (a, b) =>
-                a - b
+            (
+                a,
+                b
+            ) =>
+                a -
+                b
         );
 
 
@@ -816,7 +893,8 @@
         ) {
 
             if (
-                weapon.unlockLevel ===
+                weapon
+                    .unlockLevel ===
                 levelNumber
             ) {
 
@@ -832,17 +910,29 @@
 
 
         return {
-            success: true,
-            firstTime: true,
-            booksEarned: 2,
+
+            success:
+                true,
+
+            firstTime:
+                true,
+
+            booksEarned:
+                2,
+
             weaponUnlocked,
 
             highestCompletedLevel:
                 getHighestCompletedLevel(),
 
             nextLevel:
-                levelNumber < 50
-                    ? levelNumber + 1
+
+                levelNumber <
+                50
+
+                    ? levelNumber +
+                        1
+
                     : null
         };
     }
@@ -871,7 +961,8 @@
 
 
         if (
-            weapon.unlockLevel ===
+            weapon
+                .unlockLevel ===
             0
         ) {
 
@@ -919,7 +1010,9 @@
 
 
         if (
+
             !weapon ||
+
             !isWeaponUnlocked(
                 weapon.id
             )
@@ -932,7 +1025,8 @@
             saveData();
 
 
-            return WEAPONS.pistol;
+            return WEAPONS
+                .pistol;
         }
 
 
@@ -982,7 +1076,9 @@
 
 
         if (
-            upgrade.requires.length ===
+            upgrade
+                .requires
+                .length ===
             0
         ) {
 
@@ -993,6 +1089,7 @@
         return upgrade
             .requires
             .every(
+
                 requiredUpgradeId =>
 
                     hasUpgrade(
@@ -1047,8 +1144,12 @@
         if (!upgrade) {
 
             return {
-                success: false,
-                reason: "unknown"
+
+                success:
+                    false,
+
+                reason:
+                    "unknown"
             };
         }
 
@@ -1060,8 +1161,12 @@
         ) {
 
             return {
-                success: false,
-                reason: "owned"
+
+                success:
+                    false,
+
+                reason:
+                    "owned"
             };
         }
 
@@ -1073,8 +1178,12 @@
         ) {
 
             return {
-                success: false,
-                reason: "locked"
+
+                success:
+                    false,
+
+                reason:
+                    "locked"
             };
         }
 
@@ -1085,8 +1194,12 @@
         ) {
 
             return {
-                success: false,
-                reason: "money"
+
+                success:
+                    false,
+
+                reason:
+                    "money"
             };
         }
 
@@ -1095,16 +1208,21 @@
             upgrade.cost;
 
 
-        data.purchasedUpgrades.push(
-            upgradeId
-        );
+        data
+            .purchasedUpgrades
+            .push(
+                upgradeId
+            );
 
 
         saveData();
 
 
         return {
-            success: true,
+
+            success:
+                true,
+
             upgrade
         };
     }
@@ -1134,7 +1252,7 @@
         ) {
 
             fireRatePercent +=
-                6;
+                8;
         }
 
 
@@ -1149,7 +1267,7 @@
         ) {
 
             bulletSizePercent +=
-                10;
+                20;
         }
 
 
@@ -1160,7 +1278,7 @@
         ) {
 
             bulletSizePercent +=
-                10;
+                12;
         }
 
 
@@ -1175,7 +1293,7 @@
         ) {
 
             damagePercent +=
-                10;
+                20;
         }
 
 
@@ -1190,15 +1308,18 @@
         ) {
 
             pierceBonus +=
-                1;
+                2;
         }
 
 
         const frostBombInterval =
+
             hasUpgrade(
                 "frostBomb"
             )
+
                 ? 10000
+
                 : null;
 
 
@@ -1206,17 +1327,24 @@
 
             fireRatePercent,
 
+
             shootCooldownMultiplier:
+
                 1 /
+
                 (
                     1 +
+
                     fireRatePercent /
                     100
                 ),
 
+
             bulletSizePercent,
 
+
             damagePercent,
+
 
             pierceBonus,
 
@@ -1226,7 +1354,9 @@
                 hasUpgrade(
                     "chainRhythm"
                 )
+
                     ? 5
+
                     : null,
 
 
@@ -1235,7 +1365,9 @@
                 hasUpgrade(
                     "blastExpert"
                 )
+
                     ? 2
+
                     : 1,
 
 
@@ -1244,7 +1376,9 @@
                 hasUpgrade(
                     "napalmDust"
                 )
+
                     ? 2
+
                     : 1,
 
 
@@ -1253,11 +1387,14 @@
                 hasUpgrade(
                     "infernoPayload"
                 )
+
                     ? 2
+
                     : 1,
 
 
             frostBombInterval,
+
 
             bombInterval:
                 frostBombInterval,
@@ -1268,7 +1405,9 @@
                 hasUpgrade(
                     "frostBomb"
                 )
+
                     ? 2
+
                     : 0,
 
 
@@ -1277,7 +1416,9 @@
                 hasUpgrade(
                     "deepFreeze"
                 )
+
                     ? 2
+
                     : 1,
 
 
@@ -1286,7 +1427,9 @@
                 hasUpgrade(
                     "coldShards"
                 )
+
                     ? 2
+
                     : 1,
 
 
@@ -1295,7 +1438,9 @@
                 hasUpgrade(
                     "glacierReactor"
                 )
+
                     ? 2
+
                     : 1,
 
 
@@ -1311,7 +1456,9 @@
                 hasUpgrade(
                     "doubleTap"
                 )
+
                     ? 2
+
                     : 1,
 
 
@@ -1327,7 +1474,9 @@
                 hasUpgrade(
                     "splitBurst"
                 )
+
                     ? 2
+
                     : 1,
 
 
@@ -1336,7 +1485,9 @@
                 hasUpgrade(
                     "critLine"
                 )
+
                     ? 8
+
                     : null,
 
 
@@ -1345,7 +1496,9 @@
                 hasUpgrade(
                     "overclockCore"
                 )
+
                     ? 2
+
                     : 1,
 
 
@@ -1354,7 +1507,9 @@
                 hasUpgrade(
                     "bossHunter"
                 )
+
                     ? 1.5
+
                     : 1,
 
 
@@ -1363,7 +1518,9 @@
                 hasUpgrade(
                     "armorCrack"
                 )
+
                     ? 1.4
+
                     : 1,
 
 
@@ -1379,7 +1536,9 @@
                 hasUpgrade(
                     "railRounds"
                 )
+
                     ? 2
+
                     : 1,
 
 
@@ -1388,7 +1547,9 @@
                 hasUpgrade(
                     "returnShrapnel"
                 )
+
                     ? 2
+
                     : 1,
 
 
@@ -1397,7 +1558,9 @@
                 hasUpgrade(
                     "titanShells"
                 )
+
                     ? 2
+
                     : 1,
 
 
@@ -1406,7 +1569,9 @@
                 hasUpgrade(
                     "shockPop"
                 )
+
                     ? 6
+
                     : null,
 
 
@@ -1415,7 +1580,9 @@
                 hasUpgrade(
                     "staticBuild"
                 )
+
                     ? 2
+
                     : 0,
 
 
@@ -1424,7 +1591,9 @@
                 hasUpgrade(
                     "stormBurst"
                 )
+
                     ? 2
+
                     : 1,
 
 
@@ -1433,7 +1602,9 @@
                 hasUpgrade(
                     "tempestCrown"
                 )
+
                     ? 2
+
                     : 1
         };
     }

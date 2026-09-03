@@ -1,56 +1,25 @@
 (() => {
-
     const bullets = [];
 
-
     const BASE_BULLET_RADIUS = 6;
-
     const RANGE_UNIT_PIXELS = 70;
 
-
     const WEAPON_FILE_BY_ID = {
-
-        pistol:
-            "pistol.js",
-
-        smg:
-            "smg4.js",
-
-        smg4:
-            "smg4.js",
-
-        shotgun:
-            "shotgun.js",
-
-        huntingRifle:
-            "hunting_rifle.js",
-
-        hunting_rifle:
-            "hunting_rifle.js",
-
-        ak:
-            "ak.js"
+        pistol: "pistol.js",
+        smg: "smg4.js",
+        smg4: "smg4.js",
+        shotgun: "shotgun.js",
+        huntingRifle: "hunting_rifle.js",
+        hunting_rifle: "hunting_rifle.js",
+        ak: "ak.js"
     };
 
+    let weapon = null;
+    let combatModifiers = {};
+    let fireAccumulator = 0;
+    let lastDirection = 1;
 
-    let weapon =
-        null;
-
-
-    let combatModifiers =
-        {};
-
-
-    let fireAccumulator =
-        0;
-
-
-    let lastDirection =
-        1;
-
-
-    window.bullets =
-        bullets;
+    window.bullets = bullets;
 
 
     function numberModifier(
@@ -65,7 +34,6 @@
                 ]
             );
 
-
         return Number.isFinite(
             value
         )
@@ -74,110 +42,11 @@
     }
 
 
-    function getEnemyDamageMultiplier(
-        enemy
-    ) {
-
-        let multiplier =
-            1;
-
-
-        /*
-            BOSS DAMAGE
-        */
-
-        if (
-            enemy?.isBoss ||
-
-            enemy
-                ?.definition
-                ?.boss ===
-            true
-        ) {
-
-            multiplier *=
-                numberModifier(
-
-                    "bossDamageMultiplier",
-
-                    1
-                );
-        }
-
-
-        /*
-            ARMOR DAMAGE
-        */
-
-        const isArmor =
-
-            enemy?.armor ===
-                true ||
-
-            enemy
-                ?.classes
-                ?.includes
-                ?.(
-                    "armor"
-                );
-
-
-        if (
-            isArmor
-        ) {
-
-            let armorMultiplier =
-                numberModifier(
-
-                    "armorCrackDamageMultiplier",
-
-                    NaN
-                );
-
-
-            /*
-                Als StoryProgress die
-                modifier nog niet meegeeft,
-                kijken we direct of
-                Armor Crack gekocht is.
-            */
-
-            if (
-                !Number.isFinite(
-                    armorMultiplier
-                )
-            ) {
-
-                armorMultiplier =
-
-                    window
-                        .StoryProgress
-                        ?.hasUpgrade
-                        ?.(
-                            "armorCrack"
-                        )
-
-                        ? 1.4
-
-                        : 1;
-            }
-
-
-            multiplier *=
-                armorMultiplier;
-        }
-
-
-        return multiplier;
-    }
-
-
     function isGuardianShielded(
         enemy
     ) {
 
         return (
-
             enemy
                 ?.guardianShieldSources
                 instanceof Set &&
@@ -190,98 +59,12 @@
     }
 
 
-    function getModifiedWeaponStats() {
+    function getBaseWeaponStats() {
 
-        if (
-            !weapon
-        ) {
+        if (!weapon) {
 
             return null;
         }
-
-
-        const fireRateMultiplier =
-
-            numberModifier(
-                "fireRateMultiplier",
-                1
-            ) *
-
-            (
-                1 +
-
-                numberModifier(
-                    "fireRateBonus",
-                    0
-                )
-            ) *
-
-            (
-                1 +
-
-                numberModifier(
-                    "fireRatePercent",
-                    0
-                ) /
-
-                100
-            );
-
-
-        const damageMultiplier =
-
-            numberModifier(
-                "damageMultiplier",
-                1
-            ) *
-
-            (
-                1 +
-
-                numberModifier(
-                    "damageBonus",
-                    0
-                )
-            ) *
-
-            (
-                1 +
-
-                numberModifier(
-                    "damagePercent",
-                    0
-                ) /
-
-                100
-            );
-
-
-        const bulletSizeMultiplier =
-
-            numberModifier(
-                "bulletSizeMultiplier",
-                1
-            ) *
-
-            (
-                1 +
-
-                numberModifier(
-                    "bulletSizeBonus",
-                    0
-                )
-            ) *
-
-            (
-                1 +
-
-                numberModifier(
-                    "bulletSizePercent",
-                    0
-                ) /
-
-                100
-            );
 
 
         const rangeMultiplier =
@@ -294,18 +77,17 @@
         return {
 
             shotsPerSecond:
-
-                weapon
-                    .shotsPerSecond *
-
-                fireRateMultiplier,
+                Number(
+                    weapon.shotsPerSecond
+                ) ||
+                0,
 
 
             damage:
-
-                weapon.damage *
-
-                damageMultiplier,
+                Number(
+                    weapon.damage
+                ) ||
+                0,
 
 
             pierce:
@@ -315,13 +97,10 @@
                     1,
 
                     Math.round(
-
-                        weapon.pierce +
-
-                        numberModifier(
-                            "pierceBonus",
-                            0
-                        )
+                        Number(
+                            weapon.pierce
+                        ) ||
+                        1
                     )
                 ),
 
@@ -331,12 +110,12 @@
                 BASE_BULLET_RADIUS *
 
                 (
-                    weapon
-                        .bulletSizeMultiplier ||
+                    Number(
+                        weapon
+                            .bulletSizeMultiplier
+                    ) ||
                     1
-                ) *
-
-                bulletSizeMultiplier,
+                ),
 
 
             projectilesPerShot:
@@ -346,30 +125,26 @@
                     1,
 
                     Math.round(
-
-                        (
+                        Number(
                             weapon
-                                .projectilesPerShot ||
-                            1
-                        ) +
-
-                        numberModifier(
-
-                            "projectilesPerShotBonus",
-
-                            0
-                        )
+                                .projectilesPerShot
+                        ) ||
+                        1
                     )
                 ),
 
 
             bulletSpeed:
-                weapon.bulletSpeed,
+                Number(
+                    weapon.bulletSpeed
+                ) ||
+                600,
 
 
             spreadDegrees:
-
-                weapon.spreadDegrees ||
+                Number(
+                    weapon.spreadDegrees
+                ) ||
                 0,
 
 
@@ -381,8 +156,12 @@
                     ? Infinity
 
                     :
-
-                    weapon.range *
+                    (
+                        Number(
+                            weapon.range
+                        ) ||
+                        0
+                    ) *
 
                     RANGE_UNIT_PIXELS *
 
@@ -391,15 +170,58 @@
     }
 
 
+    function getModifiedWeaponStats() {
+
+        const baseStats =
+            getBaseWeaponStats();
+
+
+        if (!baseStats) {
+
+            return null;
+        }
+
+
+        if (
+            window
+                .UpgradeEffects
+                ?.modifyWeaponStats
+        ) {
+
+            return window
+                .UpgradeEffects
+                .modifyWeaponStats(
+
+                    baseStats,
+
+                    combatModifiers
+                );
+        }
+
+
+        return baseStats;
+    }
+
+
     async function configureWeapon(
         weaponId,
         modifiers = {}
     ) {
 
+        const normalizedWeaponId =
+
+            typeof weaponId ===
+            "string"
+
+                ? weaponId
+
+                : weaponId?.id;
+
+
         const fileName =
 
             WEAPON_FILE_BY_ID[
-                weaponId
+                normalizedWeaponId
             ] ||
 
             WEAPON_FILE_BY_ID
@@ -439,6 +261,14 @@
 
 
         resetShootingTimer();
+
+
+        window
+            .UpgradeEffects
+            ?.configure
+            ?.(
+                combatModifiers
+            );
     }
 
 
@@ -481,30 +311,13 @@
     }
 
 
-    function shootVolley() {
+    function createBaseVolley(
+        stats,
+        baseAngle
+    ) {
 
-        const stats =
-            getModifiedWeaponStats();
-
-
-        if (!stats) {
-
-            return;
-        }
-
-
-        const direction =
-            getShootDirection();
-
-
-        const baseAngle =
-
-            direction ===
-            1
-
-                ? 0
-
-                : Math.PI;
+        const projectiles =
+            [];
 
 
         for (
@@ -554,23 +367,13 @@
 
                 offsetDegrees *
 
-                (
-                    Math.PI /
-                    180
-                );
+                Math.PI /
+                180;
 
 
-            bullets.push({
+            projectiles.push({
 
-                x:
-                    window
-                        .levelPlayer
-                        .x,
-
-                y:
-                    window
-                        .levelPlayer
-                        .y,
+                angle,
 
 
                 radius:
@@ -578,31 +381,15 @@
                         .bulletRadius,
 
 
-                vx:
-
-                    Math.cos(
-                        angle
-                    ) *
-
-                    stats
-                        .bulletSpeed,
-
-
-                vy:
-
-                    Math.sin(
-                        angle
-                    ) *
-
-                    stats
-                        .bulletSpeed,
-
-
                 damage:
                     stats.damage,
 
 
                 remainingPierce:
+                    stats.pierce,
+
+
+                initialPierce:
                     stats.pierce,
 
 
@@ -615,10 +402,389 @@
                         .rangePixels,
 
 
+                bulletSpeed:
+                    stats
+                        .bulletSpeed,
+
+
                 hitEnemyIds:
-                    new Set()
+                    new Set(),
+
+
+                pierceHitCount:
+                    0,
+
+
+                color:
+                    "#111111",
+
+
+                glowColor:
+                    null
             });
         }
+
+
+        return projectiles;
+    }
+
+
+    function pushPreparedBullet(
+        projectile
+    ) {
+
+        const angle =
+            Number(
+                projectile.angle
+            ) ||
+            0;
+
+
+        const speed =
+            Number(
+                projectile
+                    .bulletSpeed
+            ) ||
+            600;
+
+
+        bullets.push({
+
+            ...projectile,
+
+
+            x:
+                window
+                    .levelPlayer
+                    .x,
+
+
+            y:
+                window
+                    .levelPlayer
+                    .y,
+
+
+            vx:
+
+                Math.cos(
+                    angle
+                ) *
+
+                speed,
+
+
+            vy:
+
+                Math.sin(
+                    angle
+                ) *
+
+                speed,
+
+
+            hitEnemyIds:
+
+                projectile
+                    .hitEnemyIds
+                instanceof Set
+
+                    ? projectile
+                        .hitEnemyIds
+
+                    : new Set()
+        });
+    }
+
+
+    function spawnEffectBullet(
+        projectile
+    ) {
+
+        if (!projectile) {
+
+            return null;
+        }
+
+
+        const bullet = {
+
+            x:
+                Number(
+                    projectile.x
+                ) ||
+                0,
+
+
+            y:
+                Number(
+                    projectile.y
+                ) ||
+                0,
+
+
+            radius:
+
+                Math.max(
+
+                    2,
+
+                    Number(
+                        projectile.radius
+                    ) ||
+                    4
+                ),
+
+
+            vx:
+                Number(
+                    projectile.vx
+                ) ||
+                0,
+
+
+            vy:
+                Number(
+                    projectile.vy
+                ) ||
+                0,
+
+
+            damage:
+
+                Math.max(
+
+                    0,
+
+                    Number(
+                        projectile.damage
+                    ) ||
+                    0
+                ),
+
+
+            remainingPierce:
+
+                Math.max(
+
+                    1,
+
+                    Math.round(
+                        Number(
+                            projectile
+                                .remainingPierce
+                        ) ||
+                        1
+                    )
+                ),
+
+
+            initialPierce:
+
+                Math.max(
+
+                    1,
+
+                    Math.round(
+                        Number(
+                            projectile
+                                .initialPierce
+                        ) ||
+                        1
+                    )
+                ),
+
+
+            travelled:
+                Number(
+                    projectile.travelled
+                ) ||
+                0,
+
+
+            maxDistance:
+
+                projectile.maxDistance ===
+                Infinity
+
+                    ? Infinity
+
+                    :
+                    Math.max(
+
+                        1,
+
+                        Number(
+                            projectile
+                                .maxDistance
+                        ) ||
+                        240
+                    ),
+
+
+            hitEnemyIds:
+
+                projectile
+                    .hitEnemyIds
+                instanceof Set
+
+                    ? projectile
+                        .hitEnemyIds
+
+                    : new Set(),
+
+
+            pierceHitCount:
+                Number(
+                    projectile
+                        .pierceHitCount
+                ) ||
+                0,
+
+
+            color:
+                projectile.color ||
+                "#111111",
+
+
+            glowColor:
+                projectile.glowColor ||
+                null,
+
+
+            isShrapnel:
+                projectile.isShrapnel ===
+                true,
+
+
+            isCrit:
+                projectile.isCrit ===
+                true,
+
+
+            isExplosive:
+                projectile.isExplosive ===
+                true,
+
+
+            isLightning:
+                projectile.isLightning ===
+                true
+        };
+
+
+        bullets.push(
+            bullet
+        );
+
+
+        return bullet;
+    }
+
+
+    function shootVolley() {
+
+        const stats =
+            getModifiedWeaponStats();
+
+
+        if (!stats) {
+
+            return;
+        }
+
+
+        const direction =
+            getShootDirection();
+
+
+        const baseAngle =
+
+            direction ===
+            1
+
+                ? 0
+
+                : Math.PI;
+
+
+        const baseProjectiles =
+            createBaseVolley(
+
+                stats,
+
+                baseAngle
+            );
+
+
+        const preparedProjectiles =
+
+            window
+                .UpgradeEffects
+                ?.prepareVolley
+
+                ?
+
+                window
+                    .UpgradeEffects
+                    .prepareVolley({
+
+                        projectiles:
+                            baseProjectiles,
+
+                        baseAngle,
+
+                        stats,
+
+                        weapon
+                    })
+
+                :
+
+                baseProjectiles;
+
+
+        for (
+            const projectile
+            of preparedProjectiles
+        ) {
+
+            pushPreparedBullet(
+                projectile
+            );
+        }
+    }
+
+
+    function calculateBulletDamage(
+        bullet,
+        enemy
+    ) {
+
+        if (
+            window
+                .UpgradeEffects
+                ?.modifyHitDamage
+        ) {
+
+            return window
+                .UpgradeEffects
+                .modifyHitDamage({
+
+                    enemy,
+
+                    bullet,
+
+                    damage:
+                        bullet.damage,
+
+                    includePierce:
+                        true
+                });
+        }
+
+
+        return bullet.damage;
     }
 
 
@@ -628,9 +794,7 @@
         damageEnemy
     ) {
 
-        if (
-            !weapon
-        ) {
+        if (!weapon) {
 
             return;
         }
@@ -639,10 +803,6 @@
         const stats =
             getModifiedWeaponStats();
 
-
-        /*
-            AUTO SHOOT
-        */
 
         if (
             stats &&
@@ -669,11 +829,12 @@
 
 
             while (
+
                 fireAccumulator >=
                     interval &&
 
                 safety <
-                    20
+                20
             ) {
 
                 shootVolley();
@@ -688,36 +849,57 @@
         }
 
 
+        window
+            .UpgradeEffects
+            ?.update
+            ?.(
+                dt,
+                {
+                    enemies,
+
+                    damageEnemy,
+
+                    player:
+                        window
+                            .levelPlayer,
+
+                    isGuardianShielded,
+
+                    spawnBullet:
+                        spawnEffectBullet
+                }
+            );
+
+
         const canvas =
             document.getElementById(
                 "level-canvas"
             );
 
 
-        /*
-            BULLETS
-        */
-
         for (
+
             let i =
                 bullets.length -
                 1;
 
-            i >= 0;
+            i >=
+            0;
 
             i--
         ) {
 
             const bullet =
-                bullets[i];
+                bullets[
+                    i
+                ];
 
 
-            if (
-                !bullet
-            ) {
+            if (!bullet) {
 
                 continue;
             }
+
 
             const stepX =
                 bullet.vx *
@@ -746,10 +928,6 @@
                 );
 
 
-            /*
-                RANGE
-            */
-
             if (
                 bullet.travelled >=
                 bullet.maxDistance
@@ -760,16 +938,12 @@
                     1
                 );
 
-
                 continue;
             }
 
 
-            /*
-                OUTSIDE SCREEN
-            */
-
             if (
+
                 bullet.x <
                     -150 ||
 
@@ -790,7 +964,6 @@
                     1
                 );
 
-
                 continue;
             }
 
@@ -799,22 +972,28 @@
                 false;
 
 
-            /*
-                ENEMY COLLISION
-            */
-
             for (
+
                 let e =
                     enemies.length -
                     1;
 
-                e >= 0;
+                e >=
+                0;
 
                 e--
             ) {
 
                 const enemy =
-                    enemies[e];
+                    enemies[
+                        e
+                    ];
+
+
+                if (!enemy) {
+
+                    continue;
+                }
 
 
                 if (
@@ -833,109 +1012,164 @@
                     Math.hypot(
 
                         bullet.x -
-                            enemy.x,
+                        enemy.x,
 
                         bullet.y -
-                            enemy.y
+                        enemy.y
                     );
 
 
                 if (
-                    distance <=
-
+                    distance >
                     bullet.radius +
-
                     enemy.radius
                 ) {
 
-                    bullet
-                        .hitEnemyIds
-                        .add(
-                            enemy.id
-                        );
+                    continue;
+                }
 
 
-                    /*
-                        ==================================
-                        GUARDIAN SHIELD
-                        ==================================
-
-                        Shield blokkeert de kogel
-                        volledig.
-
-                        Ook pierce bullets kunnen
-                        er niet doorheen.
-                    */
-
-                    if (
-                        isGuardianShielded(
-                            enemy
-                        )
-                    ) {
-
-                        bullets.splice(
-                            i,
-                            1
-                        );
+                bullet
+                    .hitEnemyIds
+                    .add(
+                        enemy.id
+                    );
 
 
-                        bulletRemoved =
-                            true;
+                if (
+                    isGuardianShielded(
+                        enemy
+                    )
+                ) {
+
+                    bullets.splice(
+                        i,
+                        1
+                    );
 
 
-                        break;
-                    }
+                    bulletRemoved =
+                        true;
 
 
-                    /*
-                        Normale damage +
-                        boss/armor modifiers.
-                    */
-
-                    const enemyDamage =
-
-                        bullet.damage *
-
-                        getEnemyDamageMultiplier(
-                            enemy
-                        );
+                    break;
+                }
 
 
-                    damageEnemy(
+                const enemyDamage =
+                    calculateBulletDamage(
+
+                        bullet,
+
+                        enemy
+                    );
+
+
+                damageEnemy(
+
+                    enemy,
+
+                    enemyDamage
+                );
+
+
+                if (
+                    !window
+                        .levelPlayer
+                        ?.alive
+                ) {
+
+                    return;
+                }
+
+
+                const killed =
+
+                    enemy.hp <=
+                        0 ||
+
+                    !enemies.includes(
+                        enemy
+                    );
+
+
+                window
+                    .UpgradeEffects
+                    ?.onBulletHit
+                    ?.({
+
+                        bullet,
 
                         enemy,
 
-                        enemyDamage
-                    );
+                        enemies,
 
-                    if (
-                        !window.levelPlayer?.alive
-                    ) {
+                        damageEnemy,
 
-                        return;
-                    }
+                        killed,
 
-                    bullet.remainingPierce--;
+                        spawnBullet:
+                            spawnEffectBullet,
+
+                        isGuardianShielded
+                    });
 
 
-                    if (
-                        bullet
-                            .remainingPierce <=
+                if (
+                    !window
+                        .levelPlayer
+                        ?.alive
+                ) {
+
+                    return;
+                }
+
+
+                bullet.pierceHitCount =
+
+                    (
+                        Number(
+                            bullet
+                                .pierceHitCount
+                        ) ||
                         0
-                    ) {
+                    ) +
 
-                        bullets.splice(
-                            i,
-                            1
+                    1;
+
+
+                bullet.remainingPierce--;
+
+
+                if (
+                    bullet
+                        .remainingPierce <=
+                    0
+                ) {
+
+                    const currentIndex =
+                        bullets.indexOf(
+                            bullet
                         );
 
 
-                        bulletRemoved =
-                            true;
+                    if (
+                        currentIndex !==
+                        -1
+                    ) {
 
-
-                        break;
+                        bullets.splice(
+                            currentIndex,
+                            1
+                        );
                     }
+
+
+                    bulletRemoved =
+                        true;
+
+
+                    break;
                 }
             }
 
@@ -957,14 +1191,30 @@
         ctx.save();
 
 
-        ctx.fillStyle =
-            "#111111";
-
-
         for (
             const bullet
             of bullets
         ) {
+
+            const style =
+
+                window
+                    .UpgradeEffects
+                    ?.getBulletStyle
+                    ?.(
+                        bullet
+                    ) ||
+
+                {
+                    color:
+                        bullet.color ||
+                        "#111111",
+
+                    glowColor:
+                        bullet.glowColor ||
+                        null
+                };
+
 
             ctx.beginPath();
 
@@ -980,15 +1230,85 @@
                 0,
 
                 Math.PI *
-                    2
+                2
             );
 
 
+            ctx.fillStyle =
+                style.color;
+
+
+            if (
+                style.glowColor
+            ) {
+
+                ctx.shadowBlur =
+                    14;
+
+
+                ctx.shadowColor =
+                    style.glowColor;
+
+            } else {
+
+                ctx.shadowBlur =
+                    0;
+            }
+
+
             ctx.fill();
+
+
+            if (
+
+                bullet.isCrit ||
+
+                bullet.isExplosive ||
+
+                bullet.isLightning
+            ) {
+
+                ctx.shadowBlur =
+                    0;
+
+
+                ctx.lineWidth =
+                    2;
+
+
+                ctx.strokeStyle =
+                    "rgba(255,255,255,0.85)";
+
+
+                ctx.stroke();
+            }
         }
 
 
+        ctx.shadowBlur =
+            0;
+
+
         ctx.restore();
+
+
+        window
+            .UpgradeEffects
+            ?.draw
+            ?.(
+                ctx,
+                {
+                    enemies:
+
+                        window
+                            .LevelEngine
+                            ?.getState
+                            ?.()
+                            ?.enemies ||
+
+                        []
+                }
+            );
     }
 
 
@@ -996,6 +1316,18 @@
 
         bullets.length =
             0;
+    }
+
+
+    function clearCombat() {
+
+        clearBullets();
+
+
+        window
+            .UpgradeEffects
+            ?.clear
+            ?.();
     }
 
 
@@ -1012,6 +1344,12 @@
 
 
         resetShootingTimer();
+
+
+        window
+            .UpgradeEffects
+            ?.reset
+            ?.();
     }
 
 
@@ -1030,7 +1368,7 @@
 
 
         clear:
-            clearBullets,
+            clearCombat,
 
 
         reset:

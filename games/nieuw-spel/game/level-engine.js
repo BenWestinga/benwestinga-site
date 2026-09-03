@@ -2164,118 +2164,282 @@
         }
     }
 
+    function isUpgradeFrozen(
+        enemy
+    ) {
+
+        return (
+            window
+                .UpgradeEffects
+                ?.isEnemyFrozen
+                ?.(enemy) ===
+            true
+        );
+    }
+
+
+    function captureFrozenEnemyMotion() {
+
+        const snapshots =
+            new Map();
+
+
+        for (
+            const enemy
+            of state.enemies
+        ) {
+
+            if (
+                !isUpgradeFrozen(
+                    enemy
+                )
+            ) {
+
+                continue;
+            }
+
+
+            snapshots.set(
+
+                enemy,
+
+                {
+                    x:
+                        enemy.x,
+
+                    y:
+                        enemy.y,
+
+                    vx:
+                        enemy.vx,
+
+                    vy:
+                        enemy.vy
+                }
+            );
+        }
+
+
+        return snapshots;
+    }
+
+
+    function restoreFrozenEnemyMotion(
+        snapshots
+    ) {
+
+        for (
+            const [
+                enemy,
+                snapshot
+            ]
+            of snapshots
+        ) {
+
+            if (
+
+                !isEnemyAlive(
+                    enemy
+                ) ||
+
+                !isUpgradeFrozen(
+                    enemy
+                )
+            ) {
+
+                continue;
+            }
+
+
+            enemy.x =
+                snapshot.x;
+
+
+            enemy.y =
+                snapshot.y;
+
+
+            enemy.vx =
+                snapshot.vx;
+
+            enemy.vy =
+                snapshot.vy;
+        }
+    }
+
+
     function updateEnemies(dt) {
+
+        const frozenBeforeUpdate =
+            captureFrozenEnemyMotion();
+
+
         callDefinitionHook(
             "beforeUpdate",
             dt
         );
 
+
+        restoreFrozenEnemyMotion(
+            frozenBeforeUpdate
+        );
+
+
         if (
             state.status !==
             "playing"
         ) {
+
             return;
         }
+
 
         const snapshot =
             [
                 ...state.enemies
             ];
 
+
         for (
             const enemy
             of snapshot
         ) {
+
             if (
                 !isEnemyAlive(
                     enemy
                 )
             ) {
+
                 continue;
             }
+
 
             const definition =
                 enemy.definition;
 
+
             if (
+                isUpgradeFrozen(
+                    enemy
+                )
+            ) {
+
+            } else if (
                 typeof definition
                     ?.update ===
                 "function"
             ) {
+
                 definition.update(
+
                     enemy,
+
                     dt,
+
                     enemyApi
                 );
             }
+
 
             if (
                 state.status !==
                 "playing"
             ) {
+
                 return;
             }
+
 
             if (
                 !isEnemyAlive(
                     enemy
                 )
             ) {
+
                 continue;
             }
+
 
             if (
                 isInsideArena(
                     enemy
                 )
             ) {
+
                 enemy.enteredArena =
                     true;
             }
 
+
             if (
+
                 enemy
                     .collidesWithPlayer &&
 
                 playerTouchesCircle(
+
                     enemy.x,
+
                     enemy.y,
+
                     enemy.radius
                 )
             ) {
+
                 let handled =
                     false;
+
 
                 if (
                     typeof definition
                         ?.onPlayerCollision ===
                     "function"
                 ) {
+
                     handled =
+
                         definition
                             .onPlayerCollision(
+
                                 enemy,
+
                                 enemyApi
                             ) ===
+
                         true;
                 }
 
+
                 if (!handled) {
+
                     killPlayer();
                 }
+
 
                 if (
                     state.status !==
                     "playing"
                 ) {
+
                     return;
                 }
             }
         }
 
+
+        const frozenAfterUpdate =
+            captureFrozenEnemyMotion();
+
+
         callDefinitionHook(
             "afterUpdate",
             dt
+        );
+
+
+        restoreFrozenEnemyMotion(
+            frozenAfterUpdate
         );
     }
 
