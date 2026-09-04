@@ -14,13 +14,15 @@ const landedSwordDefinition = {
     behavior: "static-object",
 
     hp: 3,
-    size: 1,
+    size: 1.4,
 
     speed: "ultraSlow",
 
-    color: "#aeb6bd",
+    color: "#c4cbd1",
 
-    collidesWithPlayer: true,
+    collidesWithPlayer:
+        true,
+
 
     draw(enemy, ctx) {
         const x =
@@ -35,121 +37,184 @@ const landedSwordDefinition = {
 
         ctx.save();
 
+        ctx.translate(
+            x,
+            y
+        );
+
+        ctx.rotate(
+            -Math.PI / 4
+        );
+
 
         /*
-            Blade
+            SWORD BLADE
         */
+
+        ctx.strokeStyle =
+            "#525b63";
+
+        ctx.lineWidth =
+            Math.max(
+                7,
+                r * 0.42
+            );
 
         ctx.lineCap =
             "round";
 
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            0,
+            r * 0.55
+        );
+
+        ctx.lineTo(
+            0,
+            -r * 0.90
+        );
+
+        ctx.stroke();
+
+
+        /*
+            LIGHT METAL INSIDE
+        */
+
         ctx.strokeStyle =
-            "#d8dde2";
+            "#dce2e6";
 
         ctx.lineWidth =
             Math.max(
                 4,
-                r * 0.42
+                r * 0.23
             );
 
 
         ctx.beginPath();
 
         ctx.moveTo(
-            x - r * 0.48,
-            y + r * 0.48
+            0,
+            r * 0.48
         );
 
         ctx.lineTo(
-            x + r * 0.55,
-            y - r * 0.55
+            0,
+            -r * 0.83
         );
 
         ctx.stroke();
 
 
         /*
-            Dark edge
+            TIP
         */
 
-        ctx.strokeStyle =
-            "#565e66";
+        ctx.fillStyle =
+            "#dce2e6";
 
-        ctx.lineWidth =
-            Math.max(
-                1.5,
-                r * 0.13
-            );
 
         ctx.beginPath();
 
         ctx.moveTo(
-            x - r * 0.42,
-            y + r * 0.42
+            -r * 0.13,
+            -r * 0.74
         );
 
         ctx.lineTo(
-            x + r * 0.58,
-            y - r * 0.58
+            0,
+            -r * 1.05
+        );
+
+        ctx.lineTo(
+            r * 0.13,
+            -r * 0.74
+        );
+
+        ctx.closePath();
+
+        ctx.fill();
+
+
+        /*
+            GUARD
+        */
+
+        ctx.strokeStyle =
+            "#82703e";
+
+        ctx.lineWidth =
+            Math.max(
+                5,
+                r * 0.30
+            );
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            -r * 0.42,
+            r * 0.42
+        );
+
+        ctx.lineTo(
+            r * 0.42,
+            r * 0.42
         );
 
         ctx.stroke();
 
 
         /*
-            Guard
+            HANDLE
         */
 
         ctx.strokeStyle =
-            "#6d5428";
+            "#3e2b1f";
 
         ctx.lineWidth =
             Math.max(
-                3,
-                r * 0.25
+                5,
+                r * 0.26
             );
+
 
         ctx.beginPath();
 
         ctx.moveTo(
-            x - r * 0.52,
-            y + r * 0.08
+            0,
+            r * 0.42
         );
 
         ctx.lineTo(
-            x - r * 0.02,
-            y + r * 0.58
+            0,
+            r * 0.88
         );
 
         ctx.stroke();
 
 
         /*
-            Handle
+            HANDLE END
         */
 
-        ctx.strokeStyle =
-            "#392819";
+        ctx.fillStyle =
+            "#82703e";
 
-        ctx.lineWidth =
-            Math.max(
-                3,
-                r * 0.25
-            );
 
         ctx.beginPath();
 
-        ctx.moveTo(
-            x - r * 0.45,
-            y + r * 0.45
+        ctx.arc(
+            0,
+            r * 0.91,
+            r * 0.13,
+            0,
+            Math.PI * 2
         );
 
-        ctx.lineTo(
-            x - r * 0.72,
-            y + r * 0.72
-        );
-
-        ctx.stroke();
+        ctx.fill();
 
 
         ctx.restore();
@@ -229,7 +294,7 @@ function spawnLandedSword(
                     3,
 
                 radius:
-                    10,
+                    14,
 
                 speed:
                     0,
@@ -244,10 +309,7 @@ function spawnLandedSword(
                     true,
 
                 enteredArena:
-                    true,
-
-                alwaysShowHealthBar:
-                    false
+                    true
             }
         );
 
@@ -265,20 +327,31 @@ const knight = {
     behavior: "knight-chase",
 
     hp: 8,
-    size: 2,
+
+    /*
+        Eerst size 2.
+        Nu +2 = size 4.
+    */
+
+    size: 4,
 
     speed: "medium",
+
     tracking: 0.3,
 
-    color: "#4f9845",
+    color: "#4e9c48",
 
-    throwRadius: 260,
+    throwRadius:
+        380,
 
-    swordFlightDuration: 0.75,
+    swordFlightDuration:
+        0.8,
 
-    flyingSwordRadius: 9,
+    flyingSwordRadius:
+        13,
 
-    swordLandingRadius: 14,
+    swordLandingRadius:
+        19,
 
 
     reset() {
@@ -323,7 +396,8 @@ const knight = {
 
         /*
             Tracking enemy:
-            eenmaal binnen = binnen blijven.
+            eenmaal binnen blijft
+            hij binnen.
         */
 
         if (
@@ -336,7 +410,7 @@ const knight = {
 
 
         /*
-            Zwaard slechts één keer gooien.
+            Heeft al gegooid.
         */
 
         if (
@@ -352,6 +426,7 @@ const knight = {
 
         const distance =
             Math.hypot(
+
                 player.x -
                     enemy.x,
 
@@ -392,6 +467,7 @@ const knight = {
 
             const progress =
                 Math.min(
+
                     1,
 
                     projectile.elapsed /
@@ -400,6 +476,7 @@ const knight = {
 
 
             projectile.x =
+
                 projectile.startX +
 
                 (
@@ -411,6 +488,7 @@ const knight = {
 
 
             projectile.y =
+
                 projectile.startY +
 
                 (
@@ -429,25 +507,19 @@ const knight = {
             }
 
 
-            /*
-                Zwaard landt.
-            */
-
             spawnLandedSword(
                 projectile,
                 api
             );
 
 
-            /*
-                Als speler precies op
-                landing staat -> dood.
-            */
-
             if (
                 api.playerTouchesCircle(
+
                     projectile.targetX,
+
                     projectile.targetY,
+
                     projectile.targetRadius
                 )
             ) {
@@ -462,7 +534,8 @@ const knight = {
 
 
             if (
-                api.getPlayer().alive ===
+                api.getPlayer()
+                    .alive ===
                 false
             ) {
                 return;
@@ -472,25 +545,30 @@ const knight = {
 
 
     draw(enemy, ctx, api) {
+        /*
+            GROENE BODY
+        */
+
         api.drawDefaultEnemy(
             enemy,
             {
                 face:
-                    true
+                    true,
+
+                color:
+                    this.color,
+
+                strokeStyle:
+                    "#505860",
+
+                lineWidth:
+                    Math.max(
+                        5,
+                        enemy.radius *
+                            0.13
+                    )
             }
         );
-
-
-        /*
-            Zwaard zichtbaar zolang
-            Knight hem nog heeft.
-        */
-
-        if (
-            enemy.hasThrownSword
-        ) {
-            return;
-        }
 
 
         const x =
@@ -507,16 +585,218 @@ const knight = {
 
 
         /*
-            Klein zwaard aan rechterkant.
+            =====================
+            HARNAS
+            =====================
         */
 
-        ctx.strokeStyle =
-            "#d3d9de";
+
+        /*
+            BORSTPLAAT
+        */
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x - r * 0.55,
+            y + r * 0.05
+        );
+
+        ctx.lineTo(
+            x - r * 0.40,
+            y + r * 0.62
+        );
+
+        ctx.quadraticCurveTo(
+            x,
+            y + r * 0.82,
+            x + r * 0.40,
+            y + r * 0.62
+        );
+
+        ctx.lineTo(
+            x + r * 0.55,
+            y + r * 0.05
+        );
+
+        ctx.quadraticCurveTo(
+            x,
+            y + r * 0.27,
+            x - r * 0.55,
+            y + r * 0.05
+        );
+
+
+        ctx.fillStyle =
+            "#747e87";
+
+        ctx.fill();
+
 
         ctx.lineWidth =
             Math.max(
                 3,
-                r * 0.16
+                r * 0.08
+            );
+
+        ctx.strokeStyle =
+            "#40474e";
+
+        ctx.stroke();
+
+
+        /*
+            METALEN HIGHLIGHT
+        */
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x - r * 0.30,
+            y + r * 0.20
+        );
+
+        ctx.quadraticCurveTo(
+            x,
+            y + r * 0.34,
+            x + r * 0.30,
+            y + r * 0.20
+        );
+
+
+        ctx.strokeStyle =
+            "#b9c3ca";
+
+        ctx.lineWidth =
+            Math.max(
+                2,
+                r * 0.05
+            );
+
+        ctx.stroke();
+
+
+        /*
+            LINKER SCHOUDER
+        */
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x - r * 0.62,
+            y + r * 0.02,
+            r * 0.25,
+            Math.PI,
+            Math.PI * 2
+        );
+
+
+        ctx.lineWidth =
+            Math.max(
+                4,
+                r * 0.10
+            );
+
+        ctx.strokeStyle =
+            "#737d86";
+
+        ctx.stroke();
+
+
+        /*
+            RECHTER SCHOUDER
+        */
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x + r * 0.62,
+            y + r * 0.02,
+            r * 0.25,
+            Math.PI,
+            Math.PI * 2
+        );
+
+        ctx.stroke();
+
+
+        /*
+            BOUTEN
+        */
+
+        ctx.fillStyle =
+            "#d5dce1";
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x - r * 0.40,
+            y + r * 0.20,
+            Math.max(
+                2,
+                r * 0.05
+            ),
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x + r * 0.40,
+            y + r * 0.20,
+            Math.max(
+                2,
+                r * 0.05
+            ),
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+
+        ctx.restore();
+
+
+        /*
+            ZWAARD NOG IN HAND
+        */
+
+        if (
+            enemy.hasThrownSword
+        ) {
+            return;
+        }
+
+
+        ctx.save();
+
+        ctx.translate(
+            x + r * 0.63,
+            y + r * 0.10
+        );
+
+        ctx.rotate(
+            0.55
+        );
+
+
+        /*
+            BLADE
+        */
+
+        ctx.strokeStyle =
+            "#dce2e6";
+
+        ctx.lineWidth =
+            Math.max(
+                4,
+                r * 0.10
             );
 
         ctx.lineCap =
@@ -526,38 +806,71 @@ const knight = {
         ctx.beginPath();
 
         ctx.moveTo(
-            x + r * 0.33,
-            y + r * 0.25
+            0,
+            r * 0.22
         );
 
         ctx.lineTo(
-            x + r * 0.82,
-            y - r * 0.55
+            0,
+            -r * 0.65
         );
 
         ctx.stroke();
 
 
+        /*
+            GUARD
+        */
+
         ctx.strokeStyle =
-            "#5e4927";
+            "#876e38";
 
         ctx.lineWidth =
             Math.max(
-                3,
-                r * 0.18
+                4,
+                r * 0.09
             );
 
 
         ctx.beginPath();
 
         ctx.moveTo(
-            x + r * 0.25,
-            y + r * 0.18
+            -r * 0.15,
+            r * 0.19
         );
 
         ctx.lineTo(
-            x + r * 0.50,
-            y + r * 0.40
+            r * 0.15,
+            r * 0.19
+        );
+
+        ctx.stroke();
+
+
+        /*
+            HANDLE
+        */
+
+        ctx.strokeStyle =
+            "#38271d";
+
+        ctx.lineWidth =
+            Math.max(
+                4,
+                r * 0.09
+            );
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            0,
+            r * 0.19
+        );
+
+        ctx.lineTo(
+            0,
+            r * 0.43
         );
 
         ctx.stroke();
@@ -566,11 +879,6 @@ const knight = {
         ctx.restore();
     },
 
-
-    /*
-        Zwarte landingscirkel
-        ONDER enemies.
-    */
 
     drawBelow(ctx) {
         for (
@@ -592,16 +900,16 @@ const knight = {
 
 
             ctx.fillStyle =
-                "rgba(0,0,0,0.70)";
+                "rgba(0,0,0,0.72)";
 
             ctx.fill();
 
 
             ctx.lineWidth =
-                3;
+                4;
 
             ctx.strokeStyle =
-                "rgba(0,0,0,0.95)";
+                "rgba(0,0,0,0.98)";
 
             ctx.stroke();
 
@@ -611,10 +919,6 @@ const knight = {
     },
 
 
-    /*
-        Vliegend zwaard.
-    */
-
     drawGlobal(ctx) {
         for (
             const projectile
@@ -622,6 +926,7 @@ const knight = {
         ) {
             const progress =
                 Math.min(
+
                     1,
 
                     projectile.elapsed /
@@ -630,11 +935,13 @@ const knight = {
 
 
             const arcHeight =
+
                 Math.sin(
                     progress *
                     Math.PI
                 ) *
-                90;
+
+                120;
 
 
             const drawX =
@@ -646,6 +953,7 @@ const knight = {
 
 
             const spin =
+
                 progress *
                 Math.PI *
                 4;
@@ -665,14 +973,14 @@ const knight = {
 
 
             /*
-                Blade
+                FLYING BLADE
             */
 
             ctx.strokeStyle =
-                "#dce1e5";
+                "#4c555c";
 
             ctx.lineWidth =
-                5;
+                8;
 
             ctx.lineCap =
                 "round";
@@ -681,39 +989,87 @@ const knight = {
             ctx.beginPath();
 
             ctx.moveTo(
-                -8,
-                8
+                0,
+                11
             );
 
             ctx.lineTo(
-                8,
-                -8
+                0,
+                -15
+            );
+
+            ctx.stroke();
+
+
+            ctx.strokeStyle =
+                "#dce2e6";
+
+            ctx.lineWidth =
+                5;
+
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                0,
+                10
+            );
+
+            ctx.lineTo(
+                0,
+                -15
             );
 
             ctx.stroke();
 
 
             /*
-                Guard
+                GUARD
             */
 
             ctx.strokeStyle =
-                "#765d30";
+                "#886d34";
 
             ctx.lineWidth =
-                4;
+                5;
 
 
             ctx.beginPath();
 
             ctx.moveTo(
                 -7,
-                2
+                8
             );
 
             ctx.lineTo(
-                -2,
-                7
+                7,
+                8
+            );
+
+            ctx.stroke();
+
+
+            /*
+                HANDLE
+            */
+
+            ctx.strokeStyle =
+                "#39271d";
+
+            ctx.lineWidth =
+                5;
+
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                0,
+                8
+            );
+
+            ctx.lineTo(
+                0,
+                16
             );
 
             ctx.stroke();

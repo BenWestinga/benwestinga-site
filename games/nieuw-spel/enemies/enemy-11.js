@@ -9,14 +9,9 @@ const camoGoon = {
 
     speed: "slow",
 
-    /*
-        Sand Bomb = 0.3
-        2x = 0.6
-    */
-
     tracking: 0.6,
 
-    color: "#a6d987",
+    color: "#a8e88a",
 
 
     onSpawn(enemy) {
@@ -62,11 +57,6 @@ const camoGoon = {
         }
 
 
-        /*
-            Tracking enemy:
-            nooit meer uit arena.
-        */
-
         if (
             enemy.enteredArena
         ) {
@@ -80,6 +70,9 @@ const camoGoon = {
             !enemy.camoStarted
         ) {
             enemy.isInvisible =
+                false;
+
+            enemy.hideWorldHealthBar =
                 false;
 
             return;
@@ -129,7 +122,7 @@ const camoGoon = {
             /*
                 Daarna:
                 4 zichtbaar
-                1 onzichtbaar.
+                1 onzichtbaar
             */
 
             const phase =
@@ -141,11 +134,6 @@ const camoGoon = {
                 phase >= 4;
         }
 
-
-        /*
-            Healthbar mag hem tijdens
-            invisibility niet verraden.
-        */
 
         enemy.hideWorldHealthBar =
             enemy.isInvisible;
@@ -167,14 +155,16 @@ const camoGoon = {
                     true,
 
                 color:
-                    this.color
+                    this.color,
+
+                strokeStyle:
+                    "#41793c",
+
+                lineWidth:
+                    4
             }
         );
 
-
-        /*
-            Grass / camo sprinkels.
-        */
 
         const x =
             enemy.x;
@@ -189,20 +179,97 @@ const camoGoon = {
         ctx.save();
 
 
-        ctx.fillStyle =
-            "#4e9440";
+        /*
+            GROTE CAMO PATCHES
+        */
 
+        const patches = [
+
+            {
+                x: -0.42,
+                y: -0.30,
+                radius: 0.20,
+                color: "#44883d"
+            },
+
+            {
+                x: 0.32,
+                y: -0.42,
+                radius: 0.17,
+                color: "#397936"
+            },
+
+            {
+                x: -0.18,
+                y: 0.38,
+                radius: 0.21,
+                color: "#579b44"
+            },
+
+            {
+                x: 0.48,
+                y: 0.26,
+                radius: 0.15,
+                color: "#3b7434"
+            },
+
+            {
+                x: 0.04,
+                y: -0.52,
+                radius: 0.12,
+                color: "#619f4c"
+            }
+        ];
+
+
+        for (
+            const patch
+            of patches
+        ) {
+            ctx.beginPath();
+
+            ctx.arc(
+                x +
+                    patch.x *
+                    r,
+
+                y +
+                    patch.y *
+                    r,
+
+                patch.radius *
+                    r,
+
+                0,
+
+                Math.PI * 2
+            );
+
+            ctx.fillStyle =
+                patch.color;
+
+            ctx.fill();
+        }
+
+
+        /*
+            LICHTE KLEINE SPRINKELS
+        */
 
         const dots = [
-            [-0.48, -0.35],
-            [0.35, -0.48],
-            [-0.10, -0.58],
-            [0.52, 0.05],
-            [-0.48, 0.22],
-            [0.12, 0.48],
-            [0.42, 0.38],
-            [-0.28, 0.52]
+            [-0.60, 0.02],
+            [-0.30, -0.60],
+            [0.18, 0.55],
+            [0.62, -0.10],
+            [0.48, 0.52],
+            [-0.50, 0.48],
+            [0.60, -0.45],
+            [-0.02, 0.64]
         ];
+
+
+        ctx.fillStyle =
+            "#d1e5a4";
 
 
         for (
@@ -215,13 +282,21 @@ const camoGoon = {
             ctx.beginPath();
 
             ctx.arc(
-                x + dx * r,
-                y + dy * r,
+                x +
+                    dx *
+                    r,
+
+                y +
+                    dy *
+                    r,
+
                 Math.max(
-                    1.5,
-                    r * 0.07
+                    2,
+                    r * 0.065
                 ),
+
                 0,
+
                 Math.PI * 2
             );
 
@@ -230,52 +305,55 @@ const camoGoon = {
 
 
         /*
-            Kleine grassprietjes.
+            GRASSPRIETJES
         */
 
         ctx.strokeStyle =
-            "#5da448";
+            "#2f6d31";
 
         ctx.lineWidth =
             Math.max(
-                1.5,
+                2,
                 r * 0.07
             );
+
+        ctx.lineCap =
+            "round";
+
+
+        const grass = [
+            [-0.55, -0.48, -0.68, -0.82],
+            [-0.28, -0.58, -0.20, -0.90],
+            [0.02, -0.61, 0.08, -0.91],
+            [0.30, -0.55, 0.45, -0.82],
+            [0.54, -0.38, 0.70, -0.62],
+            [-0.61, 0.14, -0.80, 0.02],
+            [0.61, 0.10, 0.80, -0.03]
+        ];
 
 
         ctx.beginPath();
 
-        ctx.moveTo(
-            x - r * 0.45,
-            y - r * 0.52
-        );
 
-        ctx.lineTo(
-            x - r * 0.36,
-            y - r * 0.78
-        );
+        for (
+            const [
+                x1,
+                y1,
+                x2,
+                y2
+            ]
+            of grass
+        ) {
+            ctx.moveTo(
+                x + x1 * r,
+                y + y1 * r
+            );
 
-
-        ctx.moveTo(
-            x + r * 0.12,
-            y - r * 0.58
-        );
-
-        ctx.lineTo(
-            x + r * 0.20,
-            y - r * 0.82
-        );
-
-
-        ctx.moveTo(
-            x + r * 0.42,
-            y - r * 0.42
-        );
-
-        ctx.lineTo(
-            x + r * 0.55,
-            y - r * 0.65
-        );
+            ctx.lineTo(
+                x + x2 * r,
+                y + y2 * r
+            );
+        }
 
 
         ctx.stroke();

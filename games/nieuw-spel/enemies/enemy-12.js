@@ -33,23 +33,48 @@ function fireShotgun(
         );
 
 
-    const spreadAngles = [
-        -30,
-        -15,
-        0,
-        15,
-        30
+    /*
+        Kleinere spreiding dan eerst.
+    */
+
+    const shotSettings = [
+
+        {
+            degrees: -16,
+            speed: 158
+        },
+
+        {
+            degrees: -8,
+            speed: 174
+        },
+
+        {
+            degrees: 0,
+            speed: 198
+        },
+
+        {
+            degrees: 8,
+            speed: 181
+        },
+
+        {
+            degrees: 16,
+            speed: 164
+        }
     ];
 
 
     for (
-        const degrees
-        of spreadAngles
+        const shot
+        of shotSettings
     ) {
         const angle =
+
             baseAngle +
 
-            degrees *
+            shot.degrees *
                 Math.PI /
                 180;
 
@@ -65,13 +90,13 @@ function fireShotgun(
                 Math.cos(
                     angle
                 ) *
-                config.projectileSpeed,
+                shot.speed,
 
             vy:
                 Math.sin(
                     angle
                 ) *
-                config.projectileSpeed,
+                shot.speed,
 
             radius:
                 config.projectileRadius,
@@ -98,13 +123,14 @@ const shotgunGoon = {
 
     color: "#487f3d",
 
-    shootInterval: 8,
+    shootInterval:
+        8,
 
-    projectileRadius: 6,
+    projectileRadius:
+        6,
 
-    projectileSpeed: 180,
-
-    projectileColor: "#7b442c",
+    projectileColor:
+        "#7b442c",
 
 
     reset() {
@@ -263,11 +289,6 @@ const shotgunGoon = {
         );
 
 
-        /*
-            Simpele dubbele shotgun
-            onderaan/rechts.
-        */
-
         const x =
             enemy.x;
 
@@ -281,16 +302,16 @@ const shotgunGoon = {
         ctx.save();
 
 
+        /*
+            DOUBLE BARREL
+        */
+
         ctx.lineCap =
             "round";
 
 
-        /*
-            Twee barrels.
-        */
-
         ctx.strokeStyle =
-            "#454b50";
+            "#41484c";
 
         ctx.lineWidth =
             Math.max(
@@ -302,54 +323,82 @@ const shotgunGoon = {
         ctx.beginPath();
 
         ctx.moveTo(
-            x + r * 0.20,
-            y + r * 0.24
+            x + r * 0.17,
+            y + r * 0.20
         );
 
         ctx.lineTo(
-            x + r * 0.78,
-            y + r * 0.05
+            x + r * 0.82,
+            y + r * 0.02
         );
 
 
         ctx.moveTo(
-            x + r * 0.18,
-            y + r * 0.35
+            x + r * 0.17,
+            y + r * 0.32
         );
 
         ctx.lineTo(
-            x + r * 0.78,
-            y + r * 0.16
+            x + r * 0.82,
+            y + r * 0.14
         );
-
 
         ctx.stroke();
 
 
         /*
-            Houten deel.
+            WOODEN STOCK
         */
 
         ctx.strokeStyle =
-            "#714823";
+            "#724823";
 
         ctx.lineWidth =
             Math.max(
                 4,
-                r * 0.18
+                r * 0.19
             );
 
 
         ctx.beginPath();
 
         ctx.moveTo(
-            x + r * 0.18,
-            y + r * 0.29
+            x + r * 0.20,
+            y + r * 0.27
         );
 
         ctx.lineTo(
-            x - r * 0.15,
-            y + r * 0.48
+            x - r * 0.22,
+            y + r * 0.50
+        );
+
+        ctx.stroke();
+
+
+        /*
+            SMALL GRIP
+        */
+
+        ctx.strokeStyle =
+            "#4d2e18";
+
+        ctx.lineWidth =
+            Math.max(
+                3,
+                r * 0.13
+            );
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x + r * 0.09,
+            y + r * 0.30
+        );
+
+        ctx.lineTo(
+            x + r * 0.01,
+            y + r * 0.53
         );
 
         ctx.stroke();

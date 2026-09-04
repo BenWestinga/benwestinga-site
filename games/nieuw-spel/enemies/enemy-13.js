@@ -6,19 +6,32 @@ const snake = {
 
     hp: 1.8,
 
-    size: 2.4,
+    /*
+        Iets langer/groter.
+    */
+
+    size: 3,
 
     speed: "mediumFast",
 
     color: "#397c35",
 
-    chaseDuration: 2,
+    chaseDuration:
+        2,
 
-    chaseTracking: 1,
+    chaseTracking:
+        1,
 
-    waveAmplitude: 32,
+    /*
+        Zelfde voorwaartse snelheid,
+        maar veel langzamere kronkel.
+    */
 
-    waveLength: 130,
+    waveAmplitude:
+        27,
+
+    waveLength:
+        360,
 
 
     onSpawn(enemy, api) {
@@ -63,7 +76,7 @@ const snake = {
 
         /*
             Eerste 2 seconden:
-            speler volgen.
+            richting speler.
         */
 
         if (
@@ -85,10 +98,6 @@ const snake = {
                     "wave";
 
 
-                /*
-                    Huidige richting vastzetten.
-                */
-
                 const length =
                     Math.hypot(
                         enemy.vx,
@@ -106,10 +115,12 @@ const snake = {
 
 
                 enemy.snakePerpendicularX =
-                    -enemy.snakeDirectionY;
+                    -enemy
+                        .snakeDirectionY;
 
                 enemy.snakePerpendicularY =
-                    enemy.snakeDirectionX;
+                    enemy
+                        .snakeDirectionX;
 
 
                 enemy.snakeOriginX =
@@ -126,8 +137,11 @@ const snake = {
         } else {
 
             /*
-                Rechtdoor met
-                slangenbeweging.
+                Voorwaartse afstand blijft
+                gewoon enemy.speed.
+
+                Dus de langzamere kronkel
+                verlaagt de snelheid niet.
             */
 
             enemy.snakeDistance +=
@@ -136,13 +150,14 @@ const snake = {
 
 
             const wave =
+
                 Math.sin(
 
                     enemy.snakeDistance /
-                    this.waveLength *
+                        this.waveLength *
 
                     Math.PI *
-                    2
+                        2
 
                 ) *
 
@@ -154,10 +169,10 @@ const snake = {
                 enemy.snakeOriginX +
 
                 enemy.snakeDirectionX *
-                enemy.snakeDistance +
+                    enemy.snakeDistance +
 
                 enemy.snakePerpendicularX *
-                wave;
+                    wave;
 
 
             enemy.y =
@@ -165,18 +180,14 @@ const snake = {
                 enemy.snakeOriginY +
 
                 enemy.snakeDirectionY *
-                enemy.snakeDistance +
+                    enemy.snakeDistance +
 
                 enemy.snakePerpendicularY *
-                wave;
+                    wave;
 
 
             /*
-                Velocity ongeveer tangent
-                aan zijn huidige beweging.
-
-                Vooral voor visuals /
-                andere systemen.
+                Richting voor visual.
             */
 
             const waveDerivative =
@@ -184,10 +195,10 @@ const snake = {
                 Math.cos(
 
                     enemy.snakeDistance /
-                    this.waveLength *
+                        this.waveLength *
 
                     Math.PI *
-                    2
+                        2
 
                 ) *
 
@@ -205,7 +216,7 @@ const snake = {
                 enemy.snakeDirectionX +
 
                 enemy.snakePerpendicularX *
-                waveDerivative;
+                    waveDerivative;
 
 
             let vy =
@@ -213,7 +224,7 @@ const snake = {
                 enemy.snakeDirectionY +
 
                 enemy.snakePerpendicularY *
-                waveDerivative;
+                    waveDerivative;
 
 
             const velocityLength =
@@ -252,14 +263,10 @@ const snake = {
 
 
         /*
-            Snake is een straight-through
-            enemy.
+            Snake blijft niet binnen.
 
-            Dus NIET binnen houden.
-
-            Wanneer hij volledig aan de
-            andere kant verdwijnt,
-            wordt hij verwijderd.
+            Hij gaat uiteindelijk
+            door de arena heen.
         */
 
         if (
@@ -275,7 +282,7 @@ const snake = {
     },
 
 
-    draw(enemy, ctx, api) {
+    draw(enemy, ctx) {
         const x =
             enemy.x;
 
@@ -285,10 +292,6 @@ const snake = {
         const r =
             enemy.radius;
 
-
-        /*
-            Richting waarin slang kijkt.
-        */
 
         const angle =
             Math.atan2(
@@ -305,54 +308,74 @@ const snake = {
             y
         );
 
+
         ctx.rotate(
             angle
         );
 
 
         /*
-            Alles blijft bewust
-            BINNEN de ronde hitbox.
+            LANGER SLANGENLICHAAM.
 
-              -r -------- +r
-
-            Daardoor klopt wat je ziet
-            met wat je kunt raken.
+            Blijft wel binnen
+            de ronde hitbox.
         */
+
+        ctx.lineCap =
+            "round";
+
+        ctx.lineJoin =
+            "round";
 
 
         /*
-            Donkere buitenkant lichaam.
+            DONKERE BUITENRAND
         */
 
         ctx.beginPath();
 
+
         ctx.moveTo(
-            -r * 0.72,
+            -r * 0.82,
             0
         );
 
 
         ctx.bezierCurveTo(
+
+            -r * 0.67,
+            -r * 0.26,
+
             -r * 0.48,
-            -r * 0.34,
-
-            -r * 0.22,
-            r * 0.34,
-
-            0,
-            0
-        );
-
-
-        ctx.bezierCurveTo(
-            r * 0.22,
             -r * 0.30,
 
-            r * 0.40,
-            r * 0.18,
+            -r * 0.31,
+            -r * 0.06
+        );
 
-            r * 0.58,
+
+        ctx.bezierCurveTo(
+
+            -r * 0.14,
+            r * 0.23,
+
+            r * 0.05,
+            r * 0.25,
+
+            r * 0.22,
+            0
+        );
+
+
+        ctx.bezierCurveTo(
+
+            r * 0.38,
+            -r * 0.23,
+
+            r * 0.54,
+            -r * 0.21,
+
+            r * 0.70,
             0
         );
 
@@ -363,20 +386,14 @@ const snake = {
         ctx.lineWidth =
             Math.max(
                 7,
-                r * 0.44
+                r * 0.34
             );
-
-        ctx.lineCap =
-            "round";
-
-        ctx.lineJoin =
-            "round";
 
         ctx.stroke();
 
 
         /*
-            Groene binnenkant.
+            GROENE BINNENKANT
         */
 
         ctx.strokeStyle =
@@ -385,18 +402,47 @@ const snake = {
         ctx.lineWidth =
             Math.max(
                 4,
-                r * 0.28
+                r * 0.22
             );
 
         ctx.stroke();
 
 
         /*
-            Kop.
+            STAARTPUNT
+        */
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            -r * 0.82,
+            0
+        );
+
+        ctx.lineTo(
+            -r * 0.92,
+            r * 0.04
+        );
+
+
+        ctx.strokeStyle =
+            "#397c35";
+
+        ctx.lineWidth =
+            Math.max(
+                3,
+                r * 0.14
+            );
+
+        ctx.stroke();
+
+
+        /*
+            KOP
         */
 
         const headX =
-            r * 0.58;
+            r * 0.70;
 
 
         ctx.beginPath();
@@ -404,14 +450,14 @@ const snake = {
         ctx.arc(
             headX,
             0,
-            r * 0.24,
+            r * 0.22,
             0,
             Math.PI * 2
         );
 
 
         ctx.fillStyle =
-            "#4b9442";
+            "#4c9844";
 
         ctx.fill();
 
@@ -419,7 +465,7 @@ const snake = {
         ctx.lineWidth =
             Math.max(
                 2,
-                r * 0.07
+                r * 0.06
             );
 
         ctx.strokeStyle =
@@ -429,7 +475,7 @@ const snake = {
 
 
         /*
-            Ogen.
+            EYES
         */
 
         ctx.fillStyle =
@@ -439,13 +485,18 @@ const snake = {
         ctx.beginPath();
 
         ctx.arc(
-            headX + r * 0.06,
-            -r * 0.08,
+            headX +
+                r * 0.06,
+
+            -r * 0.075,
+
             Math.max(
                 1.5,
-                r * 0.045
+                r * 0.038
             ),
+
             0,
+
             Math.PI * 2
         );
 
@@ -455,13 +506,18 @@ const snake = {
         ctx.beginPath();
 
         ctx.arc(
-            headX + r * 0.06,
-            r * 0.08,
+            headX +
+                r * 0.06,
+
+            r * 0.075,
+
             Math.max(
                 1.5,
-                r * 0.045
+                r * 0.038
             ),
+
             0,
+
             Math.PI * 2
         );
 
@@ -469,30 +525,59 @@ const snake = {
 
 
         /*
-            Tong.
+            TONG
         */
 
         ctx.strokeStyle =
-            "#cc3030";
+            "#d33a3a";
 
         ctx.lineWidth =
             Math.max(
                 1.5,
-                r * 0.05
+                r * 0.045
             );
 
 
         ctx.beginPath();
 
         ctx.moveTo(
-            headX + r * 0.20,
+            headX +
+                r * 0.19,
             0
         );
 
         ctx.lineTo(
-            headX + r * 0.31,
+            headX +
+                r * 0.31,
             0
         );
+
+
+        ctx.moveTo(
+            headX +
+                r * 0.31,
+            0
+        );
+
+        ctx.lineTo(
+            headX +
+                r * 0.37,
+            -r * 0.05
+        );
+
+
+        ctx.moveTo(
+            headX +
+                r * 0.31,
+            0
+        );
+
+        ctx.lineTo(
+            headX +
+                r * 0.37,
+            r * 0.05
+        );
+
 
         ctx.stroke();
 
