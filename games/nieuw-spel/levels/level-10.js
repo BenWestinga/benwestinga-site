@@ -44,7 +44,7 @@ export const config = {
         { enemy: "sandguardianWorm", count: 1, start: 60, duration: 1 },
         { enemy: "sandGuy", count: 60, start: 50, duration: 90 },
         { enemy: "sandShooter", count: 35, start: 60, duration: 240 },
-        { enemy: "sandWorm", count: 6, start: 100, duration: 380 },
+        { enemy: "sandWorm", count: 6, start: 100, duration: 180 },
         { enemy: "sandBomb", count: 40, start: 130, duration: 110 },
         { enemy: "sandBall", count: 20, start: 5, duration: 240 },
         { enemy: "bigsandGoon", count: 30, start: 280, duration: 500 },
