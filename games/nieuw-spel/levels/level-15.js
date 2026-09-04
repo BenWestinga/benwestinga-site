@@ -14,7 +14,7 @@ export const config = {
 
     background: {
         image: "grass.png",
-        alpha: 0.58,
+        alpha: 0.28,
         color: "#6f9f4d"
     },
 

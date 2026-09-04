@@ -28,11 +28,12 @@ export const config = {
 
     spawnGroups: [
 
-        { enemy: "grassGoon", count: 5, start: 5, duration: 50},
-        { enemy: "knight", count: 5, start: 5, duration: 50},
-        { enemy: "camoGoon", count: 5, start: 5, duration: 50},
-        { enemy: "shotgunGoon", count: 5, start: 5, duration: 50},
-        { enemy: "snake", count: 5, start: 5, duration: 50},
+        { enemy: "grassGoon", count: 50, start: 5, duration: 60},
+        { enemy: "knight", count: 5, start: 5, duration: 60},
+        { enemy: "camoGoon", count: 2, start: 30, duration: 120},
+        { enemy: "shotgunGoon", count: 7, start: 62, duration: 28},
+        { enemy: "grassGoon", count: 40, start: 90, duration: 60},
+        { enemy: "knight", count: 8, start: 90, duration: 60}
     ]
 };
 

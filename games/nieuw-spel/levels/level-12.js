@@ -14,7 +14,7 @@ export const config = {
 
     background: {
         image: "grass.png",
-        alpha: 0.58,
+        alpha: 0.28,
         color: "#6f9f4d"
     },
 
@@ -28,15 +28,11 @@ export const config = {
 
     spawnGroups: [
 
-        /*
-        {
-            enemy: "grassEnemy",
-            count: 20,
-            start: 5,
-            duration: 60
-        }
-        */
-
+        { enemy: "snake", count: 50, start: 5, duration: 60},
+        { enemy: "camoGoon", count: 20, start: 30, duration: 90},
+        { enemy: "snake", count: 50, start: 100, duration: 50},
+        { enemy: "grassGoon", count: 20, start: 110, duration: 40},
+        { enemy: "knight", count: 12, start: 80, duration: 60}
     ]
 };
 

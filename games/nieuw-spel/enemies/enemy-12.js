@@ -114,12 +114,12 @@ const shotgunGoon = {
 
     behavior: "shotgun-goon",
 
-    hp: 5,
-    size: 2,
+    hp: 8,
+    size: 5,
 
     speed: "ultraSlow",
 
-    tracking: 0.02,
+    tracking: 0.04,
 
     color: "#487f3d",
 

@@ -3,6 +3,9 @@ import knight from "../enemies/enemy-10.js";
 import camoGoon from "../enemies/enemy-11.js";
 import shotgunGoon from "../enemies/enemy-12.js";
 import snake from "../enemies/enemy-13.js";
+import shielder from "../enemies/enemy-14.js";
+import snakeQueen from "../enemies/enemy-15.js";
+import warrior from "../enemies/enemy-16.js";
 
 export const config = {
 
@@ -14,7 +17,7 @@ export const config = {
 
     background: {
         image: "grass.png",
-        alpha: 0.58,
+        alpha: 0.28,
         color: "#6f9f4d"
     },
 
@@ -23,19 +26,18 @@ export const config = {
         knight,
         camoGoon,
         shotgunGoon,
-        snake
+        snake,
+        shielder,
+        snakeQueen,
+        warrior
+
     },
 
     spawnGroups: [
 
-        /*
-        {
-            enemy: "grassEnemy",
-            count: 20,
-            start: 5,
-            duration: 60
-        }
-        */
+        { enemy: "shielder", count: 1, start: 5, duration: 1},
+        { enemy: "snakeQueen", count: 1, start: 20, duration: 1},
+        { enemy: "warrior", count: 1, start: 45, duration: 1},
 
     ]
 };
