@@ -80,17 +80,6 @@ export const config = {
                         side: "left",
                         spacing: 80
                     }
-                },
-        {
-                    enemy: "sandGuy",
-                    start: 240,
-        
-                    formation: {
-                        type: "column",
-                        count: 15,
-                        side: "right",
-                        spacing: 80
-                    }
                 }
     ]
 };
