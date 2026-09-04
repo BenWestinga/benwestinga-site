@@ -6,26 +6,17 @@ const snake = {
 
     hp: 1.8,
 
-    /*
-        Iets langer/groter.
-    */
-
-    size: 3,
+    size: 3.4,
 
     speed: "mediumFast",
 
-    color: "#397c35",
+    color: "#1f5a22",
 
     chaseDuration:
         2,
 
     chaseTracking:
         1,
-
-    /*
-        Zelfde voorwaartse snelheid,
-        maar veel langzamere kronkel.
-    */
 
     waveAmplitude:
         27,
@@ -73,11 +64,6 @@ const snake = {
         enemy.snakeTimer +=
             dt;
 
-
-        /*
-            Eerste 2 seconden:
-            richting speler.
-        */
 
         if (
             enemy.snakeMode ===
@@ -136,14 +122,6 @@ const snake = {
 
         } else {
 
-            /*
-                Voorwaartse afstand blijft
-                gewoon enemy.speed.
-
-                Dus de langzamere kronkel
-                verlaagt de snelheid niet.
-            */
-
             enemy.snakeDistance +=
                 enemy.speed *
                 dt;
@@ -185,10 +163,6 @@ const snake = {
                 enemy.snakePerpendicularY *
                     wave;
 
-
-            /*
-                Richting voor visual.
-            */
 
             const waveDerivative =
 
@@ -262,13 +236,6 @@ const snake = {
         }
 
 
-        /*
-            Snake blijft niet binnen.
-
-            Hij gaat uiteindelijk
-            door de arena heen.
-        */
-
         if (
             enemy.enteredArena &&
             api.isFullyOutsideArena(
@@ -302,24 +269,14 @@ const snake = {
 
         ctx.save();
 
-
         ctx.translate(
             x,
             y
         );
 
-
         ctx.rotate(
             angle
         );
-
-
-        /*
-            LANGER SLANGENLICHAAM.
-
-            Blijft wel binnen
-            de ronde hitbox.
-        */
 
         ctx.lineCap =
             "round";
@@ -329,87 +286,87 @@ const snake = {
 
 
         /*
-            DONKERE BUITENRAND
+            Extra lang lichaam
         */
 
         ctx.beginPath();
 
-
         ctx.moveTo(
-            -r * 0.82,
-            0
+            -r * 1.02,
+            r * 0.03
         );
 
-
         ctx.bezierCurveTo(
-
-            -r * 0.67,
-            -r * 0.26,
-
-            -r * 0.48,
-            -r * 0.30,
-
-            -r * 0.31,
-            -r * 0.06
-        );
-
-
-        ctx.bezierCurveTo(
-
-            -r * 0.14,
-            r * 0.23,
-
-            r * 0.05,
-            r * 0.25,
-
-            r * 0.22,
-            0
-        );
-
-
-        ctx.bezierCurveTo(
-
-            r * 0.38,
+            -r * 0.88,
             -r * 0.23,
 
-            r * 0.54,
-            -r * 0.21,
+            -r * 0.70,
+            -r * 0.34,
 
-            r * 0.70,
+            -r * 0.52,
+            -r * 0.11
+        );
+
+        ctx.bezierCurveTo(
+            -r * 0.35,
+            r * 0.14,
+
+            -r * 0.14,
+            r * 0.25,
+
+            0,
+            0
+        );
+
+        ctx.bezierCurveTo(
+            r * 0.17,
+            -r * 0.22,
+
+            r * 0.34,
+            -r * 0.26,
+
+            r * 0.50,
+            -r * 0.02
+        );
+
+        ctx.bezierCurveTo(
+            r * 0.63,
+            r * 0.17,
+
+            r * 0.75,
+            r * 0.14,
+
+            r * 0.88,
             0
         );
 
 
         ctx.strokeStyle =
-            "#214d25";
+            "#133919";
 
         ctx.lineWidth =
             Math.max(
-                7,
-                r * 0.34
+                9,
+                r * 0.32
             );
 
         ctx.stroke();
 
-
-        /*
-            GROENE BINNENKANT
-        */
 
         ctx.strokeStyle =
             this.color;
 
         ctx.lineWidth =
             Math.max(
-                4,
-                r * 0.22
+                5,
+                r * 0.20
             );
 
         ctx.stroke();
 
 
         /*
-            STAARTPUNT
+            Rug-streep
         */
 
         ctx.beginPath();
@@ -419,30 +376,74 @@ const snake = {
             0
         );
 
-        ctx.lineTo(
-            -r * 0.92,
-            r * 0.04
+        ctx.bezierCurveTo(
+            -r * 0.62,
+            -r * 0.12,
+
+            -r * 0.28,
+            0.14 * r,
+
+            0,
+            0
         );
 
+        ctx.bezierCurveTo(
+            r * 0.24,
+            -r * 0.12,
+
+            r * 0.56,
+            0.10 * r,
+
+            r * 0.78,
+            0
+        );
 
         ctx.strokeStyle =
-            "#397c35";
+            "#2a6b2f";
 
         ctx.lineWidth =
             Math.max(
-                3,
-                r * 0.14
+                2,
+                r * 0.07
             );
 
         ctx.stroke();
 
 
         /*
-            KOP
+            Staart
+        */
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            -r * 0.98,
+            r * 0.02
+        );
+
+        ctx.lineTo(
+            -r * 1.12,
+            r * 0.06
+        );
+
+        ctx.strokeStyle =
+            "#1b4b21";
+
+        ctx.lineWidth =
+            Math.max(
+                3,
+                r * 0.10
+            );
+
+        ctx.stroke();
+
+
+        /*
+            Kop
         */
 
         const headX =
-            r * 0.70;
+            r * 0.90;
 
 
         ctx.beginPath();
@@ -455,12 +456,10 @@ const snake = {
             Math.PI * 2
         );
 
-
         ctx.fillStyle =
-            "#4c9844";
+            "#2a6a2f";
 
         ctx.fill();
-
 
         ctx.lineWidth =
             Math.max(
@@ -469,55 +468,45 @@ const snake = {
             );
 
         ctx.strokeStyle =
-            "#214d25";
+            "#133919";
 
         ctx.stroke();
 
 
         /*
-            EYES
+            Ogen
         */
 
         ctx.fillStyle =
             "#111111";
 
-
         ctx.beginPath();
 
         ctx.arc(
             headX +
-                r * 0.06,
-
-            -r * 0.075,
-
+                r * 0.05,
+            -r * 0.07,
             Math.max(
                 1.5,
                 r * 0.038
             ),
-
             0,
-
             Math.PI * 2
         );
 
         ctx.fill();
 
-
         ctx.beginPath();
 
         ctx.arc(
             headX +
-                r * 0.06,
-
-            r * 0.075,
-
+                r * 0.05,
+            r * 0.07,
             Math.max(
                 1.5,
                 r * 0.038
             ),
-
             0,
-
             Math.PI * 2
         );
 
@@ -525,7 +514,7 @@ const snake = {
 
 
         /*
-            TONG
+            Tong
         */
 
         ctx.strokeStyle =
@@ -536,7 +525,6 @@ const snake = {
                 1.5,
                 r * 0.045
             );
-
 
         ctx.beginPath();
 
@@ -552,7 +540,6 @@ const snake = {
             0
         );
 
-
         ctx.moveTo(
             headX +
                 r * 0.31,
@@ -564,7 +551,6 @@ const snake = {
                 r * 0.37,
             -r * 0.05
         );
-
 
         ctx.moveTo(
             headX +
@@ -578,9 +564,7 @@ const snake = {
             r * 0.05
         );
 
-
         ctx.stroke();
-
 
         ctx.restore();
     }

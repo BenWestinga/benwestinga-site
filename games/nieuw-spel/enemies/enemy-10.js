@@ -14,7 +14,7 @@ const landedSwordDefinition = {
     behavior: "static-object",
 
     hp: 3,
-    size: 1.4,
+    size: 1.6,
 
     speed: "ultraSlow",
 
@@ -326,14 +326,14 @@ const knight = {
 
     behavior: "knight-chase",
 
-    hp: 8,
+    hp: 9,
 
     /*
         Eerst size 2.
         Nu +2 = size 4.
     */
 
-    size: 4,
+    size: 6,
 
     speed: "medium",
 

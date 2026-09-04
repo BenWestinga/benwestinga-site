@@ -5,7 +5,7 @@ const camoGoon = {
     behavior: "camo-chase",
 
     hp: 2,
-    size: 2,
+    size: 4,
 
     speed: "slow",
 
