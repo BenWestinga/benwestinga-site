@@ -655,7 +655,7 @@ const snakeQueen = {
 
 
     hp:
-        24,
+        26,
 
     size:
         8,
@@ -673,15 +673,15 @@ const snakeQueen = {
 
 
     summonInterval:
-        13.4,
+        8.4,
 
 
     summonDuration:
-        2,
+        1,
 
 
     summonRadius:
-        145,
+        290,
 
 
     ballChargeDuration:
