@@ -31,9 +31,9 @@ export const config = {
         { enemy: "grassGoon", count: 60, start: 5, duration: 60},
         { enemy: "knight", count: 10, start: 5, duration: 60},
         { enemy: "camoGoon", count: 8, start: 30, duration: 120},
-        { enemy: "shotgunGoon", count: 9, start: 60, duration: 28},
+        { enemy: "shotgunGoon", count: 12, start: 60, duration: 28},
         { enemy: "grassGoon", count: 40, start: 90, duration: 60},
-        { enemy: "knight", count: 8, start: 90, duration: 60}
+        { enemy: "knight", count: 18, start: 90, duration: 60}
     ]
 };
 

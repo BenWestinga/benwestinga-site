@@ -3,6 +3,8 @@ import knight from "../enemies/enemy-10.js";
 import camoGoon from "../enemies/enemy-11.js";
 import shotgunGoon from "../enemies/enemy-12.js";
 import snake from "../enemies/enemy-13.js";
+import grassBen from "../enemies/boss-03.js";
+import shielder from "../enemies/enemy-14.js";
 
 export const config = {
 
@@ -23,31 +25,21 @@ export const config = {
         knight,
         camoGoon,
         shotgunGoon,
-        snake
+        snake,
+        grassBen,
+        shielder
     },
 
     spawnGroups: [
 
-        /*
-        Normale enemy:
-
-        {
-            enemy: "grassEnemy",
-            count: 20,
-            start: 5,
-            duration: 60
-        }
-
-
-        Boss:
-
-        {
-            enemy: "grassBoss",
-            count: 1,
-            start: 120,
-            duration: 1
-        }
-        */
+        { enemy: "grassGoon", count: 100, start: 5, duration: 155},
+        { enemy: "camoGoon", count: 40, start: 5, duration: 155},
+        { enemy: "knight", count: 40, start: 5, duration: 155},
+        { enemy: "shotgunGoon", count: 38, start: 5, duration: 155},
+        { enemy: "snake", count: 150, start: 5, duration: 155},
+        { enemy: "shielder", count: 30, start: 5, duration: 155},
+        { enemy: "grassBen", count: 1, start: 160, duration: 1},
+        { enemy: "shotgunGoon", count: 50, start: 160, duration: 260},
 
     ]
 };

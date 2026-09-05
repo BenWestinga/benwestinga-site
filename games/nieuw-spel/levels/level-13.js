@@ -38,21 +38,12 @@ export const config = {
         { enemy: "shielder", count: 5, start: 5, duration: 35},
         { enemy: "knight", count: 10, start: 10, duration: 30},
         { enemy: "shotgunGoon", count: 5, start: 12, duration: 30},
-        {
-                    enemy: "snake",
-                    start: 50,
-        
-                    formation: {
-                        type: "column",
-                        count: 20,
-                        side: "left",
-                        spacing: 40
-                    }
-                },
         { enemy: "knight", count: 12, start: 55, duration: 45},
         { enemy: "shielder", count: 8, start: 55, duration: 45},
         { enemy: "shotgunGoon", count: 4, start: 65, duration: 5},
-        { enemy: "shotgunGoon", count: 4, start: 90, duration: 5}
+        { enemy: "shotgunGoon", count: 4, start: 90, duration: 5},
+        { enemy: "shotgunGoon", count: 3, start: 110, duration: 5},
+        { enemy: "shotgunGoon", count: 3, start: 130, duration: 5}
 
     ]
 };
