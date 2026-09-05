@@ -2,8 +2,7 @@ const swordThrows = [];
 
 
 function clearSwordThrows() {
-    swordThrows.length =
-        0;
+    swordThrows.length = 0;
 }
 
 
@@ -20,19 +19,13 @@ const landedSwordDefinition = {
 
     color: "#c4cbd1",
 
-    collidesWithPlayer:
-        true,
+    collidesWithPlayer: true,
 
 
     draw(enemy, ctx) {
-        const x =
-            enemy.x;
-
-        const y =
-            enemy.y;
-
-        const r =
-            enemy.radius;
+        const x = enemy.x;
+        const y = enemy.y;
+        const r = enemy.radius;
 
 
         ctx.save();
@@ -264,8 +257,18 @@ function throwSword(
     });
 
 
+    /*
+        Sword is now gone.
+
+        Start the 20 second
+        return timer.
+    */
+
     enemy.hasThrownSword =
         true;
+
+    enemy.swordReturnTimer =
+        0;
 }
 
 
@@ -275,9 +278,7 @@ function spawnLandedSword(
 ) {
     const sword =
         api.createEntity(
-
             landedSwordDefinition,
-
             {
                 x:
                     projectile.targetX,
@@ -285,7 +286,6 @@ function spawnLandedSword(
                 y:
                     projectile.targetY
             },
-
             {
                 hp:
                     3,
@@ -328,11 +328,6 @@ const knight = {
 
     hp: 9,
 
-    /*
-        Eerst size 2.
-        Nu +2 = size 4.
-    */
-
     size: 6,
 
     speed: "medium",
@@ -340,6 +335,30 @@ const knight = {
     tracking: 0.3,
 
     color: "#4e9c48",
+
+
+    /*
+        =========================
+        MOVEMENT CYCLE
+
+        10 sec chase
+        1 sec straight
+        repeat forever
+        =========================
+    */
+
+    chaseDuration:
+        10,
+
+    chaseBreakDuration:
+        1,
+
+
+    /*
+        =========================
+        SWORD
+        =========================
+    */
 
     throwRadius:
         380,
@@ -352,6 +371,14 @@ const knight = {
 
     swordLandingRadius:
         19,
+
+    /*
+        After throwing his sword,
+        it returns after 20 seconds.
+    */
+
+    swordReturnDuration:
+        20,
 
 
     reset() {
@@ -370,18 +397,97 @@ const knight = {
 
 
     onSpawn(enemy) {
+        /*
+            Starts with a sword.
+        */
+
         enemy.hasThrownSword =
             false;
+
+        enemy.swordReturnTimer =
+            0;
+
+
+        /*
+            Movement cycle starts
+            with 10 seconds chase.
+        */
+
+        enemy.chaseCycleTimer =
+            0;
     },
 
 
     update(enemy, dt, api) {
-        api.moveTowardPlayer(
-            enemy,
-            dt,
-            this.tracking
-        );
+        /*
+            ==========================================
+            MOVEMENT CYCLE
+            ==========================================
 
+            0 - 10 sec:
+                chase player
+
+            10 - 11 sec:
+                do not track player,
+                continue straight
+
+            repeat forever.
+        */
+
+        enemy.chaseCycleTimer +=
+            dt;
+
+
+        const cycleDuration =
+            this.chaseDuration +
+            this.chaseBreakDuration;
+
+
+        const cyclePosition =
+            enemy.chaseCycleTimer %
+            cycleDuration;
+
+
+        const isChasing =
+            cyclePosition <
+            this.chaseDuration;
+
+
+        if (
+            isChasing
+        ) {
+            /*
+                Normal chase.
+            */
+
+            api.moveTowardPlayer(
+                enemy,
+                dt,
+                this.tracking
+            );
+
+        } else {
+            /*
+                For 1 second the Knight
+                does NOT change direction
+                toward the player.
+
+                He simply continues in
+                his current direction.
+            */
+
+            api.moveStraight(
+                enemy,
+                dt
+            );
+        }
+
+
+        /*
+            ==========================================
+            ARENA
+            ==========================================
+        */
 
         if (
             !enemy.enteredArena &&
@@ -395,9 +501,8 @@ const knight = {
 
 
         /*
-            Tracking enemy:
-            eenmaal binnen blijft
-            hij binnen.
+            Once inside, Knight
+            cannot leave the arena.
         */
 
         if (
@@ -410,40 +515,68 @@ const knight = {
 
 
         /*
-            Heeft al gegooid.
+            ==========================================
+            SWORD RETURN TIMER
+            ==========================================
         */
 
         if (
             enemy.hasThrownSword
         ) {
-            return;
+            enemy.swordReturnTimer +=
+                dt;
+
+
+            if (
+                enemy.swordReturnTimer >=
+                this.swordReturnDuration
+            ) {
+                /*
+                    Sword has returned.
+                */
+
+                enemy.hasThrownSword =
+                    false;
+
+                enemy.swordReturnTimer =
+                    0;
+            }
         }
 
 
-        const player =
-            api.getPlayer();
-
-
-        const distance =
-            Math.hypot(
-
-                player.x -
-                    enemy.x,
-
-                player.y -
-                    enemy.y
-            );
-
+        /*
+            ==========================================
+            THROW SWORD
+            ==========================================
+        */
 
         if (
-            distance <=
-            this.throwRadius
+            !enemy.hasThrownSword
         ) {
-            throwSword(
-                enemy,
-                api,
-                this
-            );
+            const player =
+                api.getPlayer();
+
+
+            const distance =
+                Math.hypot(
+                    player.x -
+                        enemy.x,
+
+                    player.y -
+                        enemy.y
+                );
+
+
+            if (
+                distance <=
+                this.throwRadius
+            ) {
+                throwSword(
+                    enemy,
+                    api,
+                    this
+                );
+            }
         }
     },
 
@@ -467,41 +600,32 @@ const knight = {
 
             const progress =
                 Math.min(
-
                     1,
-
                     projectile.elapsed /
                         projectile.duration
                 );
 
 
             projectile.x =
-
                 projectile.startX +
-
                 (
                     projectile.targetX -
                     projectile.startX
                 ) *
-
                 progress;
 
 
             projectile.y =
-
                 projectile.startY +
-
                 (
                     projectile.targetY -
                     projectile.startY
                 ) *
-
                 progress;
 
 
             if (
-                progress <
-                1
+                progress < 1
             ) {
                 continue;
             }
@@ -515,11 +639,8 @@ const knight = {
 
             if (
                 api.playerTouchesCircle(
-
                     projectile.targetX,
-
                     projectile.targetY,
-
                     projectile.targetRadius
                 )
             ) {
@@ -546,7 +667,7 @@ const knight = {
 
     draw(enemy, ctx, api) {
         /*
-            GROENE BODY
+            GREEN BODY
         */
 
         api.drawDefaultEnemy(
@@ -586,13 +707,13 @@ const knight = {
 
         /*
             =====================
-            HARNAS
+            ARMOR
             =====================
         */
 
 
         /*
-            BORSTPLAAT
+            CHEST PLATE
         */
 
         ctx.beginPath();
@@ -610,6 +731,7 @@ const knight = {
         ctx.quadraticCurveTo(
             x,
             y + r * 0.82,
+
             x + r * 0.40,
             y + r * 0.62
         );
@@ -622,6 +744,7 @@ const knight = {
         ctx.quadraticCurveTo(
             x,
             y + r * 0.27,
+
             x - r * 0.55,
             y + r * 0.05
         );
@@ -646,7 +769,7 @@ const knight = {
 
 
         /*
-            METALEN HIGHLIGHT
+            METAL HIGHLIGHT
         */
 
         ctx.beginPath();
@@ -659,6 +782,7 @@ const knight = {
         ctx.quadraticCurveTo(
             x,
             y + r * 0.34,
+
             x + r * 0.30,
             y + r * 0.20
         );
@@ -677,7 +801,7 @@ const knight = {
 
 
         /*
-            LINKER SCHOUDER
+            LEFT SHOULDER
         */
 
         ctx.beginPath();
@@ -704,7 +828,7 @@ const knight = {
 
 
         /*
-            RECHTER SCHOUDER
+            RIGHT SHOULDER
         */
 
         ctx.beginPath();
@@ -721,7 +845,7 @@ const knight = {
 
 
         /*
-            BOUTEN
+            BOLTS
         */
 
         ctx.fillStyle =
@@ -733,10 +857,12 @@ const knight = {
         ctx.arc(
             x - r * 0.40,
             y + r * 0.20,
+
             Math.max(
                 2,
                 r * 0.05
             ),
+
             0,
             Math.PI * 2
         );
@@ -749,10 +875,12 @@ const knight = {
         ctx.arc(
             x + r * 0.40,
             y + r * 0.20,
+
             Math.max(
                 2,
                 r * 0.05
             ),
+
             0,
             Math.PI * 2
         );
@@ -764,7 +892,12 @@ const knight = {
 
 
         /*
-            ZWAARD NOG IN HAND
+            ==========================
+            SWORD IN HAND
+            ==========================
+
+            Only draw it when Knight
+            currently has a sword.
         */
 
         if (
@@ -881,6 +1014,11 @@ const knight = {
 
 
     drawBelow(ctx) {
+        /*
+            Landing warning
+            for every flying sword.
+        */
+
         for (
             const projectile
             of swordThrows
@@ -920,27 +1058,27 @@ const knight = {
 
 
     drawGlobal(ctx) {
+        /*
+            Flying swords.
+        */
+
         for (
             const projectile
             of swordThrows
         ) {
             const progress =
                 Math.min(
-
                     1,
-
                     projectile.elapsed /
                         projectile.duration
                 );
 
 
             const arcHeight =
-
                 Math.sin(
                     progress *
                     Math.PI
                 ) *
-
                 120;
 
 
@@ -953,7 +1091,6 @@ const knight = {
 
 
             const spin =
-
                 progress *
                 Math.PI *
                 4;
@@ -973,7 +1110,7 @@ const knight = {
 
 
             /*
-                FLYING BLADE
+                FLYING BLADE OUTLINE
             */
 
             ctx.strokeStyle =
@@ -1000,6 +1137,10 @@ const knight = {
 
             ctx.stroke();
 
+
+            /*
+                METAL BLADE
+            */
 
             ctx.strokeStyle =
                 "#dce2e6";
