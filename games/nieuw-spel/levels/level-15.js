@@ -3,7 +3,7 @@ import knight from "../enemies/enemy-10.js";
 import camoGoon from "../enemies/enemy-11.js";
 import shotgunGoon from "../enemies/enemy-12.js";
 import snake from "../enemies/enemy-13.js";
-import grassBen from "../enemies/boss-03.js";
+import snakeMachine from "../enemies/boss-03.js";
 import shielder from "../enemies/enemy-14.js";
 
 export const config = {
@@ -26,7 +26,7 @@ export const config = {
         camoGoon,
         shotgunGoon,
         snake,
-        grassBen,
+        snakeMachine,
         shielder
     },
 
@@ -38,8 +38,8 @@ export const config = {
         { enemy: "shotgunGoon", count: 12, start: 5, duration: 155},
         { enemy: "snake", count: 150, start: 5, duration: 155},
         { enemy: "shielder", count: 8, start: 5, duration: 155},
-        { enemy: "grassBen", count: 1, start: 160, duration: 1},
-        { enemy: "shotgunGoon", count: 50, start: 160, duration: 260},
+        { enemy: "snakeMachine", count: 1, start: 160, duration: 1},
+        { enemy: "shotgunGoon", count: 70, start: 160, duration: 260},
 
     ]
 };

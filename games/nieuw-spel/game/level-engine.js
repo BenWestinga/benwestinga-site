@@ -271,23 +271,42 @@
         ctx.strokeStyle =
             "rgba(0,0,0,0.75)";
 
-        const title =
-            `LEVEL ${activeConfig.number}`;
+        const hideLevelTitle =
+            state.enemies.some(
+                enemy =>
+                    enemy &&
+                    enemy.hp > 0 &&
+                    enemy.enteredArena &&
+                    enemy.definition
+                        ?.hideLevelTitleWhenActive ===
+                        true
+            );
 
-        ctx.strokeText(
-            title,
-            canvas.width / 2,
-            48
-        );
 
-        ctx.fillStyle =
-            "white";
+        if (
+            !hideLevelTitle
+        ) {
+            const title =
+                `LEVEL ${activeConfig.number}`;
 
-        ctx.fillText(
-            title,
-            canvas.width / 2,
-            48
-        );
+
+            ctx.strokeText(
+                title,
+                canvas.width / 2,
+                48
+            );
+
+
+            ctx.fillStyle =
+                "white";
+
+
+            ctx.fillText(
+                title,
+                canvas.width / 2,
+                48
+            );
+        }
 
         ctx.font =
             "bold 18px Arial";

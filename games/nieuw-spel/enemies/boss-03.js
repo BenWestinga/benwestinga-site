@@ -2,31 +2,53 @@ const snakeBullets = [];
 const healEffects = [];
 
 
+/*
+    =====================================================
+    RUNTIME
+    =====================================================
+*/
+
 function clearRuntime() {
     snakeBullets.length = 0;
     healEffects.length = 0;
 }
 
 
+/*
+    =====================================================
+    HEAL VISUAL
+    =====================================================
+*/
+
 function addHealEffect(
     enemy,
     amount
 ) {
-    healEffects.push({
-        x:
-            enemy.x,
+    if (
+        !enemy ||
+        amount <= 0
+    ) {
+        return;
+    }
 
-        y:
-            enemy.y,
+
+    healEffects.push({
+        x: enemy.x,
+        y: enemy.y,
 
         amount,
 
         elapsed: 0,
-
         duration: 1
     });
 }
 
+
+/*
+    =====================================================
+    TURN NORMAL SNAKE INTO A STRAIGHT/WAVE SNAKE
+    =====================================================
+*/
 
 function configureSnakeDirection(
     snake,
@@ -44,10 +66,16 @@ function configureSnakeDirection(
         Math.sin(angle);
 
 
+    /*
+        Skip the Snake's normal
+        first 2 second chase.
+    */
+
     snake.snakeTimer = 2;
 
     snake.snakeMode =
         "wave";
+
 
     snake.snakeDirectionX =
         dx;
@@ -55,11 +83,13 @@ function configureSnakeDirection(
     snake.snakeDirectionY =
         dy;
 
+
     snake.snakePerpendicularX =
         -dy;
 
     snake.snakePerpendicularY =
         dx;
+
 
     snake.snakeOriginX =
         snake.x;
@@ -67,8 +97,10 @@ function configureSnakeDirection(
     snake.snakeOriginY =
         snake.y;
 
+
     snake.snakeDistance =
         0;
+
 
     snake.vx =
         dx *
@@ -78,144 +110,17 @@ function configureSnakeDirection(
         dy *
         snake.speed;
 
+
     snake.enteredArena =
         true;
 }
 
 
-function shootSnake(
-    boss,
-    api,
-    config
-) {
-    const player =
-        api.getPlayer();
-
-
-    const dx =
-        player.x -
-        boss.x;
-
-    const dy =
-        player.y -
-        boss.y;
-
-    const distance =
-        Math.hypot(
-            dx,
-            dy
-        ) || 1;
-
-
-    const vx =
-        dx /
-        distance *
-        config.snakeBulletSpeed;
-
-    const vy =
-        dy /
-        distance *
-        config.snakeBulletSpeed;
-
-
-    snakeBullets.push({
-        x:
-            boss.x,
-
-        y:
-            boss.y,
-
-        vx,
-        vy,
-
-        angle:
-            Math.atan2(
-                vy,
-                vx
-            ),
-
-        radius:
-            config.snakeBulletRadius,
-
-        rage:
-            boss.grassBenState
-                ?.raging === true
-    });
-}
-
-
-function spawnSnakeFromBullet(
-    bullet,
-    api,
-    config
-) {
-    const canvas =
-        api.getCanvas();
-
-
-    const margin = 30;
-
-
-    const x =
-        Math.max(
-            margin,
-            Math.min(
-                canvas.width -
-                    margin,
-                bullet.x
-            )
-        );
-
-
-    const y =
-        Math.max(
-            margin,
-            Math.min(
-                canvas.height -
-                    margin,
-                bullet.y
-            )
-        );
-
-
-    const snake =
-        api.spawnEnemyAt(
-            "snake",
-            x,
-            y
-        );
-
-
-    if (!snake) {
-        return;
-    }
-
-
-    /*
-        EXACT 180 DEGREE TURN.
-    */
-
-    const reverseAngle =
-        bullet.angle +
-        Math.PI;
-
-
-    configureSnakeDirection(
-        snake,
-        reverseAngle
-    );
-
-
-    if (
-        bullet.rage
-    ) {
-        applyRageToSnake(
-            snake,
-            config
-        );
-    }
-}
-
+/*
+    =====================================================
+    RAGE SNAKES
+    =====================================================
+*/
 
 function applyRageToSnake(
     snake,
@@ -230,25 +135,33 @@ function applyRageToSnake(
 
 
     if (
-        snake.grassBenRageActive
+        snake.snakeMachineRageActive
     ) {
         return;
     }
 
 
-    snake.grassBenRageActive =
+    snake.snakeMachineRageActive =
         true;
 
 
-    snake.grassBenOriginalSize =
+    /*
+        Remember original values.
+    */
+
+    snake.snakeMachineOriginalSize =
         snake.size;
 
-    snake.grassBenOriginalRadius =
+    snake.snakeMachineOriginalRadius =
         snake.radius;
 
-    snake.grassBenOriginalSpeed =
+    snake.snakeMachineOriginalSpeed =
         snake.speed;
 
+
+    /*
+        2x bigger.
+    */
 
     snake.size *=
         2;
@@ -256,20 +169,40 @@ function applyRageToSnake(
     snake.radius *=
         2;
 
+
+    /*
+        Slightly faster.
+    */
+
     snake.speed *=
         config.rageSnakeSpeedMultiplier;
 
 
     /*
-        Ook huidige velocity
-        iets sneller maken.
+        Keep current direction,
+        only increase speed.
     */
 
-    snake.vx *=
-        config.rageSnakeSpeedMultiplier;
+    const velocityLength =
+        Math.hypot(
+            snake.vx,
+            snake.vy
+        );
 
-    snake.vy *=
-        config.rageSnakeSpeedMultiplier;
+
+    if (
+        velocityLength > 0
+    ) {
+        snake.vx =
+            snake.vx /
+            velocityLength *
+            snake.speed;
+
+        snake.vy =
+            snake.vy /
+            velocityLength *
+            snake.speed;
+    }
 }
 
 
@@ -278,24 +211,28 @@ function removeRageFromSnake(
 ) {
     if (
         !snake ||
-        !snake.grassBenRageActive
+        !snake.snakeMachineRageActive
     ) {
         return;
     }
 
 
     snake.size =
-        snake.grassBenOriginalSize ??
+        snake.snakeMachineOriginalSize ??
         snake.size;
 
     snake.radius =
-        snake.grassBenOriginalRadius ??
+        snake.snakeMachineOriginalRadius ??
         snake.radius;
 
     snake.speed =
-        snake.grassBenOriginalSpeed ??
+        snake.snakeMachineOriginalSpeed ??
         snake.speed;
 
+
+    /*
+        Restore velocity magnitude.
+    */
 
     const velocityLength =
         Math.hypot(
@@ -319,14 +256,21 @@ function removeRageFromSnake(
     }
 
 
-    delete snake.grassBenOriginalSize;
-    delete snake.grassBenOriginalRadius;
-    delete snake.grassBenOriginalSpeed;
+    delete snake.snakeMachineOriginalSize;
+    delete snake.snakeMachineOriginalRadius;
+    delete snake.snakeMachineOriginalSpeed;
 
-    snake.grassBenRageActive =
+
+    snake.snakeMachineRageActive =
         false;
 }
 
+
+/*
+    =====================================================
+    RAGE START / END
+    =====================================================
+*/
 
 function startRage(
     boss,
@@ -334,7 +278,12 @@ function startRage(
     config
 ) {
     const state =
-        boss.grassBenState;
+        boss.snakeMachineState;
+
+
+    if (!state) {
+        return;
+    }
 
 
     state.raging =
@@ -343,9 +292,13 @@ function startRage(
     state.rageRemaining =
         config.rageDuration;
 
-    state.rageCooldown =
+    state.rageTimer =
         0;
 
+
+    /*
+        Boss moves 2x as fast.
+    */
 
     boss.speed =
         state.baseSpeed *
@@ -353,7 +306,7 @@ function startRage(
 
 
     /*
-        ALLE BESTAANDE SNAKES.
+        Existing snakes become enraged.
     */
 
     for (
@@ -378,7 +331,12 @@ function stopRage(
     api
 ) {
     const state =
-        boss.grassBenState;
+        boss.snakeMachineState;
+
+
+    if (!state) {
+        return;
+    }
 
 
     state.raging =
@@ -387,7 +345,7 @@ function stopRage(
     state.rageRemaining =
         0;
 
-    state.rageCooldown =
+    state.rageTimer =
         0;
 
 
@@ -411,35 +369,36 @@ function stopRage(
 }
 
 
-function healBossFromSnakes(
+/*
+    =====================================================
+    SNAKE HEAL
+
+    NOW ACTIVE ALL THE TIME,
+    NOT ONLY DURING RAGE.
+    =====================================================
+*/
+
+function absorbTouchingSnakes(
     boss,
-    api
+    api,
+    config
 ) {
-    const state =
-        boss.grassBenState;
-
-
-    if (
-        !state?.raging
-    ) {
-        return;
-    }
-
-
     const enemies = [
         ...api.getEnemies()
     ];
 
 
     for (
-        const enemy
+        const snake
         of enemies
     ) {
         if (
-            !enemy ||
-            enemy === boss ||
-            enemy.type !== "snake" ||
-            !api.isEnemyAlive(enemy)
+            !snake ||
+            snake === boss ||
+            snake.type !== "snake" ||
+            !api.isEnemyAlive(
+                snake
+            )
         ) {
             continue;
         }
@@ -447,17 +406,17 @@ function healBossFromSnakes(
 
         const distance =
             Math.hypot(
-                enemy.x -
+                snake.x -
                     boss.x,
 
-                enemy.y -
+                snake.y -
                     boss.y
             );
 
 
         if (
             distance >
-            enemy.radius +
+            snake.radius +
                 boss.radius
         ) {
             continue;
@@ -465,11 +424,11 @@ function healBossFromSnakes(
 
 
         /*
-            SNAKE ABSORBED.
+            Snake disappears into boss.
         */
 
         api.removeEnemy(
-            enemy
+            snake
         );
 
 
@@ -480,7 +439,8 @@ function healBossFromSnakes(
         boss.hp =
             Math.min(
                 boss.maxHp,
-                boss.hp + 3
+                boss.hp +
+                    config.snakeHealAmount
             );
 
 
@@ -489,15 +449,175 @@ function healBossFromSnakes(
             oldHp;
 
 
-        addHealEffect(
-            boss,
-            actualHeal
+        if (
+            actualHeal > 0
+        ) {
+            addHealEffect(
+                boss,
+                actualHeal
+            );
+        }
+    }
+}
+
+
+/*
+    =====================================================
+    SNAKE GUN
+    =====================================================
+*/
+
+function shootSnakeBullet(
+    boss,
+    api,
+    config
+) {
+    const player =
+        api.getPlayer();
+
+
+    const dx =
+        player.x -
+        boss.x;
+
+    const dy =
+        player.y -
+        boss.y;
+
+
+    const length =
+        Math.hypot(
+            dx,
+            dy
+        ) || 1;
+
+
+    const vx =
+        dx /
+        length *
+        config.snakeBulletSpeed;
+
+    const vy =
+        dy /
+        length *
+        config.snakeBulletSpeed;
+
+
+    snakeBullets.push({
+        x:
+            boss.x,
+
+        y:
+            boss.y,
+
+        vx,
+
+        vy,
+
+        angle:
+            Math.atan2(
+                vy,
+                vx
+            ),
+
+        radius:
+            config.snakeBulletRadius,
+
+        raging:
+            boss.snakeMachineState
+                ?.raging === true
+    });
+}
+
+
+/*
+    Bullet reaches wall:
+    turn exactly 180 degrees,
+    then become normal Snake.
+*/
+
+function transformBulletIntoSnake(
+    bullet,
+    api,
+    config
+) {
+    const canvas =
+        api.getCanvas();
+
+
+    const margin =
+        30;
+
+
+    const spawnX =
+        Math.max(
+            margin,
+            Math.min(
+                canvas.width -
+                    margin,
+                bullet.x
+            )
+        );
+
+
+    const spawnY =
+        Math.max(
+            margin,
+            Math.min(
+                canvas.height -
+                    margin,
+                bullet.y
+            )
+        );
+
+
+    const snake =
+        api.spawnEnemyAt(
+            "snake",
+            spawnX,
+            spawnY
+        );
+
+
+    if (!snake) {
+        return;
+    }
+
+
+    /*
+        Exact 180 degree turn.
+    */
+
+    configureSnakeDirection(
+        snake,
+        bullet.angle +
+            Math.PI
+    );
+
+
+    /*
+        If Snake Machine is currently
+        raging, new Snake also gets rage.
+    */
+
+    if (
+        bullet.raging
+    ) {
+        applyRageToSnake(
+            snake,
+            config
         );
     }
 }
 
 
-function drawGreenBen(
+/*
+    =====================================================
+    DRAW BOSS
+    =====================================================
+*/
+
+function drawSnakeMachine(
     enemy,
     ctx,
     api,
@@ -519,11 +639,16 @@ function drawGreenBen(
         enemy.radius;
 
 
+    const raging =
+        enemy.snakeMachineState
+            ?.raging === true;
+
+
     ctx.save();
 
 
     /*
-        GREEN OUTER BODY
+        GREEN BODY
     */
 
     ctx.beginPath();
@@ -536,17 +661,18 @@ function drawGreenBen(
         Math.PI * 2
     );
 
+
     ctx.fillStyle =
-        enemy.grassBenState
-            ?.raging
-            ? "#30d64a"
-            : "#4c9d4c";
+        raging
+            ? "#26dc45"
+            : "#438f45";
+
 
     ctx.fill();
 
 
     /*
-        BEN.PNG
+        BEN IMAGE
     */
 
     if (
@@ -556,12 +682,13 @@ function drawGreenBen(
     ) {
         ctx.save();
 
+
         ctx.beginPath();
 
         ctx.arc(
             x,
             y,
-            r * 0.90,
+            r * 0.91,
             0,
             Math.PI * 2
         );
@@ -571,25 +698,28 @@ function drawGreenBen(
 
         ctx.drawImage(
             image,
-            x - r * 0.90,
-            y - r * 0.90,
-            r * 1.80,
-            r * 1.80
+
+            x - r * 0.91,
+            y - r * 0.91,
+
+            r * 1.82,
+            r * 1.82
         );
 
 
         /*
-            GREEN TINT
+            Green tint.
         */
 
         ctx.globalCompositeOperation =
             "source-atop";
 
+
         ctx.fillStyle =
-            enemy.grassBenState
-                ?.raging
-                ? "rgba(20,255,45,0.45)"
-                : "rgba(40,180,55,0.34)";
+            raging
+                ? "rgba(25,255,55,0.46)"
+                : "rgba(35,185,60,0.34)";
+
 
         ctx.fillRect(
             x - r,
@@ -617,11 +747,12 @@ function drawGreenBen(
         Math.PI * 2
     );
 
+
     ctx.strokeStyle =
-        enemy.grassBenState
-            ?.raging
-            ? "#b7ff9e"
-            : "#dcffcf";
+        raging
+            ? "#caffbc"
+            : "#e2ffda";
+
 
     ctx.lineWidth =
         Math.max(
@@ -629,11 +760,14 @@ function drawGreenBen(
             r * 0.07
         );
 
+
     ctx.stroke();
 
 
     /*
-        SNAKEGUN
+        =========================================
+        SNAKE MACHINE GUN
+        =========================================
     */
 
     const player =
@@ -655,54 +789,51 @@ function drawGreenBen(
         y
     );
 
+
     ctx.rotate(
         gunAngle
     );
 
 
     /*
-        BARREL
+        Gun body.
+    */
+
+    ctx.fillStyle =
+        "#315f32";
+
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        r * 0.08,
+        -r * 0.18,
+
+        r * 0.56,
+        r * 0.36,
+
+        r * 0.08
+    );
+
+    ctx.fill();
+
+
+    /*
+        Barrel outline.
     */
 
     ctx.strokeStyle =
-        "#244e28";
+        "#183c1c";
 
     ctx.lineWidth =
         Math.max(
-            7,
-            r * 0.13
+            8,
+            r * 0.14
         );
 
     ctx.lineCap =
         "round";
 
-    ctx.beginPath();
-
-    ctx.moveTo(
-        r * 0.30,
-        0
-    );
-
-    ctx.lineTo(
-        r * 1.02,
-        0
-    );
-
-    ctx.stroke();
-
-
-    /*
-        GREEN BARREL INSIDE
-    */
-
-    ctx.strokeStyle =
-        "#5ebf59";
-
-    ctx.lineWidth =
-        Math.max(
-            3,
-            r * 0.055
-        );
 
     ctx.beginPath();
 
@@ -712,7 +843,7 @@ function drawGreenBen(
     );
 
     ctx.lineTo(
-        r * 1.03,
+        r * 1.10,
         0
     );
 
@@ -720,21 +851,54 @@ function drawGreenBen(
 
 
     /*
-        GUN STOCK
+        Green barrel inside.
     */
 
-    ctx.fillStyle =
-        "#3d6d37";
+    ctx.strokeStyle =
+        raging
+            ? "#67ff6d"
+            : "#65be62";
+
+
+    ctx.lineWidth =
+        Math.max(
+            4,
+            r * 0.06
+        );
+
 
     ctx.beginPath();
 
-    ctx.roundRect(
-        r * 0.05,
-        -r * 0.17,
-        r * 0.45,
-        r * 0.34,
-        r * 0.08
+    ctx.moveTo(
+        r * 0.42,
+        0
     );
+
+    ctx.lineTo(
+        r * 1.12,
+        0
+    );
+
+    ctx.stroke();
+
+
+    /*
+        Barrel end.
+    */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        r * 1.10,
+        0,
+        r * 0.12,
+        0,
+        Math.PI * 2
+    );
+
+
+    ctx.fillStyle =
+        "#173a1b";
 
     ctx.fill();
 
@@ -743,60 +907,116 @@ function drawGreenBen(
 }
 
 
-const grassBen = {
-    id: "grass-ben",
-    name: "Grass Ben",
+/*
+    =====================================================
+    BOSS
+    =====================================================
+*/
 
-    behavior: "grass-boss",
+const snakeMachine = {
+    id: "snake-machine",
+
+    name: "Snake Machine",
+
+    behavior:
+        "snake-machine-boss",
 
     boss: true,
+
+
+    /*
+        This property will only hide
+        LEVEL 15 while THIS boss
+        is active.
+    */
+
+    hideLevelTitleWhenActive:
+        true,
+
 
     hp: 250,
 
     /*
-        SAME BASE SIZE AS OLD BEN.
+        Same base size/speed
+        as previous Ben boss.
     */
+
     size: 6,
 
     shape: "circle",
 
-    /*
-        SAME BASE SPEED AS OLD BEN.
-    */
     speed: "ultraSlow",
 
     tracking: 0.1,
 
-    /*
-        User's lowercase file.
-    */
     image: "ben.png",
 
-    color: "#4c9d4c",
+    color: "#438f45",
 
-    snakeGunInterval: 5,
+    borderColor:
+        "#ffffff",
 
-    snakeBulletSpeed: 420,
+    borderWidth: 4,
 
-    snakeBulletRadius: 11,
+    stayInsideArena: true,
 
-    /*
-        40 SEC NORMAL
-        -> 20 SEC RAGE
-        -> 40 SEC NORMAL...
-    */
-
-    rageInterval: 40,
-
-    rageDuration: 20,
-
-    rageBossSpeedMultiplier: 2,
 
     /*
-        2x SIZE,
-        20% FASTER.
+        =================================================
+        SNAKE GUN
+        =================================================
     */
-    rageSnakeSpeedMultiplier: 1.2,
+
+    normalSnakeGunInterval:
+        5,
+
+    /*
+        Rage = twice as fast shooting.
+
+        5 / 2 = 2.5 seconds.
+    */
+
+    rageSnakeGunInterval:
+        2.5,
+
+    snakeBulletSpeed:
+        420,
+
+    snakeBulletRadius:
+        11,
+
+
+    /*
+        =================================================
+        HEAL
+        =================================================
+    */
+
+    snakeHealAmount:
+        3,
+
+
+    /*
+        =================================================
+        RAGE
+        =================================================
+
+        40 seconds normal
+        20 seconds rage
+        repeat.
+    */
+
+    rageInterval:
+        40,
+
+    rageDuration:
+        20,
+
+    rageBossSpeedMultiplier:
+        2,
+
+    rageSnakeSpeedMultiplier:
+        1.2,
 
 
     reset() {
@@ -814,25 +1034,51 @@ const grassBen = {
     },
 
 
-    onSpawn(enemy) {
-        enemy.grassBenState = {
+    onSpawn(
+        enemy,
+        api
+    ) {
+        enemy.snakeMachineState = {
+            /*
+                Snake gun.
+            */
+
             shootTimer: 0,
 
-            rageCooldown: 0,
+
+            /*
+                Rage.
+            */
 
             raging: false,
 
+            rageTimer: 0,
+
             rageRemaining: 0,
+
+
+            /*
+                Original base speed.
+            */
 
             baseSpeed:
                 enemy.speed
         };
+
+
+        api.aimVelocityAtPlayer(
+            enemy
+        );
     },
 
 
-    update(enemy, dt, api) {
+    update(
+        enemy,
+        dt,
+        api
+    ) {
         const state =
-            enemy.grassBenState;
+            enemy.snakeMachineState;
 
 
         if (!state) {
@@ -841,9 +1087,62 @@ const grassBen = {
 
 
         /*
-            =================================
+            =================================================
+            ENTER ARENA
+            =================================================
+        */
+
+        if (
+            !enemy.enteredArena
+        ) {
+            api.moveTowardPlayer(
+                enemy,
+                dt,
+                this.tracking
+            );
+
+
+            if (
+                api.isInsideArena(
+                    enemy
+                )
+            ) {
+                enemy.enteredArena =
+                    true;
+
+
+                api.keepInsideArena(
+                    enemy,
+                    14,
+                    false
+                );
+            }
+
+
+            return;
+        }
+
+
+        /*
+            =================================================
+            HEAL FROM EVERY SNAKE
+
+            THIS HAPPENS DURING NORMAL PHASE
+            AND DURING RAGE.
+            =================================================
+        */
+
+        absorbTouchingSnakes(
+            enemy,
+            api,
+            this
+        );
+
+
+        /*
+            =================================================
             MOVEMENT
-            =================================
+            =================================================
         */
 
         api.moveTowardPlayer(
@@ -853,46 +1152,41 @@ const grassBen = {
         );
 
 
-        if (
-            api.isInsideArena(
-                enemy
-            )
-        ) {
-            enemy.enteredArena =
-                true;
-        }
-
-
-        if (
-            enemy.enteredArena
-        ) {
-            api.keepInsideArena(
-                enemy,
-                14,
-                false
-            );
-        }
+        api.keepInsideArena(
+            enemy,
+            14,
+            false
+        );
 
 
         /*
-            =================================
-            SNAKEGUN
-            =================================
+            =================================================
+            SNAKE GUN
+
+            Normal: every 5 sec
+            Rage:   every 2.5 sec
+            =================================================
         */
 
         state.shootTimer +=
             dt;
 
 
+        const currentShootInterval =
+            state.raging
+                ? this.rageSnakeGunInterval
+                : this.normalSnakeGunInterval;
+
+
         while (
             state.shootTimer >=
-            this.snakeGunInterval
+            currentShootInterval
         ) {
             state.shootTimer -=
-                this.snakeGunInterval;
+                currentShootInterval;
 
 
-            shootSnake(
+            shootSnakeBullet(
                 enemy,
                 api,
                 this
@@ -901,9 +1195,9 @@ const grassBen = {
 
 
         /*
-            =================================
+            =================================================
             RAGE
-            =================================
+            =================================================
         */
 
         if (
@@ -914,9 +1208,8 @@ const grassBen = {
 
 
             /*
-                Nieuwe snakes die ergens
-                anders gespawned zijn
-                worden ook enraged.
+                Any Snake spawned during
+                rage also gets rage.
             */
 
             for (
@@ -935,12 +1228,6 @@ const grassBen = {
             }
 
 
-            healBossFromSnakes(
-                enemy,
-                api
-            );
-
-
             if (
                 state.rageRemaining <=
                 0
@@ -952,12 +1239,12 @@ const grassBen = {
             }
 
         } else {
-            state.rageCooldown +=
+            state.rageTimer +=
                 dt;
 
 
             if (
-                state.rageCooldown >=
+                state.rageTimer >=
                 this.rageInterval
             ) {
                 startRage(
@@ -970,15 +1257,22 @@ const grassBen = {
     },
 
 
-    afterUpdate(dt, api) {
+    /*
+        =====================================================
+        BULLETS + EFFECTS
+        =====================================================
+    */
+
+    afterUpdate(
+        dt,
+        api
+    ) {
         const canvas =
             api.getCanvas();
 
 
         /*
-            =================================
-            SNAKE BULLETS
-            =================================
+            Snake gun bullets.
         */
 
         for (
@@ -1003,7 +1297,7 @@ const grassBen = {
 
 
             /*
-                PLAYER HIT
+                Player collision.
             */
 
             if (
@@ -1018,6 +1312,7 @@ const grassBen = {
                     1
                 );
 
+
                 api.killPlayer();
 
                 return;
@@ -1025,7 +1320,7 @@ const grassBen = {
 
 
             /*
-                WALL HIT
+                Wall collision.
             */
 
             let hitWall =
@@ -1039,7 +1334,8 @@ const grassBen = {
                 bullet.x =
                     bullet.radius;
 
-                hitWall = true;
+                hitWall =
+                    true;
             }
 
 
@@ -1052,7 +1348,8 @@ const grassBen = {
                     canvas.width -
                     bullet.radius;
 
-                hitWall = true;
+                hitWall =
+                    true;
             }
 
 
@@ -1063,7 +1360,8 @@ const grassBen = {
                 bullet.y =
                     bullet.radius;
 
-                hitWall = true;
+                hitWall =
+                    true;
             }
 
 
@@ -1076,15 +1374,23 @@ const grassBen = {
                     canvas.height -
                     bullet.radius;
 
-                hitWall = true;
+                hitWall =
+                    true;
             }
 
 
-            if (hitWall) {
-                spawnSnakeFromBullet(
+            /*
+                Hits wall:
+                transform into Snake.
+            */
+
+            if (
+                hitWall
+            ) {
+                transformBulletIntoSnake(
                     bullet,
                     api,
-                    grassBen
+                    snakeMachine
                 );
 
 
@@ -1097,7 +1403,7 @@ const grassBen = {
 
 
         /*
-            HEAL EFFECTS
+            Heal effects.
         */
 
         for (
@@ -1110,6 +1416,7 @@ const grassBen = {
         ) {
             const effect =
                 healEffects[i];
+
 
             effect.elapsed +=
                 dt;
@@ -1128,10 +1435,27 @@ const grassBen = {
     },
 
 
-    onDeath(enemy, api) {
+    /*
+        =====================================================
+        BOSS DEATH
+
+        EXACT SAME IDEA AS OLD BOSSES:
+        - clear all enemies
+        - stop remaining spawns
+        - clear explosions
+        - complete level
+        =====================================================
+    */
+
+    onDeath(
+        enemy,
+        api
+    ) {
+        clearRuntime();
+
+
         /*
-            Als boss doodgaat:
-            alle rage-scaling herstellen.
+            Restore rage modifications first.
         */
 
         for (
@@ -1149,12 +1473,31 @@ const grassBen = {
         }
 
 
-        snakeBullets.length = 0;
+        api.completeLevelNow({
+            clearEnemies:
+                true,
+
+            stopSpawns:
+                true,
+
+            clearExplosions:
+                true
+        });
     },
 
 
-    draw(enemy, ctx, api) {
-        drawGreenBen(
+    /*
+        =====================================================
+        BOSS VISUAL
+        =====================================================
+    */
+
+    draw(
+        enemy,
+        ctx,
+        api
+    ) {
+        drawSnakeMachine(
             enemy,
             ctx,
             api,
@@ -1163,23 +1506,30 @@ const grassBen = {
     },
 
 
-    drawBelow(ctx, api) {
-        /*
-            RAGE AURA
-        */
+    /*
+        =====================================================
+        RAGE AURA
+        =====================================================
+    */
 
+    drawBelow(
+        ctx,
+        api,
+        definition
+    ) {
         const boss =
             api.getEnemies()
                 .find(
                     enemy =>
                         enemy.definition ===
-                        this
+                            definition &&
+                        enemy.enteredArena
                 );
 
 
         if (
             !boss ||
-            !boss.grassBenState
+            !boss.snakeMachineState
                 ?.raging
         ) {
             return;
@@ -1190,7 +1540,7 @@ const grassBen = {
             (
                 Math.sin(
                     performance.now() /
-                    120
+                        120
                 ) +
                 1
             ) /
@@ -1205,18 +1555,21 @@ const grassBen = {
         ctx.arc(
             boss.x,
             boss.y,
+
             boss.radius *
                 (
                     1.35 +
-                    pulse * 0.15
+                    pulse *
+                        0.16
                 ),
+
             0,
             Math.PI * 2
         );
 
 
         ctx.fillStyle =
-            "rgba(35,255,60,0.10)";
+            "rgba(40,255,65,0.10)";
 
         ctx.fill();
 
@@ -1224,8 +1577,9 @@ const grassBen = {
         ctx.lineWidth =
             5;
 
+
         ctx.strokeStyle =
-            "rgba(70,255,85,0.60)";
+            "rgba(80,255,95,0.65)";
 
         ctx.stroke();
 
@@ -1234,11 +1588,17 @@ const grassBen = {
     },
 
 
-    drawGlobal(ctx) {
+    /*
+        =====================================================
+        FLYING SNAKE BULLETS + HEALS
+        =====================================================
+    */
+
+    drawGlobal(
+        ctx
+    ) {
         /*
-            =================================
-            SNAKEGUN PROJECTILES
-            =================================
+            Snake bullets.
         */
 
         for (
@@ -1254,10 +1614,12 @@ const grassBen = {
 
             ctx.save();
 
+
             ctx.translate(
                 bullet.x,
                 bullet.y
             );
+
 
             ctx.rotate(
                 angle
@@ -1265,51 +1627,30 @@ const grassBen = {
 
 
             const r =
-                bullet.rage
-                    ? bullet.radius * 1.5
+                bullet.raging
+                    ? bullet.radius *
+                        1.4
                     : bullet.radius;
 
 
             /*
-                FAST SNAKE BODY
+                Dark outline body.
             */
 
             ctx.strokeStyle =
                 "#123b18";
 
             ctx.lineWidth =
-                r * 0.85;
+                r * 0.86;
 
             ctx.lineCap =
                 "round";
 
-            ctx.beginPath();
-
-            ctx.moveTo(
-                -r * 1.5,
-                0
-            );
-
-            ctx.lineTo(
-                r * 0.55,
-                0
-            );
-
-            ctx.stroke();
-
-
-            ctx.strokeStyle =
-                bullet.rage
-                    ? "#54e85d"
-                    : "#246a2b";
-
-            ctx.lineWidth =
-                r * 0.52;
 
             ctx.beginPath();
 
             ctx.moveTo(
-                -r * 1.45,
+                -r * 1.55,
                 0
             );
 
@@ -1322,7 +1663,36 @@ const grassBen = {
 
 
             /*
-                HEAD
+                Green body.
+            */
+
+            ctx.strokeStyle =
+                bullet.raging
+                    ? "#66f36e"
+                    : "#286f30";
+
+
+            ctx.lineWidth =
+                r * 0.52;
+
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                -r * 1.50,
+                0
+            );
+
+            ctx.lineTo(
+                r * 0.55,
+                0
+            );
+
+            ctx.stroke();
+
+
+            /*
+                Head.
             */
 
             ctx.beginPath();
@@ -1335,20 +1705,22 @@ const grassBen = {
                 Math.PI * 2
             );
 
+
             ctx.fillStyle =
-                bullet.rage
-                    ? "#60f16a"
-                    : "#318339";
+                bullet.raging
+                    ? "#65fa6d"
+                    : "#33863c";
 
             ctx.fill();
 
 
             /*
-                RED EYES
+                Eyes.
             */
 
             ctx.fillStyle =
-                "#d92534";
+                "#d51f30";
+
 
             ctx.beginPath();
 
@@ -1387,9 +1759,7 @@ const grassBen = {
 
 
         /*
-            =================================
-            HEAL EFFECT
-            =================================
+            Heal animations.
         */
 
         for (
@@ -1400,6 +1770,7 @@ const grassBen = {
                 effect.elapsed /
                 effect.duration;
 
+
             const alpha =
                 1 -
                 progress;
@@ -1407,12 +1778,13 @@ const grassBen = {
 
             ctx.save();
 
+
             ctx.globalAlpha =
                 alpha;
 
 
             /*
-                GREEN HEAL RING
+                Expanding green ring.
             */
 
             ctx.beginPath();
@@ -1420,15 +1792,18 @@ const grassBen = {
             ctx.arc(
                 effect.x,
                 effect.y,
-                30 +
+
+                28 +
                     progress *
-                    55,
+                        58,
+
                 0,
                 Math.PI * 2
             );
 
+
             ctx.strokeStyle =
-                "#61ff72";
+                "#62ff73";
 
             ctx.lineWidth =
                 5;
@@ -1437,30 +1812,31 @@ const grassBen = {
 
 
             /*
-                +3
+                +3 HP text.
             */
 
-            if (
-                effect.amount > 0
-            ) {
-                ctx.fillStyle =
-                    "#75ff81";
+            ctx.fillStyle =
+                "#7aff84";
 
-                ctx.font =
-                    "bold 26px Arial";
 
-                ctx.textAlign =
-                    "center";
+            ctx.font =
+                "bold 27px Arial";
 
-                ctx.fillText(
-                    `+${effect.amount}`,
-                    effect.x,
-                    effect.y -
-                        40 -
-                        progress *
+
+            ctx.textAlign =
+                "center";
+
+
+            ctx.fillText(
+                `+${effect.amount}`,
+
+                effect.x,
+
+                effect.y -
+                    38 -
+                    progress *
                         30
-                );
-            }
+            );
 
 
             ctx.restore();
@@ -1468,13 +1844,27 @@ const grassBen = {
     },
 
 
-    drawHud(ctx, api) {
+    /*
+        =====================================================
+        BOSS HEALTH BAR
+
+        Only appears once Snake Machine
+        entered the arena.
+        =====================================================
+    */
+
+    drawHud(
+        ctx,
+        api,
+        definition
+    ) {
         const boss =
             api.getEnemies()
                 .find(
                     enemy =>
                         enemy.definition ===
-                        this
+                            definition &&
+                        enemy.enteredArena
                 );
 
 
@@ -1489,23 +1879,25 @@ const grassBen = {
 
         const width =
             Math.min(
-                520,
+                620,
                 canvas.width *
-                0.55
+                    0.62
             );
 
+
         const height =
-            18;
+            26;
+
 
         const x =
-            (
-                canvas.width -
-                width
-            ) /
-            2;
+            canvas.width /
+                2 -
+            width /
+                2;
+
 
         const y =
-            24;
+            68;
 
 
         const hpRatio =
@@ -1514,7 +1906,7 @@ const grassBen = {
                 Math.min(
                     1,
                     boss.hp /
-                    boss.maxHp
+                        boss.maxHp
                 )
             );
 
@@ -1526,42 +1918,69 @@ const grassBen = {
             NAME
         */
 
-        ctx.font =
-            "bold 20px Arial";
-
         ctx.textAlign =
             "center";
 
-        ctx.fillStyle =
-            boss.grassBenState
+        ctx.textBaseline =
+            "middle";
+
+        ctx.font =
+            "bold 24px Arial";
+
+        ctx.lineWidth =
+            5;
+
+
+        ctx.strokeStyle =
+            "rgba(0,0,0,0.80)";
+
+
+        ctx.strokeText(
+            boss.snakeMachineState
                 ?.raging
-                ? "#73ff79"
+                ? "SNAKE MACHINE - RAGE"
+                : "SNAKE MACHINE",
+
+            canvas.width /
+                2,
+
+            y - 21
+        );
+
+
+        ctx.fillStyle =
+            boss.snakeMachineState
+                ?.raging
+                ? "#70ff7c"
                 : "#ffffff";
 
+
         ctx.fillText(
-            boss.grassBenState
+            boss.snakeMachineState
                 ?.raging
-                ? "GRASS BEN - RAGE"
-                : "GRASS BEN",
+                ? "SNAKE MACHINE - RAGE"
+                : "SNAKE MACHINE",
 
-            canvas.width / 2,
+            canvas.width /
+                2,
 
-            y - 5
+            y - 21
         );
 
 
         /*
-            BACKGROUND
+            BAR BACKGROUND
         */
 
         ctx.fillStyle =
-            "rgba(0,0,0,0.75)";
+            "rgba(0,0,0,0.78)";
+
 
         ctx.fillRect(
-            x - 3,
-            y + 5,
-            width + 6,
-            height + 6
+            x - 4,
+            y - 4,
+            width + 8,
+            height + 8
         );
 
 
@@ -1570,19 +1989,24 @@ const grassBen = {
         */
 
         ctx.fillStyle =
-            boss.grassBenState
+            boss.snakeMachineState
                 ?.raging
-                ? "#39e653"
-                : "#4ea853";
+                ? "#39e853"
+                : "#4ba653";
+
 
         ctx.fillRect(
             x,
-            y + 8,
+            y,
             width *
                 hpRatio,
             height
         );
 
+
+        /*
+            BORDER
+        */
 
         ctx.strokeStyle =
             "#ffffff";
@@ -1590,24 +2014,37 @@ const grassBen = {
         ctx.lineWidth =
             2;
 
+
         ctx.strokeRect(
             x,
-            y + 8,
+            y,
             width,
             height
         );
 
 
+        /*
+            HP NUMBER
+        */
+
         ctx.font =
-            "bold 13px Arial";
+            "bold 14px Arial";
 
         ctx.fillStyle =
             "#ffffff";
 
+
         ctx.fillText(
-            `${Math.ceil(boss.hp)} / ${boss.maxHp}`,
-            canvas.width / 2,
-            y + 23
+            `${Math.ceil(
+                boss.hp
+            )} / ${boss.maxHp}`,
+
+            canvas.width /
+                2,
+
+            y +
+                height /
+                    2
         );
 
 
@@ -1616,4 +2053,4 @@ const grassBen = {
 };
 
 
-export default grassBen;
+export default snakeMachine;
