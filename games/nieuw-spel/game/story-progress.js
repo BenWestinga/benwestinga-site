@@ -49,7 +49,7 @@
             id: "quickHands1",
             name: "Quick Hands I",
             description:
-                "+10% faster fire rate.",
+                "+6% faster fire rate.",
             cost: 2,
             requires: [],
             x: 42,
@@ -72,7 +72,7 @@
             id: "quickHands2",
             name: "Quick Hands II",
             description:
-                "+8% faster fire rate.",
+                "+4% faster fire rate.",
             cost: 3,
             requires: [
                 "quickHands1"
@@ -85,26 +85,26 @@
             id: "doubleTap",
             name: "Double Tap",
             description:
-                "Double Tap activates twice as often.",
+                "Every 6th attack fires twice as many bullets.",
             cost: 3,
             requires: [
                 "quickHands2"
             ],
             x: 22,
-            y: 22
+            y: 27
         },
 
         splitBurst: {
             id: "splitBurst",
             name: "Split Burst",
             description:
-                "Split Burst activates twice as often.",
+                "Every 12th attack makes its main bullet burst into 3 full-damage bullets after 0.5 seconds, unless it hits an enemy first.",
             cost: 4,
             requires: [
                 "quickHands2"
             ],
             x: 42,
-            y: 18
+            y: 27
         },
 
         critLine: {
@@ -117,21 +117,22 @@
                 "splitBurst"
             ],
             x: 49,
-            y: 30
+            y: 37
         },
 
         overclockCore: {
             id: "overclockCore",
             name: "Overclock Core",
             description:
-                "Rapid-fire special effects become twice as powerful.",
+                "Critical hits deal 3x total damage instead of 2x.",
             cost: 4,
             requires: [
                 "doubleTap",
-                "splitBurst"
+                "splitBurst",
+                "critLine"
             ],
             x: 32,
-            y: 7
+            y: 16
         },
 
 
@@ -139,7 +140,7 @@
             id: "chainRhythm",
             name: "Chain Rhythm",
             description:
-                "Every 5th bullet causes a small explosion.",
+                "Every 5th attack makes its main bullet explode and leave a brief damaging afterburn area.",
             cost: 4,
             requires: [
                 "quickHands1"
@@ -157,21 +158,21 @@
             requires: [
                 "chainRhythm"
             ],
-            x: 19,
-            y: 70
+            x: 18,
+            y: 72
         },
 
         napalmDust: {
             id: "napalmDust",
             name: "Napalm Dust",
             description:
-                "Damaging areas from explosions last twice as long.",
+                "Afterburn areas from explosions last twice as long.",
             cost: 4,
             requires: [
                 "chainRhythm"
             ],
             x: 33,
-            y: 77
+            y: 76
         },
 
         infernoPayload: {
@@ -184,8 +185,8 @@
                 "blastExpert",
                 "napalmDust"
             ],
-            x: 20,
-            y: 91
+            x: 21,
+            y: 84
         },
 
 
@@ -198,8 +199,8 @@
             requires: [
                 "quickHands1"
             ],
-            x: 20,
-            y: 47
+            x: 19,
+            y: 49
         },
 
         deepFreeze: {
@@ -211,35 +212,35 @@
             requires: [
                 "frostBomb"
             ],
-            x: 8,
-            y: 38
+            x: 9,
+            y: 37
         },
 
         coldShards: {
             id: "coldShards",
             name: "Cold Shards",
             description:
-                "Frozen enemies take twice as much bonus damage.",
+                "Frozen enemies take 2x damage.",
             cost: 4,
             requires: [
                 "frostBomb"
             ],
-            x: 8,
-            y: 57
+            x: 9,
+            y: 60
         },
 
         glacierReactor: {
             id: "glacierReactor",
             name: "Glacier Reactor",
             description:
-                "All freeze effects become twice as powerful.",
+                "Freeze duration and frozen-enemy damage are doubled again.",
             cost: 4,
             requires: [
                 "deepFreeze",
                 "coldShards"
             ],
-            x: 5,
-            y: 76
+            x: 9,
+            y: 81
         },
 
 
@@ -253,47 +254,47 @@
                 "heavyAmmo1"
             ],
             x: 67,
-            y: 34
+            y: 37
         },
 
         brutalForce: {
             id: "brutalForce",
             name: "Brutal Force",
             description:
-                "+20% bullet damage.",
+                "+8% bullet damage.",
             cost: 4,
             requires: [
                 "heavyAmmo2"
             ],
             x: 58,
-            y: 18
+            y: 27
         },
 
         bossHunter: {
             id: "bossHunter",
             name: "Boss Hunter",
             description:
-                "+50% damage against bosses.",
+                "+25% damage against bosses.",
             cost: 4,
             requires: [
                 "heavyAmmo2"
             ],
             x: 78,
-            y: 22
+            y: 27
         },
 
         titanShells: {
             id: "titanShells",
             name: "Titan Shells",
             description:
-                "Heavy Ammo bonuses become twice as powerful.",
+                "Heavy Ammo size bonuses, Brutal Force, and Boss Hunter bonuses are doubled.",
             cost: 4,
             requires: [
                 "brutalForce",
                 "bossHunter"
             ],
             x: 68,
-            y: 7
+            y: 16
         },
 
 
@@ -301,13 +302,13 @@
             id: "armorCrack",
             name: "Armor Crack",
             description:
-                "Deal +40% damage to enemies with 8 or more HP.",
+                "Deal +15% damage to enemies with 8 or more HP or armor.",
             cost: 4,
             requires: [
                 "heavyAmmo1"
             ],
             x: 69,
-            y: 61
+            y: 62
         },
 
         piercingTip: {
@@ -320,33 +321,33 @@
                 "armorCrack"
             ],
             x: 61,
-            y: 78
+            y: 75
         },
 
         railRounds: {
             id: "railRounds",
             name: "Rail Rounds",
             description:
-                "Piercing bullets gain twice as much bonus damage.",
+                "After piercing an enemy, the bullet gains +15% damage for each enemy it has already pierced.",
             cost: 4,
             requires: [
                 "piercingTip"
             ],
-            x: 55,
-            y: 92
+            x: 54,
+            y: 84
         },
 
         returnShrapnel: {
             id: "returnShrapnel",
             name: "Return Shrapnel",
             description:
-                "Piercing kills launch twice as much shrapnel.",
+                "Piercing kills launch 4 shrapnel bullets.",
             cost: 4,
             requires: [
                 "piercingTip"
             ],
             x: 72,
-            y: 90
+            y: 84
         },
 
 
@@ -354,13 +355,13 @@
             id: "shockPop",
             name: "Shock Pop",
             description:
-                "Every 6th bullet triggers chain lightning.",
+                "Every 10 seconds, your next attack triggers chain lightning when it hits an enemy.",
             cost: 4,
             requires: [
                 "heavyAmmo1"
             ],
-            x: 80,
-            y: 47
+            x: 81,
+            y: 49
         },
 
         staticBuild: {
@@ -372,7 +373,7 @@
             requires: [
                 "shockPop"
             ],
-            x: 91,
+            x: 90,
             y: 37
         },
 
@@ -380,27 +381,27 @@
             id: "stormBurst",
             name: "Storm Burst",
             description:
-                "Electrical bursts activate twice as often.",
+                "Lightning hits have a 24% chance to create an electrical burst around the first target.",
             cost: 4,
             requires: [
                 "shockPop"
             ],
-            x: 91,
-            y: 58
+            x: 90,
+            y: 62
         },
 
         tempestCrown: {
             id: "tempestCrown",
             name: "Tempest Crown",
             description:
-                "Lightning damage and range are doubled.",
+                "Chain lightning range is increased by 35%.",
             cost: 4,
             requires: [
                 "staticBuild",
                 "stormBurst"
             ],
-            x: 94,
-            y: 78
+            x: 90,
+            y: 81
         }
     };
 
@@ -442,30 +443,20 @@
                 Array.isArray(
                     parsed.completedLevels
                 )
-
                     ? parsed.completedLevels
-
                     : [];
 
 
             completedLevels =
                 completedLevels
-                    .map(
-                        Number
-                    )
+                    .map(Number)
                     .filter(
-
                         level =>
-
                             Number.isInteger(
                                 level
                             ) &&
-
-                            level >=
-                                1 &&
-
-                            level <=
-                                50
+                            level >= 1 &&
+                            level <= 50
                     );
 
 
@@ -474,15 +465,10 @@
                     ...new Set(
                         completedLevels
                     )
-                ]
-                    .sort(
-                        (
-                            a,
-                            b
-                        ) =>
-                            a -
-                            b
-                    );
+                ].sort(
+                    (a, b) =>
+                        a - b
+                );
 
 
             let books =
@@ -492,17 +478,13 @@
 
 
             if (
-
                 !Number.isFinite(
                     books
                 ) ||
-
-                books <
-                0
+                books < 0
             ) {
 
-                books =
-                    0;
+                books = 0;
             }
 
 
@@ -510,19 +492,16 @@
                 Array.isArray(
                     parsed.purchasedUpgrades
                 )
-
                     ? [
                         ...new Set(
                             parsed.purchasedUpgrades
                         )
                     ]
-
                     : [];
 
 
             purchasedUpgrades =
                 purchasedUpgrades.map(
-
                     upgradeId => {
 
                         if (
@@ -558,9 +537,7 @@
 
             purchasedUpgrades =
                 purchasedUpgrades.filter(
-
                     upgradeId =>
-
                         UPGRADES[
                             upgradeId
                         ]
@@ -568,14 +545,9 @@
 
 
             let selectedWeapon =
-
-                typeof parsed
-                    .selectedWeapon ===
+                typeof parsed.selectedWeapon ===
                 "string"
-
-                    ? parsed
-                        .selectedWeapon
-
+                    ? parsed.selectedWeapon
                     : "pistol";
 
 
@@ -591,28 +563,19 @@
 
 
             return {
-
                 completedLevels,
-
                 books,
-
                 selectedWeapon,
-
                 purchasedUpgrades
             };
 
 
-        } catch (
-            error
-        ) {
+        } catch (error) {
 
             console.error(
-
                 "Story progress could not be loaded:",
-
                 error
             );
-
 
             return createDefaultData();
         }
@@ -668,9 +631,7 @@
     function saveData() {
 
         localStorage.setItem(
-
             SAVE_KEY,
-
             JSON.stringify(
                 data
             )
@@ -681,11 +642,8 @@
 
 
         window.dispatchEvent(
-
             new CustomEvent(
-
                 "story-progress-changed",
-
                 {
                     detail:
                         getData()
@@ -724,16 +682,11 @@
 
 
         if (
-
             !Number.isInteger(
                 levelNumber
             ) ||
-
-            levelNumber <
-                1 ||
-
-            levelNumber >
-                50
+            levelNumber < 1 ||
+            levelNumber > 50
         ) {
 
             return false;
@@ -741,8 +694,7 @@
 
 
         if (
-            levelNumber ===
-            1
+            levelNumber === 1
         ) {
 
             return true;
@@ -760,8 +712,7 @@
 
 
         return isLevelCompleted(
-            levelNumber -
-            1
+            levelNumber - 1
         );
     }
 
@@ -769,9 +720,7 @@
     function getHighestCompletedLevel() {
 
         if (
-            data
-                .completedLevels
-                .length ===
+            data.completedLevels.length ===
             0
         ) {
 
@@ -796,25 +745,16 @@
 
 
         if (
-
             !Number.isInteger(
                 levelNumber
             ) ||
-
-            levelNumber <
-                1 ||
-
-            levelNumber >
-                50
+            levelNumber < 1 ||
+            levelNumber > 50
         ) {
 
             return {
-
-                success:
-                    false,
-
-                reason:
-                    "invalid"
+                success: false,
+                reason: "invalid"
             };
         }
 
@@ -826,12 +766,8 @@
         ) {
 
             return {
-
-                success:
-                    false,
-
-                reason:
-                    "locked"
+                success: false,
+                reason: "locked"
             };
         }
 
@@ -843,19 +779,10 @@
         ) {
 
             return {
-
-                success:
-                    true,
-
-                firstTime:
-                    false,
-
-                booksEarned:
-                    0,
-
-                weaponUnlocked:
-                    null,
-
+                success: true,
+                firstTime: false,
+                booksEarned: 0,
+                weaponUnlocked: null,
                 highestCompletedLevel:
                     getHighestCompletedLevel()
             };
@@ -868,12 +795,8 @@
 
 
         data.completedLevels.sort(
-            (
-                a,
-                b
-            ) =>
-                a -
-                b
+            (a, b) =>
+                a - b
         );
 
 
@@ -893,8 +816,7 @@
         ) {
 
             if (
-                weapon
-                    .unlockLevel ===
+                weapon.unlockLevel ===
                 levelNumber
             ) {
 
@@ -910,29 +832,17 @@
 
 
         return {
-
-            success:
-                true,
-
-            firstTime:
-                true,
-
-            booksEarned:
-                2,
-
+            success: true,
+            firstTime: true,
+            booksEarned: 2,
             weaponUnlocked,
 
             highestCompletedLevel:
                 getHighestCompletedLevel(),
 
             nextLevel:
-
-                levelNumber <
-                50
-
-                    ? levelNumber +
-                        1
-
+                levelNumber < 50
+                    ? levelNumber + 1
                     : null
         };
     }
@@ -961,8 +871,7 @@
 
 
         if (
-            weapon
-                .unlockLevel ===
+            weapon.unlockLevel ===
             0
         ) {
 
@@ -1010,9 +919,7 @@
 
 
         if (
-
             !weapon ||
-
             !isWeaponUnlocked(
                 weapon.id
             )
@@ -1025,8 +932,7 @@
             saveData();
 
 
-            return WEAPONS
-                .pistol;
+            return WEAPONS.pistol;
         }
 
 
@@ -1076,9 +982,7 @@
 
 
         if (
-            upgrade
-                .requires
-                .length ===
+            upgrade.requires.length ===
             0
         ) {
 
@@ -1089,9 +993,7 @@
         return upgrade
             .requires
             .every(
-
                 requiredUpgradeId =>
-
                     hasUpgrade(
                         requiredUpgradeId
                     )
@@ -1144,12 +1046,8 @@
         if (!upgrade) {
 
             return {
-
-                success:
-                    false,
-
-                reason:
-                    "unknown"
+                success: false,
+                reason: "unknown"
             };
         }
 
@@ -1161,12 +1059,8 @@
         ) {
 
             return {
-
-                success:
-                    false,
-
-                reason:
-                    "owned"
+                success: false,
+                reason: "owned"
             };
         }
 
@@ -1178,12 +1072,8 @@
         ) {
 
             return {
-
-                success:
-                    false,
-
-                reason:
-                    "locked"
+                success: false,
+                reason: "locked"
             };
         }
 
@@ -1194,12 +1084,8 @@
         ) {
 
             return {
-
-                success:
-                    false,
-
-                reason:
-                    "money"
+                success: false,
+                reason: "money"
             };
         }
 
@@ -1208,21 +1094,16 @@
             upgrade.cost;
 
 
-        data
-            .purchasedUpgrades
-            .push(
-                upgradeId
-            );
+        data.purchasedUpgrades.push(
+            upgradeId
+        );
 
 
         saveData();
 
 
         return {
-
-            success:
-                true,
-
+            success: true,
             upgrade
         };
     }
@@ -1241,7 +1122,7 @@
         ) {
 
             fireRatePercent +=
-                10;
+                6;
         }
 
 
@@ -1252,7 +1133,7 @@
         ) {
 
             fireRatePercent +=
-                8;
+                4;
         }
 
 
@@ -1293,7 +1174,7 @@
         ) {
 
             damagePercent +=
-                20;
+                8;
         }
 
 
@@ -1313,13 +1194,10 @@
 
 
         const frostBombInterval =
-
             hasUpgrade(
                 "frostBomb"
             )
-
                 ? 10000
-
                 : null;
 
 
@@ -1327,288 +1205,232 @@
 
             fireRatePercent,
 
-
             shootCooldownMultiplier:
-
                 1 /
-
                 (
                     1 +
-
                     fireRatePercent /
                     100
                 ),
 
-
             bulletSizePercent,
 
-
             damagePercent,
-
 
             pierceBonus,
 
 
             explosiveEvery:
-
                 hasUpgrade(
                     "chainRhythm"
                 )
-
                     ? 5
-
                     : null,
 
 
             explosionRadiusMultiplier:
-
                 hasUpgrade(
                     "blastExpert"
                 )
-
                     ? 2
-
                     : 1,
 
 
             napalmDurationMultiplier:
-
                 hasUpgrade(
                     "napalmDust"
                 )
-
                     ? 2
-
                     : 1,
 
 
             explosionDamageMultiplier:
-
                 hasUpgrade(
                     "infernoPayload"
                 )
-
                     ? 2
-
                     : 1,
 
 
             frostBombInterval,
-
 
             bombInterval:
                 frostBombInterval,
 
 
             frostFreezeDuration:
-
                 hasUpgrade(
                     "frostBomb"
                 )
-
                     ? 2
-
                     : 0,
 
 
             deepFreezeMultiplier:
-
                 hasUpgrade(
                     "deepFreeze"
                 )
-
                     ? 2
-
                     : 1,
 
 
             frozenDamageMultiplier:
-
                 hasUpgrade(
                     "coldShards"
                 )
-
                     ? 2
-
                     : 1,
 
 
             glacierReactorMultiplier:
-
                 hasUpgrade(
                     "glacierReactor"
                 )
-
                     ? 2
-
                     : 1,
 
 
             doubleTap:
-
                 hasUpgrade(
                     "doubleTap"
                 ),
 
 
-            doubleTapChanceMultiplier:
-
+            doubleTapEvery:
                 hasUpgrade(
                     "doubleTap"
                 )
-
-                    ? 2
-
-                    : 1,
+                    ? 6
+                    : null,
 
 
             splitBurst:
-
                 hasUpgrade(
                     "splitBurst"
                 ),
 
 
-            splitBurstChanceMultiplier:
-
+            splitBurstEvery:
                 hasUpgrade(
                     "splitBurst"
                 )
+                    ? 12
+                    : null,
 
-                    ? 2
 
-                    : 1,
+            splitBurstDelay:
+                hasUpgrade(
+                    "splitBurst"
+                )
+                    ? 0.5
+                    : null,
+
+
+            splitBurstCount:
+                hasUpgrade(
+                    "splitBurst"
+                )
+                    ? 3
+                    : null,
 
 
             critEvery:
-
                 hasUpgrade(
                     "critLine"
                 )
-
                     ? 8
-
                     : null,
 
 
             overclockMultiplier:
-
                 hasUpgrade(
                     "overclockCore"
                 )
-
                     ? 2
-
                     : 1,
 
 
             bossDamageMultiplier:
-
                 hasUpgrade(
                     "bossHunter"
                 )
-
-                    ? 1.5
-
+                    ? 1.25
                     : 1,
 
 
             armorCrackDamageMultiplier:
-
                 hasUpgrade(
                     "armorCrack"
                 )
-
-                    ? 1.4
-
+                    ? 1.15
                     : 1,
 
 
             piercing:
-
                 hasUpgrade(
                     "piercingTip"
                 ),
 
 
-            railRoundsMultiplier:
-
+            railRoundsBonusPerHit:
                 hasUpgrade(
                     "railRounds"
                 )
-
-                    ? 2
-
-                    : 1,
+                    ? 0.15
+                    : 0,
 
 
             shrapnelMultiplier:
-
                 hasUpgrade(
                     "returnShrapnel"
                 )
-
                     ? 2
-
                     : 1,
 
 
             titanShellsMultiplier:
-
                 hasUpgrade(
                     "titanShells"
                 )
-
                     ? 2
-
                     : 1,
 
 
-            lightningEvery:
+            shockPop:
+                hasUpgrade(
+                    "shockPop"
+                ),
 
+
+            shockPopInterval:
                 hasUpgrade(
                     "shockPop"
                 )
-                    ? (
-                        hasUpgrade(
-                            "stormBurst"
-                        )
-                            ? 3
-                            : 6
-                    )
+                    ? 10000
                     : null,
 
 
             lightningExtraTargets:
-
                 hasUpgrade(
                     "staticBuild"
                 )
-
                     ? 2
-
                     : 0,
 
 
             stormBurstMultiplier:
-
                 hasUpgrade(
                     "stormBurst"
                 )
-
                     ? 2
-
                     : 1,
 
 
-            lightningPowerMultiplier:
-
+            lightningRangeMultiplier:
                 hasUpgrade(
                     "tempestCrown"
                 )
-
-                    ? 2
-
+                    ? 1.35
                     : 1
         };
     }

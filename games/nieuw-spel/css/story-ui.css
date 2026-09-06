@@ -955,7 +955,7 @@
 
     box-sizing: border-box;
 
-    padding: 13px;
+    padding: 12px;
 
     display: flex;
     flex-direction: column;
@@ -963,7 +963,7 @@
     align-items: center;
     justify-content: center;
 
-    gap: 7px;
+    gap: 6px;
 
     border:
         2px solid
@@ -972,7 +972,7 @@
     border-radius: 18px;
 
     background:
-        rgba(5,8,12,0.94);
+        rgba(5,8,12,0.96);
 
     color: white;
 
@@ -980,7 +980,7 @@
 
     pointer-events: none;
 
-    z-index: 30;
+    z-index: 50;
 
     box-shadow:
         0 9px 30px rgba(0,0,0,0.55);
@@ -1048,4 +1048,195 @@
         width: 180px;
     }
 
+}
+
+
+/* =========================================================
+   UPGRADE TREE - SAFE FULLSCREEN LAYOUT
+   Keeps every upgrade card and icon inside the viewport.
+   ========================================================= */
+
+#upgrades-screen .story-popup-box {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#upgrades-screen .story-popup-box > h2 {
+    flex: 0 0 auto;
+}
+
+#upgrade-list {
+    flex: 1 1 auto;
+
+    width: 100%;
+    height: auto;
+    min-height: 0;
+
+    box-sizing: border-box;
+
+    padding:
+        0 6px 8px;
+}
+
+.upgrade-tree {
+    width:
+        min(1600px, 100%);
+
+    height: 100%;
+    max-height: none;
+    min-height: 0;
+
+    box-sizing: border-box;
+}
+
+.upgrade-tree-topbar {
+    top: 8px;
+
+    left: 16px;
+    right: 16px;
+}
+
+.upgrade-node {
+    width:
+        clamp(74px, 6.8vw, 116px);
+
+    height:
+        clamp(54px, 6.4vh, 74px);
+
+    padding: 5px;
+
+    border-radius: 13px;
+}
+
+.upgrade-node:hover {
+    transform:
+        translate(-50%, -50%)
+        scale(1.08);
+}
+
+.upgrade-node-icon {
+    height:
+        clamp(16px, 2.2vh, 20px);
+
+    font-size:
+        clamp(13px, 1.15vw, 19px);
+
+    line-height:
+        clamp(16px, 2.2vh, 20px);
+}
+
+.upgrade-node-name {
+    font-size:
+        clamp(7px, 0.65vw, 10px);
+
+    line-height: 1.02;
+}
+
+.upgrade-node-cost {
+    font-size:
+        clamp(7px, 0.65vw, 10px);
+}
+
+#upgrade-info-panel {
+    top: 10%;
+
+    width:
+        min(300px, 24vw);
+
+    min-height: 78px;
+
+    padding: 9px 11px;
+}
+
+
+/* Short desktop/laptop screens */
+
+@media (max-height: 760px) {
+
+    #shop-screen .story-popup-box,
+    #upgrades-screen .story-popup-box {
+        padding:
+            10px 20px;
+    }
+
+    #shop-screen .story-popup-box > h2,
+    #upgrades-screen .story-popup-box > h2 {
+        margin:
+            2px 0 6px;
+
+        font-size:
+            clamp(19px, 2vw, 28px);
+    }
+
+    .upgrade-node {
+        width:
+            clamp(70px, 6.4vw, 108px);
+
+        height:
+            clamp(48px, 6.2vh, 64px);
+
+        padding: 4px;
+    }
+
+    .upgrade-node-icon {
+        height: 16px;
+        line-height: 16px;
+
+        font-size:
+            clamp(11px, 1vw, 16px);
+    }
+
+    .upgrade-node-name,
+    .upgrade-node-cost {
+        font-size:
+            clamp(6px, 0.58vw, 9px);
+    }
+
+    #upgrade-info-panel {
+        min-height: 66px;
+
+        padding: 7px 9px;
+    }
+
+    #upgrade-info-panel strong {
+        font-size:
+            clamp(10px, 1vw, 15px);
+    }
+
+    #upgrade-info-panel p,
+    #upgrade-info-panel small {
+        font-size:
+            clamp(7px, 0.7vw, 10px);
+    }
+}
+
+
+/* Narrow screens */
+
+@media (max-width: 1050px) {
+
+    #upgrade-list {
+        padding:
+            0 3px 5px;
+    }
+
+    .upgrade-node {
+        width:
+            clamp(66px, 8vw, 78px);
+
+        height:
+            clamp(48px, 7vh, 58px);
+    }
+
+    .upgrade-node:hover {
+        transform:
+            translate(-50%, -50%)
+            scale(1.05);
+    }
+
+    #upgrade-info-panel {
+        width:
+            min(190px, 24vw);
+    }
 }

@@ -10,24 +10,19 @@
     let modifiers = {};
     let shotCounter = 0;
     let frostTimerMs = 0;
-
-    const BASE_DOUBLE_TAP_CHANCE = 0.10;
-    const BASE_SPLIT_BURST_CHANCE = 0.10;
+    let shockTimerMs = 0;
+    let shockReady = false;
 
     const BASE_EXPLOSION_RADIUS = 68;
     const BASE_EXPLOSION_DAMAGE_FACTOR = 0.75;
-
     const BASE_NAPALM_DURATION = 0.75;
     const BASE_NAPALM_TICK = 0.25;
     const BASE_NAPALM_DAMAGE_FACTOR = 0.10;
-
     const BASE_LIGHTNING_RANGE = 210;
     const BASE_LIGHTNING_DAMAGE_FACTOR = 0.70;
-
     const BASE_STORM_BURST_CHANCE = 0.12;
     const BASE_STORM_BURST_RADIUS = 105;
     const BASE_STORM_BURST_DAMAGE_FACTOR = 0.45;
-
 
     function numberModifier(
         name,
@@ -121,6 +116,12 @@
 
         frostTimerMs =
             0;
+
+        shockTimerMs =
+            0;
+
+        shockReady =
+            false;
 
         clearTransient();
     }
@@ -305,18 +306,13 @@
 
 
     function prepareVolley({
-
         projectiles,
-
         baseAngle
-
     }) {
 
         const result =
-
             projectiles.map(
                 projectile =>
-
                     cloneProjectile(
                         projectile
                     )
@@ -346,25 +342,6 @@
             numberModifier(
                 "explosiveEvery",
                 NaN
-            );
-
-
-        const lightningEvery =
-            numberModifier(
-                "lightningEvery",
-                NaN
-            );
-
-
-        const overclock =
-            Math.max(
-
-                1,
-
-                numberModifier(
-                    "overclockMultiplier",
-                    1
-                )
             );
 
 
@@ -458,18 +435,21 @@
         }
 
 
+        /*
+            Shock Pop is time based.
+
+            After 10 seconds,
+            the next attack carries
+            chain lightning.
+        */
+
         if (
 
-            Number.isFinite(
-                lightningEvery
+            booleanModifier(
+                "shockPop"
             ) &&
 
-            lightningEvery >
-                0 &&
-
-            shotCounter %
-                lightningEvery ===
-                0
+            shockReady
         ) {
 
             carrier.isLightning =
@@ -482,210 +462,191 @@
 
             carrier.glowColor =
                 "rgba(255,235,60,0.95)";
+
+
+            shockReady =
+                false;
+
+
+            shockTimerMs =
+                0;
         }
 
 
+        /*
+            DOUBLE TAP
+
+            Attack:
+            6
+            12
+            18
+            24
+            ...
+
+            fires one complete extra
+            copy of the normal volley.
+        */
+
+        const doubleTapEvery =
+            numberModifier(
+                "doubleTapEvery",
+                NaN
+            );
+
+
         if (
+
             booleanModifier(
                 "doubleTap"
-            )
+            ) &&
+
+            Number.isFinite(
+                doubleTapEvery
+            ) &&
+
+            doubleTapEvery >
+                0 &&
+
+            shotCounter %
+                doubleTapEvery ===
+                0
         ) {
 
-            const chance =
-
-                Math.min(
-
-                    1,
-
-                    BASE_DOUBLE_TAP_CHANCE *
-
-                    numberModifier(
-                        "doubleTapChanceMultiplier",
-                        1
-                    )
-                );
+            const originals =
+                [
+                    ...result
+                ];
 
 
-            if (
-                Math.random() <
-                chance
+            for (
+                const projectile
+                of originals
             ) {
 
-                const extraCount =
-                    Math.max(
+                result.push(
 
-                        1,
+                    cloneProjectile(
 
-                        Math.round(
-                            overclock
-                        )
-                    );
+                        projectile,
 
+                        {
+                            isDoubleTap:
+                                true,
 
-                const template =
-                    result[
-                        carrierIndex
-                    ];
+                            splitBurstPending:
+                                false,
 
-
-                for (
-                    let i = 0;
-
-                    i <
-                    extraCount;
-
-                    i++
-                ) {
-
-                    result.push(
-
-                        cloneProjectile(
-
-                            template,
-
-                            {
-                                angle:
-                                    baseAngle,
-
-                                isExplosive:
-                                    false,
-
-                                isLightning:
-                                    false,
-
-                                isDoubleTap:
-                                    true,
-
-                                color:
-                                    template
-                                        .isCrit
-
-                                        ? template
-                                            .color
-
-                                        : "#3d3d3d"
-                            }
-                        )
-                    );
-                }
+                            isSplitBurstCarrier:
+                                false
+                        }
+                    )
+                );
             }
         }
 
 
+        /*
+            SPLIT BURST
+
+            Attack:
+            12
+            24
+            36
+            ...
+
+            The main projectile receives
+            a 0.5 second timer.
+
+            If it hits an enemy before
+            the timer finishes, nothing
+            special happens.
+
+            If it is still flying after
+            0.5 seconds, it disappears
+            and becomes 3 bullets.
+        */
+
+        const splitBurstEvery =
+            numberModifier(
+                "splitBurstEvery",
+                NaN
+            );
+
+
         if (
+
             booleanModifier(
                 "splitBurst"
-            )
+            ) &&
+
+            Number.isFinite(
+                splitBurstEvery
+            ) &&
+
+            splitBurstEvery >
+                0 &&
+
+            shotCounter %
+                splitBurstEvery ===
+                0
         ) {
 
-            const chance =
+            carrier.splitBurstPending =
+                true;
 
-                Math.min(
 
-                    1,
+            carrier.isSplitBurstCarrier =
+                true;
 
-                    BASE_SPLIT_BURST_CHANCE *
+
+            carrier.splitBurstElapsed =
+                0;
+
+
+            carrier.splitBurstDelay =
+
+                Math.max(
+
+                    0.01,
 
                     numberModifier(
-                        "splitBurstChanceMultiplier",
-                        1
+                        "splitBurstDelay",
+                        0.5
+                    )
+                );
+
+
+            carrier.splitBurstCount =
+
+                Math.max(
+
+                    3,
+
+                    Math.round(
+
+                        numberModifier(
+                            "splitBurstCount",
+                            3
+                        )
                     )
                 );
 
 
             if (
-                Math.random() <
-                chance
+
+                !carrier.isCrit &&
+
+                !carrier.isExplosive &&
+
+                !carrier.isLightning
             ) {
 
-                const pairs =
-                    Math.max(
-
-                        1,
-
-                        Math.round(
-                            overclock
-                        )
-                    );
+                carrier.color =
+                    "#735cff";
 
 
-                const template =
-                    result[
-                        carrierIndex
-                    ];
-
-
-                for (
-                    let i = 0;
-
-                    i <
-                    pairs;
-
-                    i++
-                ) {
-
-                    const offsetDegrees =
-                        12 +
-                        i *
-                        7;
-
-
-                    const offset =
-
-                        offsetDegrees *
-                        Math.PI /
-                        180;
-
-
-                    for (
-                        const sign
-                        of [
-                            -1,
-                            1
-                        ]
-                    ) {
-
-                        result.push(
-
-                            cloneProjectile(
-
-                                template,
-
-                                {
-                                    angle:
-                                        baseAngle +
-                                        sign *
-                                        offset,
-
-                                    damage:
-                                        template
-                                            .damage *
-                                        0.58,
-
-                                    radius:
-                                        template
-                                            .radius *
-                                        0.72,
-
-                                    isExplosive:
-                                        false,
-
-                                    isLightning:
-                                        false,
-
-                                    isSplitBurst:
-                                        true,
-
-                                    color:
-                                        "#555555",
-
-                                    glowColor:
-                                        null
-                                }
-                            )
-                        );
-                    }
-                }
+                carrier.glowColor =
+                    "rgba(125,95,255,0.78)";
             }
         }
 
@@ -880,22 +841,25 @@
         }
 
 
-        const rail =
+        const bonusPerPreviousHit =
             Math.max(
 
-                1,
+                0,
 
                 numberModifier(
-                    "railRoundsMultiplier",
-                    1
+                    "railRoundsBonusPerHit",
+                    0
                 )
             );
 
 
-        const bonusPerPreviousHit =
+        if (
+            bonusPerPreviousHit <=
+            0
+        ) {
 
-            0.15 *
-            rail;
+            return 1;
+        }
 
 
         return (
@@ -1334,17 +1298,12 @@
 
         damageEnemy,
 
-        isGuardianShielded,
-
-        power
+        isGuardianShielded
 
     }) {
 
         const radius =
-
-            BASE_STORM_BURST_RADIUS *
-
-            power;
+            BASE_STORM_BURST_RADIUS;
 
 
         electricBursts.push({
@@ -1419,9 +1378,7 @@
 
                     bullet.damage *
 
-                    BASE_STORM_BURST_DAMAGE_FACTOR *
-
-                    power,
+                    BASE_STORM_BURST_DAMAGE_FACTOR,
 
                 bullet,
 
@@ -1447,13 +1404,13 @@
 
     }) {
 
-        const power =
+        const rangeMultiplier =
             Math.max(
 
                 1,
 
                 numberModifier(
-                    "lightningPowerMultiplier",
+                    "lightningRangeMultiplier",
                     1
                 )
             );
@@ -1463,7 +1420,7 @@
 
             BASE_LIGHTNING_RANGE *
 
-            power;
+            rangeMultiplier;
 
 
         const extraTargets =
@@ -1484,19 +1441,27 @@
             );
 
 
+        /*
+            Tempest Crown only
+            increases lightning range.
+
+            It does NOT increase
+            lightning damage.
+        */
+
         const lightningDamage =
 
             bullet.damage *
 
-            BASE_LIGHTNING_DAMAGE_FACTOR *
-
-            power;
+            BASE_LIGHTNING_DAMAGE_FACTOR;
 
 
         const excluded =
-            new Set([
-                startEnemy
-            ]);
+            new Set(
+                [
+                    startEnemy
+                ]
+            );
 
 
         let current =
@@ -1624,9 +1589,7 @@
 
                     damageEnemy,
 
-                    isGuardianShielded,
-
-                    power
+                    isGuardianShielded
                 });
             }
         }
@@ -1809,6 +1772,30 @@
 
     }) {
 
+        /*
+            If the Split Burst carrier
+            hits an enemy before its
+            timer expires, its burst
+            gets cancelled.
+
+            It still deals its normal
+            bullet damage.
+        */
+
+        if (
+            bullet
+                ?.splitBurstPending
+        ) {
+
+            bullet.splitBurstPending =
+                false;
+
+
+            bullet.isSplitBurstCarrier =
+                false;
+        }
+
+
         if (
             bullet.isExplosive
         ) {
@@ -1852,7 +1839,9 @@
         }
 
 
-        if (killed) {
+        if (
+            killed
+        ) {
 
             spawnShrapnel({
 
@@ -2338,6 +2327,471 @@
     }
 
 
+    function updateShockPopTimer(
+        dt
+    ) {
+
+        const interval =
+            numberModifier(
+                "shockPopInterval",
+                NaN
+            );
+
+
+        if (
+
+            !booleanModifier(
+                "shockPop"
+            ) ||
+
+            !Number.isFinite(
+                interval
+            ) ||
+
+            interval <=
+            0
+        ) {
+
+            shockTimerMs =
+                0;
+
+
+            shockReady =
+                false;
+
+
+            return;
+        }
+
+
+        /*
+            Once Shock Pop is ready,
+            it waits for your next attack.
+
+            Charges do not stack.
+        */
+
+        if (
+            shockReady
+        ) {
+
+            return;
+        }
+
+
+        shockTimerMs +=
+            dt *
+            1000;
+
+
+        if (
+            shockTimerMs >=
+            interval
+        ) {
+
+            shockTimerMs =
+                0;
+
+
+            shockReady =
+                true;
+        }
+    }
+
+
+    function updateSplitBurstBullets(
+        dt,
+        context
+    ) {
+
+        const bullets =
+
+            Array.isArray(
+                window.bullets
+            )
+
+                ? window.bullets
+
+                : null;
+
+
+        if (
+
+            !bullets ||
+
+            typeof context
+                ?.spawnBullet !==
+            "function"
+        ) {
+
+            return;
+        }
+
+
+        for (
+
+            let i =
+                bullets.length -
+                1;
+
+            i >=
+            0;
+
+            i--
+        ) {
+
+            const bullet =
+                bullets[
+                    i
+                ];
+
+
+            if (
+
+                !bullet ||
+
+                bullet
+                    .splitBurstPending !==
+                true
+            ) {
+
+                continue;
+            }
+
+
+            bullet.splitBurstElapsed =
+
+                (
+                    Number(
+                        bullet
+                            .splitBurstElapsed
+                    ) ||
+                    0
+                ) +
+
+                dt;
+
+
+            const delay =
+                Math.max(
+
+                    0.01,
+
+                    Number(
+                        bullet
+                            .splitBurstDelay
+                    ) ||
+                    0.5
+                );
+
+
+            if (
+                bullet
+                    .splitBurstElapsed <
+                delay
+            ) {
+
+                continue;
+            }
+
+
+            const currentIndex =
+                bullets.indexOf(
+                    bullet
+                );
+
+
+            if (
+                currentIndex ===
+                -1
+            ) {
+
+                continue;
+            }
+
+
+            bullet.splitBurstPending =
+                false;
+
+
+            bullet.isSplitBurstCarrier =
+                false;
+
+
+            /*
+                Remove the original
+                carrier bullet.
+            */
+
+            bullets.splice(
+                currentIndex,
+                1
+            );
+
+
+            const count =
+                Math.max(
+
+                    3,
+
+                    Math.round(
+
+                        Number(
+                            bullet
+                                .splitBurstCount
+                        ) ||
+                        3
+                    )
+                );
+
+
+            const speed =
+                Math.max(
+
+                    1,
+
+                    Math.hypot(
+
+                        Number(
+                            bullet.vx
+                        ) ||
+                        0,
+
+                        Number(
+                            bullet.vy
+                        ) ||
+                        0
+                    )
+                );
+
+
+            const centerAngle =
+                Math.atan2(
+
+                    Number(
+                        bullet.vy
+                    ) ||
+                    0,
+
+                    Number(
+                        bullet.vx
+                    ) ||
+                    0
+                );
+
+
+            /*
+                With 3 bullets:
+
+                -18 degrees
+                 0 degrees
+                +18 degrees
+            */
+
+            const totalSpread =
+
+                36 *
+
+                Math.PI /
+
+                180;
+
+
+            const remainingDistance =
+
+                bullet.maxDistance ===
+                    Infinity
+
+                    ? Infinity
+
+                    : Math.max(
+
+                        1,
+
+                        (
+                            Number(
+                                bullet
+                                    .maxDistance
+                            ) ||
+                            1
+                        ) -
+
+                        (
+                            Number(
+                                bullet
+                                    .travelled
+                            ) ||
+                            0
+                        )
+                    );
+
+
+            for (
+
+                let index =
+                    0;
+
+                index <
+                    count;
+
+                index++
+            ) {
+
+                const t =
+
+                    count ===
+                    1
+
+                        ? 0.5
+
+                        : index /
+                            (
+                                count -
+                                1
+                            );
+
+
+                const angle =
+
+                    centerAngle -
+
+                    totalSpread /
+                    2 +
+
+                    totalSpread *
+                    t;
+
+
+                context.spawnBullet({
+
+                    x:
+                        bullet.x,
+
+                    y:
+                        bullet.y,
+
+                    radius:
+                        bullet.radius,
+
+                    vx:
+                        Math.cos(
+                            angle
+                        ) *
+                        speed,
+
+                    vy:
+                        Math.sin(
+                            angle
+                        ) *
+                        speed,
+
+
+                    /*
+                        Every new Split Burst
+                        bullet keeps the exact
+                        current damage of the
+                        original projectile.
+                    */
+
+                    damage:
+                        bullet.damage,
+
+
+                    remainingPierce:
+                        Math.max(
+
+                            1,
+
+                            Number(
+                                bullet
+                                    .remainingPierce
+                            ) ||
+                            1
+                        ),
+
+
+                    initialPierce:
+                        Math.max(
+
+                            1,
+
+                            Number(
+                                bullet
+                                    .remainingPierce
+                            ) ||
+                            1
+                        ),
+
+
+                    travelled:
+                        0,
+
+
+                    maxDistance:
+                        remainingDistance,
+
+
+                    hitEnemyIds:
+                        new Set(),
+
+
+                    pierceHitCount:
+                        0,
+
+
+                    isCrit:
+                        bullet.isCrit ===
+                        true,
+
+
+                    /*
+                        We deliberately do
+                        not copy explosive
+                        or lightning here.
+
+                        Otherwise one
+                        special projectile
+                        could create three
+                        explosions/lightning
+                        effects.
+                    */
+
+                    isExplosive:
+                        false,
+
+
+                    isLightning:
+                        false,
+
+
+                    color:
+
+                        bullet.isCrit
+
+                            ? (
+                                bullet.color ||
+                                "#ffcf3f"
+                            )
+
+                            : "#4f4f5b",
+
+
+                    glowColor:
+
+                        bullet.isCrit
+
+                            ? (
+                                bullet.glowColor ||
+                                "rgba(255,205,50,0.85)"
+                            )
+
+                            : "rgba(135,115,255,0.45)"
+                });
+            }
+        }
+    }
+
+
     function updateFreezeTimers(
         dt
     ) {
@@ -2596,11 +3050,20 @@
         );
 
 
+        updateShockPopTimer(
+            dt
+        );
+
+
+        updateSplitBurstBullets(
+            dt,
+            context
+        );
+
+
         const frostInterval =
             numberModifier(
-
                 "frostBombInterval",
-
                 NaN
             );
 
@@ -2630,6 +3093,7 @@
 
 
                 if (
+
                     !launchFrostBomb({
 
                         player:
@@ -2644,6 +3108,15 @@
                     })
                 ) {
 
+                    /*
+                        No enemy exists right
+                        now.
+
+                        Try again soon instead
+                        of waiting another
+                        complete 10 seconds.
+                    */
+
                     frostTimerMs =
                         Math.max(
 
@@ -2652,6 +3125,7 @@
                             frostInterval -
                             1000
                         );
+
 
                     break;
                 }
@@ -2856,6 +3330,10 @@
         ctx.save();
 
 
+        /*
+            NAPALM AREAS
+        */
+
         for (
             const zone
             of napalmZones
@@ -2921,10 +3399,16 @@
         }
 
 
+        /*
+            FROZEN ENEMIES
+        */
+
         for (
             const enemy
-            of context.enemies ||
-            []
+            of (
+                context.enemies ||
+                []
+            )
         ) {
 
             if (
@@ -3053,6 +3537,10 @@
         }
 
 
+        /*
+            FROST PROJECTILES
+        */
+
         for (
             const projectile
             of frostProjectiles
@@ -3107,6 +3595,10 @@
         }
 
 
+        /*
+            FROST BURSTS
+        */
+
         for (
             const burst
             of frostBursts
@@ -3155,6 +3647,10 @@
             ctx.stroke();
         }
 
+
+        /*
+            EXPLOSIONS
+        */
 
         for (
             const visual
@@ -3211,6 +3707,10 @@
             ctx.stroke();
         }
 
+
+        /*
+            ELECTRIC BURST
+        */
 
         for (
             const burst
@@ -3272,6 +3772,10 @@
                 0;
         }
 
+
+        /*
+            CHAIN LIGHTNING
+        */
 
         for (
             const line
