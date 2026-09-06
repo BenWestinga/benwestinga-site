@@ -655,7 +655,7 @@ const snakeQueen = {
 
 
     hp:
-        26,
+        20,
 
     size:
         8,
