@@ -1053,42 +1053,56 @@
 
 /* =========================================================
    UPGRADE TREE - SAFE FULLSCREEN LAYOUT
-   Keeps every upgrade card and icon inside the viewport.
    ========================================================= */
 
 #upgrades-screen .story-popup-box {
     display: flex;
     flex-direction: column;
+
     min-height: 0;
+
+    padding: 10px 16px;
 }
+
 
 #upgrades-screen .story-popup-box > h2 {
     flex: 0 0 auto;
 }
 
+
 #upgrade-list {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
 
     width: 100%;
-    height: auto;
+
+    height:
+        calc(100vh - 88px);
+
+    max-height:
+        calc(100vh - 88px);
+
     min-height: 0;
 
     box-sizing: border-box;
 
     padding:
-        0 6px 8px;
+        0 4px 6px;
 }
+
 
 .upgrade-tree {
     width:
         min(1600px, 100%);
 
     height: 100%;
-    max-height: none;
+
+    max-height: 100%;
+
     min-height: 0;
 
     box-sizing: border-box;
 }
+
 
 .upgrade-tree-topbar {
     top: 8px;
@@ -1097,68 +1111,93 @@
     right: 16px;
 }
 
+
+/* KLEINERE UPGRADE VAKJES */
+
 .upgrade-node {
     width:
-        clamp(74px, 6.8vw, 116px);
+        clamp(60px, 5.6vw, 98px);
 
     height:
-        clamp(54px, 6.4vh, 74px);
+        clamp(42px, 5vh, 58px);
 
-    padding: 5px;
+    padding:
+        3px 4px;
 
-    border-radius: 13px;
+    gap: 1px;
+
+    border-radius:
+        11px;
 }
+
 
 .upgrade-node:hover {
     transform:
         translate(-50%, -50%)
-        scale(1.08);
+        scale(1.06);
 }
+
 
 .upgrade-node-icon {
     height:
-        clamp(16px, 2.2vh, 20px);
+        clamp(13px, 1.7vh, 17px);
 
     font-size:
-        clamp(13px, 1.15vw, 19px);
+        clamp(10px, 0.95vw, 15px);
 
     line-height:
-        clamp(16px, 2.2vh, 20px);
+        clamp(13px, 1.7vh, 17px);
 }
+
 
 .upgrade-node-name {
     font-size:
-        clamp(7px, 0.65vw, 10px);
+        clamp(6px, 0.54vw, 8px);
 
-    line-height: 1.02;
+    line-height:
+        1;
 }
+
 
 .upgrade-node-cost {
     font-size:
-        clamp(7px, 0.65vw, 10px);
+        clamp(6px, 0.54vw, 8px);
 }
+
 
 #upgrade-info-panel {
     top: 10%;
 
     width:
-        min(300px, 24vw);
+        min(270px, 22vw);
 
-    min-height: 78px;
+    min-height:
+        68px;
 
-    padding: 9px 11px;
+    padding:
+        7px 9px;
 }
 
 
-/* Short desktop/laptop screens */
+/* KORTERE LAPTOPSCHERMEN */
 
 @media (max-height: 760px) {
+
+    #upgrade-list {
+        height:
+            calc(100vh - 72px);
+
+        max-height:
+            calc(100vh - 72px);
+    }
+
 
     #shop-screen .story-popup-box,
     #upgrades-screen .story-popup-box {
         padding:
             10px 20px;
     }
+
 
     #shop-screen .story-popup-box > h2,
     #upgrades-screen .story-popup-box > h2 {
@@ -1169,40 +1208,51 @@
             clamp(19px, 2vw, 28px);
     }
 
+
     .upgrade-node {
         width:
-            clamp(70px, 6.4vw, 108px);
+            clamp(56px, 5.2vw, 90px);
 
         height:
-            clamp(48px, 6.2vh, 64px);
+            clamp(38px, 4.7vh, 50px);
 
-        padding: 4px;
+        padding:
+            2px 3px;
     }
+
 
     .upgrade-node-icon {
-        height: 16px;
-        line-height: 16px;
+        height: 12px;
+
+        line-height:
+            12px;
 
         font-size:
-            clamp(11px, 1vw, 16px);
+            clamp(9px, 0.85vw, 13px);
     }
+
 
     .upgrade-node-name,
     .upgrade-node-cost {
         font-size:
-            clamp(6px, 0.58vw, 9px);
+            clamp(5px, 0.5vw, 7px);
     }
+
 
     #upgrade-info-panel {
-        min-height: 66px;
+        min-height:
+            66px;
 
-        padding: 7px 9px;
+        padding:
+            7px 9px;
     }
+
 
     #upgrade-info-panel strong {
         font-size:
             clamp(10px, 1vw, 15px);
     }
+
 
     #upgrade-info-panel p,
     #upgrade-info-panel small {
@@ -1212,7 +1262,7 @@
 }
 
 
-/* Narrow screens */
+/* SMALLERE SCHERMEN */
 
 @media (max-width: 1050px) {
 
@@ -1221,19 +1271,22 @@
             0 3px 5px;
     }
 
+
     .upgrade-node {
         width:
-            clamp(66px, 8vw, 78px);
+            clamp(54px, 6.6vw, 68px);
 
         height:
-            clamp(48px, 7vh, 58px);
+            clamp(38px, 5.8vh, 48px);
     }
+
 
     .upgrade-node:hover {
         transform:
             translate(-50%, -50%)
-            scale(1.05);
+            scale(1.04);
     }
+
 
     #upgrade-info-panel {
         width:

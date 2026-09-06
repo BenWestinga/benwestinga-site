@@ -355,7 +355,7 @@
             id: "shockPop",
             name: "Shock Pop",
             description:
-                "Every 10 seconds, your next attack triggers chain lightning when it hits an enemy.",
+                "Every 8th attack turns the entire volley electric and triggers chain lightning on hit.",
             cost: 4,
             requires: [
                 "heavyAmmo1"
@@ -1402,11 +1402,11 @@
                 ),
 
 
-            shockPopInterval:
+            shockPopEvery:
                 hasUpgrade(
                     "shockPop"
                 )
-                    ? 10000
+                    ? 8
                     : null,
 
 

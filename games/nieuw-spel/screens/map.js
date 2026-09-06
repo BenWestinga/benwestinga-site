@@ -70,6 +70,25 @@ const windOverlayCtx =
         "2d"
     );
 
+const windRevealMaskCanvas =
+    document.createElement(
+        "canvas"
+    );
+
+
+const windRevealMaskCtx =
+    windRevealMaskCanvas.getContext(
+        "2d"
+    );
+
+
+let windRevealCentersCache =
+    null;
+
+
+let windRevealMaskDirty =
+    true;
+
 
 const WIND_REVEAL_MIN_RADIUS =
     220;
@@ -803,7 +822,24 @@ function isWindFullyCleared() {
 // REVEAL CENTERS
 // ======================================================
 
+function invalidateWindRevealCache() {
+
+    windRevealCentersCache =
+        null;
+
+
+    windRevealMaskDirty =
+        true;
+}
+
 function getWindRevealCenters() {
+
+    if (
+        windRevealCentersCache
+    ) {
+
+        return windRevealCentersCache;
+    }
 
     const centers =
         [];
@@ -843,9 +879,12 @@ function getWindRevealCenters() {
         !window.StoryProgress
     ) {
 
-        return centers;
-    }
+        windRevealCentersCache =
+            centers;
 
+
+        return windRevealCentersCache;
+    }
 
     // ==================================================
     // COMPLETED LEVEL -> NEXT LEVEL
@@ -919,7 +958,11 @@ function getWindRevealCenters() {
     }
 
 
-    return centers;
+    windRevealCentersCache =
+        centers;
+
+
+    return windRevealCentersCache;
 }
 
 
@@ -1121,7 +1164,9 @@ function positionInsideRevealedWindArea(
 
 function createWindRevealPath(
     context,
-    center
+    center,
+    offsetX = camera.x,
+    offsetY = camera.y
 ) {
 
     const pointCount =
@@ -1161,7 +1206,7 @@ function createWindRevealPath(
         const screenX =
 
             center.x -
-            camera.x +
+            offsetX +
 
             Math.cos(
                 angle
@@ -1172,7 +1217,7 @@ function createWindRevealPath(
         const screenY =
 
             center.y -
-            camera.y +
+            offsetY +
 
             Math.sin(
                 angle
@@ -1209,6 +1254,142 @@ function createWindRevealPath(
 // ======================================================
 // WIND TEKENEN
 // ======================================================
+
+function rebuildWindRevealMask() {
+
+    const width =
+        Math.max(
+            1,
+            Math.ceil(
+                WORLD_WIDTH
+            )
+        );
+
+
+    const height =
+        Math.max(
+            1,
+            Math.ceil(
+                WORLD_HEIGHT
+            )
+        );
+
+
+    if (
+        windRevealMaskCanvas.width !==
+            width ||
+
+        windRevealMaskCanvas.height !==
+            height
+    ) {
+
+        windRevealMaskCanvas.width =
+            width;
+
+
+        windRevealMaskCanvas.height =
+            height;
+
+    } else {
+
+        windRevealMaskCtx.clearRect(
+            0,
+            0,
+            width,
+            height
+        );
+    }
+
+
+    if (
+        isWindFullyCleared()
+    ) {
+
+        windRevealMaskDirty =
+            false;
+
+        return;
+    }
+
+
+    const revealCenters =
+        getWindRevealCenters();
+
+
+    windRevealMaskCtx.save();
+
+
+    windRevealMaskCtx.filter =
+        "blur(22px)";
+
+
+    windRevealMaskCtx.globalAlpha =
+        0.72;
+
+
+    windRevealMaskCtx.fillStyle =
+        "black";
+
+
+    for (
+        const center
+        of revealCenters
+    ) {
+
+        createWindRevealPath(
+            windRevealMaskCtx,
+            center,
+            0,
+            0
+        );
+
+
+        windRevealMaskCtx.fill();
+    }
+
+
+    windRevealMaskCtx.filter =
+        "none";
+
+
+    windRevealMaskCtx.globalAlpha =
+        1;
+
+
+    for (
+        const center
+        of revealCenters
+    ) {
+
+        createWindRevealPath(
+            windRevealMaskCtx,
+            center,
+            0,
+            0
+        );
+
+
+        windRevealMaskCtx.fill();
+    }
+
+
+    windRevealMaskCtx.restore();
+
+
+    windRevealMaskDirty =
+        false;
+}
+
+
+function ensureWindRevealMask() {
+
+    if (
+        windRevealMaskDirty
+    ) {
+
+        rebuildWindRevealMask();
+    }
+}
 
 function drawWindOverlay() {
 
@@ -1424,9 +1605,59 @@ function drawWindOverlay() {
     // OPEN GEBIEDEN UIT WIND HALEN
     // ==========================================
 
-    const revealCenters =
-        getWindRevealCenters();
+// ==========================================
+// GECACHTE OPEN GEBIEDEN UIT WIND HALEN
+// ==========================================
 
+ensureWindRevealMask();
+
+
+const sourceX =
+    Math.max(
+        0,
+        Math.floor(
+            camera.x
+        )
+    );
+
+
+const sourceY =
+    Math.max(
+        0,
+        Math.floor(
+            camera.y
+        )
+    );
+
+
+const sourceWidth =
+    Math.max(
+        0,
+        Math.min(
+            canvas.width,
+
+            windRevealMaskCanvas.width -
+                sourceX
+        )
+    );
+
+
+const sourceHeight =
+    Math.max(
+        0,
+        Math.min(
+            canvas.height,
+
+            windRevealMaskCanvas.height -
+                sourceY
+        )
+    );
+
+
+if (
+    sourceWidth > 0 &&
+    sourceHeight > 0
+) {
 
     windCtx.save();
 
@@ -1435,77 +1666,25 @@ function drawWindOverlay() {
         "destination-out";
 
 
-    // ==========================================
-    // ZACHTE RAND
-    // ==========================================
+    windCtx.drawImage(
+        windRevealMaskCanvas,
 
-    /*
-        Eerst dezelfde gaten licht geblurd.
+        sourceX,
+        sourceY,
 
-        Hierdoor krijg je geen messcherpe
-        overgang van map naar wind.
-    */
+        sourceWidth,
+        sourceHeight,
 
-    windCtx.filter =
-        "blur(22px)";
+        0,
+        0,
 
-
-    windCtx.globalAlpha =
-        0.72;
-
-
-    for (
-        const center
-        of revealCenters
-    ) {
-
-        createWindRevealPath(
-            windCtx,
-            center
-        );
-
-
-        windCtx.fillStyle =
-            "black";
-
-
-        windCtx.fill();
-    }
-
-
-    // ==========================================
-    // BINNENKANT VOLLEDIG VRIJ
-    // ==========================================
-
-    windCtx.filter =
-        "none";
-
-
-    windCtx.globalAlpha =
-        1;
-
-
-    for (
-        const center
-        of revealCenters
-    ) {
-
-        createWindRevealPath(
-            windCtx,
-            center
-        );
-
-
-        windCtx.fillStyle =
-            "black";
-
-
-        windCtx.fill();
-    }
+        sourceWidth,
+        sourceHeight
+    );
 
 
     windCtx.restore();
-
+}
 
     // ==========================================
     // WIND OVER MAP TEKENEN
@@ -1626,9 +1805,8 @@ async function loadTiledMap() {
 
             );
 
-
             loadLevelObjects();
-
+            invalidateWindRevealCache();
 
             mapLoaded =
                 true;
@@ -2457,6 +2635,8 @@ window.completeStoryLevel =
 
         // EERSTE KEER
 
+        invalidateWindRevealCache();
+
         let message =
 
             "Level " +
@@ -2501,6 +2681,7 @@ window.resetStoryProgress =
     function() {
 
         StoryProgress.reset();
+        invalidateWindRevealCache();
 
         respawnPlayer();
 

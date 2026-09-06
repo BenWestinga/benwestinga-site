@@ -3,7 +3,7 @@ import knight from "../enemies/enemy-10.js";
 import camoGoon from "../enemies/enemy-11.js";
 import shotgunGoon from "../enemies/enemy-12.js";
 import snake from "../enemies/enemy-13.js";
-import snakeMachine from "../enemies/boss-03.js";
+import snakeMachine from "../enemies/boss-04.js";
 import shielder from "../enemies/enemy-14.js";
 import snakeQueen from "../enemies/enemy-15.js";
 import biggrassGoon from "../enemies/enemy-16.js";
@@ -36,27 +36,19 @@ export const config = {
 
     spawnGroups: [
 
-        /*
-        Normale enemy:
-
-        {
-            enemy: "grassEnemy",
-            count: 20,
-            start: 5,
-            duration: 60
-        }
-
-
-        Sterkere boss:
-
-        {
-            enemy: "grassBossStrong",
-            count: 1,
-            start: 180,
-            duration: 1
-        }
-        */
-
+        { enemy: "grassGoon", count: 120, start: 5, duration: 80},
+        { enemy: "biggrassGoon", count: 15, start: 5, duration: 80},
+        { enemy: "knight", count: 20, start: 5, duration: 80},
+        { enemy: "shotgunGoon", count: 10, start: 5, duration: 80},
+        { enemy: "shielder", count: 14, start: 5, duration: 80},
+        { enemy: "camoGoon", count: 60, start: 80, duration: 30},
+        { enemy: "snake", count: 90, start: 100, duration: 60},
+        { enemy: "snakeQueen", count: 5, start: 100, duration: 60},
+        { enemy: "snake", count: 600, start: 160, duration: 800},
+        { enemy: "snakeQueen", count: 2, start: 250, duration: 1},
+        { enemy: "snakeQueen", count: 2, start: 400, duration: 1},
+        { enemy: "snakeQueen", count: 2, start: 550, duration: 1},
+        { enemy: "snakeMachine", count: 1, start: 160, duration: 1}
     ]
 };
 

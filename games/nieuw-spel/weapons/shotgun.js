@@ -5,7 +5,7 @@ export default {
     name: "Shotgun",
 
     shotsPerSecond:
-        1 / 2.8,
+        1 / 1.8,
 
     damage: 1,
 

@@ -10,8 +10,6 @@
     let modifiers = {};
     let shotCounter = 0;
     let frostTimerMs = 0;
-    let shockTimerMs = 0;
-    let shockReady = false;
 
     const BASE_EXPLOSION_RADIUS = 68;
     const BASE_EXPLOSION_DAMAGE_FACTOR = 0.75;
@@ -116,12 +114,6 @@
 
         frostTimerMs =
             0;
-
-        shockTimerMs =
-            0;
-
-        shockReady =
-            false;
 
         clearTransient();
     }
@@ -436,40 +428,62 @@
 
 
         /*
-            Shock Pop is time based.
+            SHOCK POP
 
-            After 10 seconds,
-            the next attack carries
-            chain lightning.
+            Every 8th attack turns the
+            entire normal volley electric.
+
+            This is attack based, not
+            projectile based. A shotgun
+            therefore makes every pellet
+            from that 8th attack electric.
         */
 
-        if (
+        const shockPopEvery =
+            numberModifier(
+                "shockPopEvery",
+                NaN
+            );
+
+
+        const isShockPopAttack =
 
             booleanModifier(
                 "shockPop"
             ) &&
 
-            shockReady
+            Number.isFinite(
+                shockPopEvery
+            ) &&
+
+            shockPopEvery >
+                0 &&
+
+            shotCounter %
+                shockPopEvery ===
+                0;
+
+
+        if (
+            isShockPopAttack
         ) {
 
-            carrier.isLightning =
-                true;
+            for (
+                const projectile
+                of result
+            ) {
+
+                projectile.isLightning =
+                    true;
 
 
-            carrier.color =
-                "#ffe75a";
+                projectile.color =
+                    "#ffe75a";
 
 
-            carrier.glowColor =
-                "rgba(255,235,60,0.95)";
-
-
-            shockReady =
-                false;
-
-
-            shockTimerMs =
-                0;
+                projectile.glowColor =
+                    "rgba(255,235,60,0.95)";
+            }
         }
 
 
@@ -2326,79 +2340,6 @@
         }
     }
 
-
-    function updateShockPopTimer(
-        dt
-    ) {
-
-        const interval =
-            numberModifier(
-                "shockPopInterval",
-                NaN
-            );
-
-
-        if (
-
-            !booleanModifier(
-                "shockPop"
-            ) ||
-
-            !Number.isFinite(
-                interval
-            ) ||
-
-            interval <=
-            0
-        ) {
-
-            shockTimerMs =
-                0;
-
-
-            shockReady =
-                false;
-
-
-            return;
-        }
-
-
-        /*
-            Once Shock Pop is ready,
-            it waits for your next attack.
-
-            Charges do not stack.
-        */
-
-        if (
-            shockReady
-        ) {
-
-            return;
-        }
-
-
-        shockTimerMs +=
-            dt *
-            1000;
-
-
-        if (
-            shockTimerMs >=
-            interval
-        ) {
-
-            shockTimerMs =
-                0;
-
-
-            shockReady =
-                true;
-        }
-    }
-
-
     function updateSplitBurstBullets(
         dt,
         context
@@ -3046,11 +2987,6 @@
 
 
         updateVisualTimers(
-            dt
-        );
-
-
-        updateShockPopTimer(
             dt
         );
 
