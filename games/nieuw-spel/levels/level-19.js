@@ -6,6 +6,7 @@ import snake from "../enemies/enemy-13.js";
 import snakeMachine from "../enemies/boss-03.js";
 import shielder from "../enemies/enemy-14.js";
 import snakeQueen from "../enemies/enemy-15.js";
+import biggrassGoon from "../enemies/enemy-16.js";
 
 export const config = {
 
@@ -29,7 +30,8 @@ export const config = {
         snake,
         snakeMachine,
         shielder,
-        snakeQueen
+        snakeQueen,
+        biggrassGoon
     },
 
 
