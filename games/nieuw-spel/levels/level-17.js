@@ -42,7 +42,7 @@ export const config = {
         { enemy: "shotgunGoon", count: 12, start: 5, duration: 155},
         { enemy: "shielder", count: 12, start: 5, duration: 50},
         { enemy: "shielder", count: 12, start: 85, duration: 50},
-        { enemy: "snakeQueen", count: 1, start: 120, duration: 1}
+        { enemy: "snakeQueen", count: 2, start: 120, duration: 1}
 
     ]
 };

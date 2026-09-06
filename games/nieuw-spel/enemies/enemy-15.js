@@ -345,13 +345,13 @@ function startAction(
 
                 {
                     length:
-                        4
+                        8
                 },
 
                 () =>
 
                     Math.random() *
-                    2
+                    1
 
             ).sort(
 
@@ -948,11 +948,21 @@ const snakeQueen = {
 
 
             if (
-                state.actionElapsed >=
-                this.summonDuration
+                state.summonIndex >=
+                state.summonTimes.length
             ) {
 
                 finishAction(
+                    enemy
+                );
+
+
+                /*
+                    Immediately start moving again
+                    after the 8th Snake spawned.
+                */
+
+                randomDirection(
                     enemy
                 );
             }
