@@ -29,7 +29,8 @@ export const config = {
         snake,
         snakeMachine,
         shielder,
-        snakeQueen
+        snakeQueen,
+        biggrassGoon
     },
 
     spawnGroups: [
