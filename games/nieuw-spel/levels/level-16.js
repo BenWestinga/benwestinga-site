@@ -36,7 +36,7 @@ export const config = {
         { enemy: "grassGoon", count: 200, start: 5, duration: 155},
         { enemy: "snake", count: 180, start: 5, duration: 155},
         { enemy: "camoGoon", count: 130, start: 5, duration: 155},
-        { enemy: "biggrassGoon", count: 10, start: 5, duration: 155},  
+        { enemy: "biggrassGoon", count: 10, start: 5, duration: 155}
     ]
 };
 
