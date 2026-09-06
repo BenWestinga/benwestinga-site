@@ -31,7 +31,6 @@ export const config = {
     },
 
     spawnGroups: [
-
         { enemy: "grassGoon", count: 100, start: 5, duration: 155},
         { enemy: "camoGoon", count: 40, start: 5, duration: 155},
         { enemy: "knight", count: 10, start: 5, duration: 155},
@@ -39,7 +38,7 @@ export const config = {
         { enemy: "snake", count: 150, start: 5, duration: 155},
         { enemy: "shielder", count: 8, start: 5, duration: 155},
         { enemy: "snakeMachine", count: 1, start: 160, duration: 1},
-        { enemy: "shotgunGoon", count: 70, start: 160, duration: 260},
+        { enemy: "shotgunGoon", count: 55, start: 160, duration: 260},
 
     ]
 };

@@ -1,3 +1,12 @@
+import grassGoon from "../enemies/enemy-09.js";
+import knight from "../enemies/enemy-10.js";
+import camoGoon from "../enemies/enemy-11.js";
+import shotgunGoon from "../enemies/enemy-12.js";
+import snake from "../enemies/enemy-13.js";
+import snakeMachine from "../enemies/boss-03.js";
+import shielder from "../enemies/enemy-14.js";
+import snakeQueen from "../enemies/enemy-15.js";
+
 export const config = {
 
     number: 19,
@@ -8,13 +17,21 @@ export const config = {
 
     background: {
         image: "grass.png",
-        alpha: 0.58,
+        alpha: 0.28,
         color: "#6f9f4d"
     },
 
     enemyTypes: {
-
+        grassGoon,
+        knight,
+        camoGoon,
+        shotgunGoon,
+        snake,
+        snakeMachine,
+        shielder,
+        snakeQueen
     },
+
 
     spawnGroups: [
 
