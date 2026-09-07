@@ -38,16 +38,16 @@ export const config = {
 
         { enemy: "grassGoon", count: 100, start: 5, duration: 60},
         { enemy: "biggrassGoon", count: 8, start: 5, duration: 60},
-        { enemy: "knight", count: 8, start: 5, duration: 60},
+        { enemy: "knight", count: 4, start: 5, duration: 60},
         { enemy: "shotgunGoon", count: 8, start: 5, duration: 60},
         { enemy: "shielder", count: 6, start: 5, duration: 60},
         { enemy: "camoGoon", count: 40, start: 80, duration: 50},
         { enemy: "snake", count: 90, start: 100, duration: 60},
-        { enemy: "snakeQueen", count: 5, start: 100, duration: 60},
+        { enemy: "snakeQueen", count: 3, start: 100, duration: 60},
         { enemy: "snake", count: 600, start: 160, duration: 800},
-        { enemy: "snakeQueen", count: 2, start: 250, duration: 1},
-        { enemy: "snakeQueen", count: 2, start: 400, duration: 1},
-        { enemy: "snakeQueen", count: 2, start: 550, duration: 1},
+        { enemy: "snakeQueen", count: 1, start: 250, duration: 1},
+        { enemy: "snakeQueen", count: 1, start: 400, duration: 1},
+        { enemy: "snakeQueen", count: 1, start: 550, duration: 1},
         { enemy: "snakeMachine", count: 1, start: 160, duration: 1}
     ]
 };
