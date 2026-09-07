@@ -83,7 +83,7 @@ export const config = {
 
         {
             enemy: "stoneThrower",
-            count: 30,
+            count: 10,
             start: 70,
             duration: 50
         },
