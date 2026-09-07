@@ -34,10 +34,11 @@ function addSlime(
                     0.58
             ),
 
-        remaining:
-            3,
+        /*
+            Exact 3 seconden gevaarlijk.
+        */
 
-        duration:
+        remaining:
             3,
 
         wobble:
@@ -79,8 +80,18 @@ const insect = {
     color:
         "#67bd45",
 
+    /*
+        Slime blijft exact
+        3 seconden bestaan.
+    */
+
     trailDuration:
         3,
+
+    /*
+        Hoe vaak een nieuwe
+        slimeblob wordt geplaatst.
+    */
 
     trailInterval:
         0.08,
@@ -104,6 +115,10 @@ const insect = {
     },
 
 
+    /* =================================================
+       SPAWN
+       ================================================= */
+
     onSpawn(
         enemy,
         api
@@ -119,7 +134,8 @@ const insect = {
 
 
         /*
-            Soms echt vanuit hoek.
+            35% kans dat hij
+            echt vanuit een hoek komt.
         */
 
         if (
@@ -135,6 +151,10 @@ const insect = {
                 );
 
 
+            /*
+                Linksboven.
+            */
+
             if (
                 corner ===
                 0
@@ -145,6 +165,11 @@ const insect = {
 
                 enemy.y =
                     -outside;
+
+
+            /*
+                Rechtsboven.
+            */
 
             } else if (
                 corner ===
@@ -158,6 +183,11 @@ const insect = {
 
                 enemy.y =
                     -outside;
+
+
+            /*
+                Rechtsonder.
+            */
 
             } else if (
                 corner ===
@@ -174,6 +204,11 @@ const insect = {
                     canvas.height +
                     outside;
 
+
+            /*
+                Linksonder.
+            */
+
             } else {
 
                 enemy.x =
@@ -185,10 +220,12 @@ const insect = {
                     outside;
             }
 
+
         } else {
 
             /*
-                Willekeurige rand.
+                Anders komt hij
+                vanaf een random kant.
             */
 
             const side =
@@ -198,6 +235,10 @@ const insect = {
                     4
                 );
 
+
+            /*
+                Links.
+            */
 
             if (
                 side ===
@@ -211,6 +252,11 @@ const insect = {
 
                     Math.random() *
                     canvas.height;
+
+
+            /*
+                Rechts.
+            */
 
             } else if (
                 side ===
@@ -226,6 +272,11 @@ const insect = {
 
                     Math.random() *
                     canvas.height;
+
+
+            /*
+                Boven.
+            */
 
             } else if (
                 side ===
@@ -239,6 +290,11 @@ const insect = {
 
                 enemy.y =
                     -outside;
+
+
+            /*
+                Onder.
+            */
 
             } else {
 
@@ -256,11 +312,15 @@ const insect = {
 
 
         /*
-            Doel ligt redelijk diep
-            in de arena.
+            =========================================
+            DOELPUNT
 
-            Hierdoor zit hij minimaal
-            een tijdje echt in beeld.
+            Het doel ligt bewust diep in
+            de arena.
+
+            Daardoor vliegt hij niet alleen
+            heel even door een hoekje.
+            =========================================
         */
 
         const targetX =
@@ -337,10 +397,15 @@ const insect = {
     },
 
 
-    /*
-        Wordt 1x voor alle insects
-        aangeroepen per update.
-    */
+    /* =================================================
+       SLIME UPDATE
+
+       Slime blijft 100% zichtbaar
+       zolang remaining > 0.
+
+       Zodra remaining <= 0:
+       direct verwijderen.
+       ================================================= */
 
     beforeUpdate(
         dt,
@@ -373,6 +438,20 @@ const insect = {
                 2;
 
 
+            /*
+                =====================================
+                EXACT VERWIJDERMOMENT
+
+                Geen fade.
+
+                > 0 sec:
+                zichtbaar + dodelijk
+
+                <= 0 sec:
+                meteen weg + niet dodelijk
+                =====================================
+            */
+
             if (
                 slime.remaining <=
                 0
@@ -389,7 +468,8 @@ const insect = {
 
 
             /*
-                Slime doodt speler.
+                Slime is dodelijk zolang
+                hij zichtbaar bestaat.
             */
 
             if (
@@ -412,6 +492,10 @@ const insect = {
     },
 
 
+    /* =================================================
+       INSECT UPDATE
+       ================================================= */
+
     update(
         enemy,
         dt,
@@ -433,7 +517,10 @@ const insect = {
 
 
         /*
-            Altijd rechte lijn.
+            Altijd rechtdoor.
+
+            Hij target de speler dus
+            niet nadat hij gespawned is.
         */
 
         api.moveStraight(
@@ -441,6 +528,11 @@ const insect = {
             dt
         );
 
+
+        /*
+            Zodra hij in arena zit,
+            begint slime trail.
+        */
 
         if (
             api.isInsideArena(
@@ -475,16 +567,20 @@ const insect = {
 
 
         /*
-            Eenmaal helemaal uit:
-            verwijderen.
+            Eenmaal door arena geweest
+            en helemaal buiten:
+
+            insect verwijderen.
         */
 
         if (
+
             enemy.enteredArena &&
 
             api.isFullyOutsideArena(
                 enemy
             )
+
         ) {
 
             api.removeEnemy(
@@ -493,6 +589,17 @@ const insect = {
         }
     },
 
+
+    /* =================================================
+       SLIME DRAW
+
+       BELANGRIJK:
+
+       GEEN alpha gebaseerd op remaining.
+
+       Iedere blob is dus 100%
+       zichtbaar totdat hij verdwijnt.
+       ================================================= */
 
     drawBelow(
         ctx
@@ -503,21 +610,16 @@ const insect = {
             of slimeTrail
         ) {
 
-            const alpha =
-                Math.max(
-
-                    0,
-
-                    slime.remaining /
-                    slime.duration
-                );
-
-
             ctx.save();
 
 
             /*
-                Hoofd-slijmblob.
+                =====================================
+                HOOFDBLOB
+
+                Volledig groen.
+                Geen transparantie.
+                =====================================
             */
 
             ctx.beginPath();
@@ -539,21 +641,47 @@ const insect = {
 
 
             ctx.fillStyle =
-
-                `rgba(69,190,68,${
-                    0.52 *
-                    alpha
-                })`;
+                "#45be44";
 
 
             ctx.fill();
 
 
             /*
-                Extra slijmbobbels.
+                Donkere buitenrand.
+
+                Hierdoor blijft het slijm
+                ook op mountain.png
+                heel duidelijk zichtbaar.
+            */
+
+            ctx.lineWidth =
+                Math.max(
+
+                    2,
+
+                    slime.radius *
+                        0.12
+                );
+
+
+            ctx.strokeStyle =
+                "#235f29";
+
+
+            ctx.stroke();
+
+
+            /*
+                =====================================
+                EXTRA SLIJMBLOBS
+
+                Ook volledig zichtbaar.
+                =====================================
             */
 
             for (
+
                 let n =
                     0;
 
@@ -561,6 +689,7 @@ const insect = {
                     3;
 
                 n++
+
             ) {
 
                 const angle =
@@ -604,7 +733,7 @@ const insect = {
                             0.34 +
 
                             n *
-                            0.04
+                                0.04
                         ),
 
 
@@ -616,11 +745,7 @@ const insect = {
 
 
                 ctx.fillStyle =
-
-                    `rgba(85,220,75,${
-                        0.34 *
-                        alpha
-                    })`;
+                    "#55dc4b";
 
 
                 ctx.fill();
@@ -628,7 +753,9 @@ const insect = {
 
 
             /*
-                Glanzende highlight.
+                =====================================
+                GLANZENDE SLIJM-HIGHLIGHT
+                =====================================
             */
 
             ctx.beginPath();
@@ -655,11 +782,41 @@ const insect = {
 
 
             ctx.fillStyle =
+                "#d2ffbe";
 
-                `rgba(210,255,190,${
-                    0.55 *
-                    alpha
-                })`;
+
+            ctx.fill();
+
+
+            /*
+                Tweede kleine shine.
+            */
+
+            ctx.beginPath();
+
+
+            ctx.arc(
+
+                slime.x +
+                    slime.radius *
+                    0.23,
+
+                slime.y +
+                    slime.radius *
+                    0.16,
+
+                slime.radius *
+                    0.09,
+
+                0,
+
+                Math.PI *
+                    2
+            );
+
+
+            ctx.fillStyle =
+                "#9df58a";
 
 
             ctx.fill();
@@ -670,6 +827,10 @@ const insect = {
     },
 
 
+    /* =================================================
+       INSECT DRAW
+       ================================================= */
+
     draw(
         enemy,
         ctx
@@ -679,6 +840,11 @@ const insect = {
             enemy.radius;
 
 
+        /*
+            Rups draait mee met
+            zijn bewegingsrichting.
+        */
+
         const angle =
             Math.atan2(
 
@@ -687,6 +853,10 @@ const insect = {
                 enemy.vx
             );
 
+
+        /*
+            Kleine lichaams-wiggle.
+        */
 
         const wiggle =
 
@@ -720,7 +890,9 @@ const insect = {
 
 
         /*
+            =====================================
             RUPSLICHAAM
+            =====================================
         */
 
         const segmentCount =
@@ -822,7 +994,9 @@ const insect = {
 
 
         /*
+            =====================================
             KOP
+            =====================================
         */
 
         const headX =
@@ -873,7 +1047,9 @@ const insect = {
 
 
         /*
+            =====================================
             OGEN
+            =====================================
         */
 
         ctx.fillStyle =
@@ -921,7 +1097,9 @@ const insect = {
 
 
         /*
+            =====================================
             VOELSPRIETEN
+            =====================================
         */
 
         ctx.strokeStyle =
