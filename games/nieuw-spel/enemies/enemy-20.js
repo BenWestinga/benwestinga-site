@@ -94,7 +94,7 @@ const insect = {
     */
 
     trailInterval:
-        0.08,
+        0.25,
 
 
     reset() {
