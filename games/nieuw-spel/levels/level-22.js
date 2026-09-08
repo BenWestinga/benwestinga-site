@@ -45,7 +45,7 @@ export const config = {
 
         {
             enemy: "insect",
-            start: 15,
+            start: 12,
 
             formation: {
                 type: "column",
@@ -64,11 +64,23 @@ export const config = {
 
         {
             enemy: "insect",
-            start: 50,
+            start: 30,
 
             formation: {
                 type: "column",
-                count: 25,
+                count: 13,
+                side: "left",
+                spacing: 30
+            }
+        },
+
+        {
+            enemy: "insect",
+            start: 48,
+
+            formation: {
+                type: "column",
+                count: 15,
                 side: "left",
                 spacing: 30
             }
