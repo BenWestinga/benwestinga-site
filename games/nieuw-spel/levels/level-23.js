@@ -37,31 +37,59 @@ export const config = {
     spawnGroups: [
 
         {
-            enemy: "stoneGoon",
-            count: 45,
+            enemy: "stone",
+            count: 3,
             start: 5,
-            duration: 90
+            duration: 1
         },
 
         {
             enemy: "stone",
-            count: 20,
-            start: 10,
-            duration: 90
+            count: 3,
+            start: 15,
+            duration: 1
         },
 
         {
-            enemy: "insect",
-            count: 20,
-            start: 15,
-            duration: 90
+            enemy: "stone",
+            count: 3,
+            start: 25,
+            duration: 1
         },
 
         {
             enemy: "stoneThrower",
-            count: 7,
+            count: 5,
             start: 30,
-            duration: 75
+            duration: 1
+        },
+
+        {
+            enemy: "insect",
+            count: 100,
+            start: 40,
+            duration: 80
+        },
+
+        {
+            enemy: "stoneThrower",
+            count: 5,
+            start: 60,
+            duration: 1
+        },
+
+        {
+            enemy: "stoneThrower",
+            count: 5,
+            start: 85,
+            duration: 1
+        },
+
+        {
+            enemy: "stoneRoller",
+            count: 10,
+            start: 110,
+            duration: 40
         }
     ]
 };

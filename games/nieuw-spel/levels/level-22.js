@@ -49,7 +49,7 @@ export const config = {
 
             formation: {
                 type: "column",
-                count: 20,
+                count: 12,
                 side: "left",
                 spacing: 60
             }
