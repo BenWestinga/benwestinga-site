@@ -8,6 +8,9 @@
     };
 
 
+    let resumeGuard = false;
+
+
     window.levelPlayer = player;
 
 
@@ -32,6 +35,8 @@
             canvas.height * 0.5;
 
         player.alive = true;
+
+        resumeGuard = false;
     }
 
 
@@ -88,14 +93,50 @@
             canvas.getBoundingClientRect();
 
 
-        player.x =
+        const pointerX =
             (event.clientX - rect.left) *
             (canvas.width / rect.width);
 
-
-        player.y =
+        const pointerY =
             (event.clientY - rect.top) *
             (canvas.height / rect.height);
+
+
+        /*
+            Na pauze mag de speler niet direct
+            naar de nieuwe muispositie springen.
+
+            De cursor moet eerst terug in de buurt
+            van de speler komen.
+        */
+        if (resumeGuard) {
+
+            const dx =
+                pointerX - player.x;
+
+            const dy =
+                pointerY - player.y;
+
+            const resumeRadius =
+                80;
+
+            if (
+                dx * dx +
+                dy * dy >
+                resumeRadius * resumeRadius
+            ) {
+                return;
+            }
+
+            resumeGuard = false;
+        }
+
+
+        player.x =
+            pointerX;
+
+        player.y =
+            pointerY;
 
 
         clampPlayer();
@@ -181,6 +222,15 @@
             movePlayerToPointer
         );
     }
+    function prepareResume() {
+
+        if (
+            window.levelActive === true &&
+            player.alive
+        ) {
+            resumeGuard = true;
+        }
+    }
 
 
     window.LevelPlayer = {
@@ -188,7 +238,8 @@
         clamp: clampPlayer,
         draw: drawPlayer,
         touchesCircle,
-        bindControls
+        bindControls,
+        prepareResume
     };
 
 

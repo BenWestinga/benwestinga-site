@@ -108,6 +108,14 @@ function openPauseMenu() {
 // ======================================================
 
 function closePauseMenu() {
+    if (
+        window.levelActive === true &&
+        window.LevelPlayer?.prepareResume
+    ) {
+
+        window.LevelPlayer.prepareResume();
+    }
+
 
     pauseMenu.hidden =
         true;
