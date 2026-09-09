@@ -1,6 +1,5 @@
 const burrowTrail = [];
 
-
 /* =====================================================
    HELPERS
    ===================================================== */
@@ -10,7 +9,6 @@ function clamp(
     min,
     max
 ) {
-
     return Math.max(
         min,
         Math.min(
@@ -20,12 +18,10 @@ function clamp(
     );
 }
 
-
 function randomRange(
     min,
     max
 ) {
-
     return (
         min +
         Math.random() *
@@ -36,9 +32,7 @@ function randomRange(
     );
 }
 
-
 function clearBurrowTrail() {
-
     burrowTrail.length =
         0;
 }
@@ -51,23 +45,17 @@ function clearBurrowTrail() {
 function addBurrowTrail(
     enemy
 ) {
-
     const state =
         enemy.stoneBurrowerState;
 
-
     if (!state) {
-
         return;
     }
-
 
     const r =
         state.surfaceRadius;
 
-
     burrowTrail.push({
-
         x:
             enemy.x +
             randomRange(
@@ -112,67 +100,267 @@ function chooseBurrowTarget(
     api,
     definition
 ) {
-
     const canvas =
         api.getCanvas();
-
 
     const player =
         api.getPlayer();
 
 
-    const angle =
-        Math.random() *
-        Math.PI *
-        2;
+    /*
+        De Burrower kiest expres NIET
+        exact de positie van de speler.
+
+        Hij kiest een random punt in een
+        ring rondom de speler:
+
+        targetMinDistance = minimale afstand
+        targetMaxDistance = maximale afstand
+
+        Daardoor kan hij dichtbij opduiken,
+        maar nooit bewust precies onder
+        de speler als doel kiezen.
+    */
+
+    const margin =
+        70;
 
 
-    const distance =
-        randomRange(
-
-            definition
-                .targetMinDistance,
-
-            definition
-                .targetMaxDistance
+    const minDistance =
+        Math.max(
+            0,
+            Number(
+                definition
+                    .targetMinDistance
+            ) || 0
         );
 
 
-    return {
+    const maxDistance =
+        Math.max(
+            minDistance,
+            Number(
+                definition
+                    .targetMaxDistance
+            ) ||
+            minDistance
+        );
 
-        x:
-            clamp(
 
-                player.x +
+    /*
+        Eerst proberen we meerdere random
+        punten rondom de speler.
 
-                    Math.cos(
-                        angle
-                    ) *
+        We clampen hier NIET direct.
 
-                    distance,
+        Dat is belangrijk, want clamping
+        kon een gekozen punt bij een rand
+        veel dichter naar de speler trekken.
+    */
 
-                70,
+    for (
+        let attempt =
+            0;
 
+        attempt <
+            40;
+
+        attempt++
+    ) {
+        const angle =
+            Math.random() *
+            Math.PI *
+            2;
+
+
+        const distance =
+            randomRange(
+                minDistance,
+                maxDistance
+            );
+
+
+        const x =
+            player.x +
+            Math.cos(
+                angle
+            ) *
+            distance;
+
+
+        const y =
+            player.y +
+            Math.sin(
+                angle
+            ) *
+            distance;
+
+
+        /*
+            Alleen accepteren als het punt
+            echt binnen de speelbare arena ligt.
+        */
+
+        if (
+            x <
+                margin ||
+
+            x >
                 canvas.width -
-                    70
-            ),
+                    margin ||
+
+            y <
+                margin ||
+
+            y >
+                canvas.height -
+                    margin
+        ) {
+            continue;
+        }
+
+
+        /*
+            Extra controle zodat de echte
+            afstand minimaal minDistance blijft.
+        */
+
+        const actualDistance =
+            Math.hypot(
+                x -
+                    player.x,
+
+                y -
+                    player.y
+            );
+
+
+        if (
+            actualDistance >=
+                minDistance
+        ) {
+            return {
+                x,
+                y
+            };
+        }
+    }
+
+
+    /*
+        FALLBACK
+
+        Als de speler bijvoorbeeld heel
+        dicht bij een hoek staat en 40
+        pogingen geen geldig punt geven,
+        zoeken we random punten in de arena
+        en kiezen we het verst gevonden punt.
+
+        Hierdoor zal hij ook dan niet
+        ineens exact op de speler mikken.
+    */
+
+    let bestX =
+        clamp(
+            canvas.width /
+                2,
+
+            margin,
+
+            canvas.width -
+                margin
+        );
+
+
+    let bestY =
+        clamp(
+            canvas.height /
+                2,
+
+            margin,
+
+            canvas.height -
+                margin
+        );
+
+
+    let bestDistance =
+        Math.hypot(
+            bestX -
+                player.x,
+
+            bestY -
+                player.y
+        );
+
+
+    for (
+        let attempt =
+            0;
+
+        attempt <
+            50;
+
+        attempt++
+    ) {
+        const x =
+            randomRange(
+                margin,
+
+                Math.max(
+                    margin,
+
+                    canvas.width -
+                        margin
+                )
+            );
+
+
+        const y =
+            randomRange(
+                margin,
+
+                Math.max(
+                    margin,
+
+                    canvas.height -
+                        margin
+                )
+            );
+
+
+        const distance =
+            Math.hypot(
+                x -
+                    player.x,
+
+                y -
+                    player.y
+            );
+
+
+        if (
+            distance >
+                bestDistance
+        ) {
+            bestDistance =
+                distance;
+
+            bestX =
+                x;
+
+            bestY =
+                y;
+        }
+    }
+
+
+    return {
+        x:
+            bestX,
 
         y:
-            clamp(
-
-                player.y +
-
-                    Math.sin(
-                        angle
-                    ) *
-
-                    distance,
-
-                70,
-
-                canvas.height -
-                    70
-            )
+            bestY
     };
 }
 
@@ -186,18 +374,14 @@ function beginUndergroundTravel(
     api,
     definition
 ) {
-
     const state =
         enemy.stoneBurrowerState;
 
 
     const target =
         chooseBurrowTarget(
-
             enemy,
-
             api,
-
             definition
         );
 
@@ -228,7 +412,6 @@ function beginUndergroundTravel(
 
     state.travelDuration =
         randomRange(
-
             definition
                 .undergroundMinDuration,
 
@@ -271,7 +454,6 @@ function beginUndergroundTravel(
 function beginWarning(
     enemy
 ) {
-
     const state =
         enemy.stoneBurrowerState;
 
@@ -318,7 +500,6 @@ function emerge(
     api,
     definition
 ) {
-
     const state =
         enemy.stoneBurrowerState;
 
@@ -351,20 +532,15 @@ function emerge(
 
     if (
         api.playerTouchesCircle(
-
             enemy.x,
-
             enemy.y,
 
             state.surfaceRadius *
-
                 definition
                     .emergeHitRadiusMultiplier
         )
     ) {
-
         api.killPlayer();
-
 
         return;
     }
@@ -383,7 +559,6 @@ function emerge(
 function beginDive(
     enemy
 ) {
-
     const state =
         enemy.stoneBurrowerState;
 
@@ -424,53 +599,40 @@ function drawCrack(
     radius,
     angle
 ) {
-
     const middleX =
-
         x +
-
         Math.cos(
             angle
         ) *
-
         radius *
         0.45;
 
 
     const middleY =
-
         y +
-
         Math.sin(
             angle
         ) *
-
         radius *
         0.45;
 
 
     const endX =
-
         x +
-
         Math.cos(
             angle +
             0.20
         ) *
-
         radius *
         0.90;
 
 
     const endY =
-
         y +
-
         Math.sin(
             angle +
             0.20
         ) *
-
         radius *
         0.90;
 
@@ -508,7 +670,6 @@ function drawStoneBody(
     enemy,
     ctx
 ) {
-
     const state =
         enemy.stoneBurrowerState;
 
@@ -519,20 +680,16 @@ function drawStoneBody(
 
     const movementAngle =
         Math.atan2(
-
             enemy.vy,
-
             enemy.vx
         );
 
 
     const facing =
-
         Math.hypot(
             enemy.vx,
             enemy.vy
         ) >
-
         1
 
             ? movementAngle
@@ -554,7 +711,6 @@ function drawStoneBody(
 
     const sideX =
         Math.cos(
-
             facing +
             Math.PI /
             2
@@ -563,7 +719,6 @@ function drawStoneBody(
 
     const sideY =
         Math.sin(
-
             facing +
             Math.PI /
             2
@@ -583,15 +738,10 @@ function drawStoneBody(
 
 
     ctx.arc(
-
         enemy.x,
-
         enemy.y,
-
         r,
-
         0,
-
         Math.PI *
             2
     );
@@ -606,9 +756,7 @@ function drawStoneBody(
 
     ctx.lineWidth =
         Math.max(
-
             3,
-
             r *
                 0.07
         );
@@ -634,11 +782,8 @@ function drawStoneBody(
 
         i++
     ) {
-
         const angle =
-
             state.bodyAngle +
-
             i *
             Math.PI *
             2 /
@@ -649,26 +794,19 @@ function drawStoneBody(
 
 
         ctx.arc(
-
             enemy.x +
-
                 Math.cos(
                     angle
                 ) *
-
                 r *
                 0.63,
 
-
             enemy.y +
-
                 Math.sin(
                     angle
                 ) *
-
                 r *
                 0.63,
-
 
             r *
                 0.19,
@@ -681,7 +819,6 @@ function drawStoneBody(
 
 
         ctx.fillStyle =
-
             i %
             2 ===
             0
@@ -708,9 +845,7 @@ function drawStoneBody(
             1
         ]
     ) {
-
         const clawX =
-
             enemy.x +
 
             forwardX *
@@ -724,7 +859,6 @@ function drawStoneBody(
 
 
         const clawY =
-
             enemy.y +
 
             forwardY *
@@ -747,9 +881,7 @@ function drawStoneBody(
 
 
         ctx.rotate(
-
             facing +
-
             side *
                 0.30
         );
@@ -759,38 +891,30 @@ function drawStoneBody(
 
 
         ctx.moveTo(
-
             r *
                 0.52,
-
             0
         );
 
 
         ctx.lineTo(
-
             -r *
                 0.18,
-
             -r *
                 0.31
         );
 
 
         ctx.lineTo(
-
             -r *
                 0.04,
-
             0
         );
 
 
         ctx.lineTo(
-
             -r *
                 0.18,
-
             r *
                 0.31
         );
@@ -834,12 +958,10 @@ function drawStoneBody(
             1
         ]
     ) {
-
         ctx.beginPath();
 
 
         ctx.arc(
-
             enemy.x +
 
                 forwardX *
@@ -850,7 +972,6 @@ function drawStoneBody(
                     side *
                     r *
                     0.20,
-
 
             enemy.y +
 
@@ -863,11 +984,8 @@ function drawStoneBody(
                     r *
                     0.20,
 
-
             Math.max(
-
                 2,
-
                 r *
                     0.07
             ),
@@ -900,17 +1018,22 @@ const stoneBurrower = {
     id:
         "stone-burrower",
 
+
     name:
         "Stone Burrower",
+
 
     behavior:
         "stone-burrower",
 
+
     hp:
         10,
 
+
     size:
         3.5,
+
 
     shape:
         "circle",
@@ -931,8 +1054,10 @@ const stoneBurrower = {
     surfaceSpeed:
         "mediumSlow",
 
+
     tracking:
         0.55,
+
 
     color:
         "#5e656a",
@@ -946,20 +1071,26 @@ const stoneBurrower = {
     undergroundMinDuration:
         1.15,
 
+
     undergroundMaxDuration:
         1.80,
 
 
     /*
-        Nieuwe locatie redelijk
-        dicht bij speler.
+        Wanneer hij een nieuw punt kiest,
+        verschijnt hij ergens tussen
+        170 en 300 pixels van de speler.
+
+        Dus nooit bewust exact
+        onder de speler.
     */
 
     targetMinDistance:
-        70,
+        170,
+
 
     targetMaxDistance:
-        235,
+        300,
 
 
     /*
@@ -997,19 +1128,16 @@ const stoneBurrower = {
 
 
     reset() {
-
         clearBurrowTrail();
     },
 
 
     onPlayerDeath() {
-
         clearBurrowTrail();
     },
 
 
     onLevelWin() {
-
         clearBurrowTrail();
     },
 
@@ -1022,7 +1150,6 @@ const stoneBurrower = {
         enemy,
         api
     ) {
-
         const canvas =
             api.getCanvas();
 
@@ -1040,11 +1167,9 @@ const stoneBurrower = {
 
         enemy.x =
             randomRange(
-
                 90,
 
                 Math.max(
-
                     91,
 
                     canvas.width -
@@ -1055,11 +1180,9 @@ const stoneBurrower = {
 
         enemy.y =
             randomRange(
-
                 90,
 
                 Math.max(
-
                     91,
 
                     canvas.height -
@@ -1077,46 +1200,55 @@ const stoneBurrower = {
             mode:
                 "underground",
 
+
             modeTimer:
                 0,
 
+
             surfaceRadius,
 
-            undergroundSpeed:
 
+            undergroundSpeed:
                 api.getEnemySpeed(
                     this.speed
                 ),
 
-            surfaceSpeed:
 
+            surfaceSpeed:
                 api.getEnemySpeed(
                     this.surfaceSpeed
                 ),
 
+
             startX:
                 enemy.x,
+
 
             startY:
                 enemy.y,
 
+
             targetX:
                 enemy.x,
+
 
             targetY:
                 enemy.y,
 
+
             travelDuration:
                 1,
+
 
             trailTimer:
                 0,
 
-            bodyAngle:
 
+            bodyAngle:
                 Math.random() *
                 Math.PI *
                 2,
+
 
             diveStartRadius:
                 surfaceRadius
@@ -1124,11 +1256,8 @@ const stoneBurrower = {
 
 
         beginUndergroundTravel(
-
             enemy,
-
             api,
-
             this
         );
     },
@@ -1142,7 +1271,6 @@ const stoneBurrower = {
         enemy,
         damage
     ) {
-
         const mode =
             enemy
                 .stoneBurrowerState
@@ -1158,7 +1286,6 @@ const stoneBurrower = {
             mode !==
             "surface"
         ) {
-
             return 0;
         }
 
@@ -1174,9 +1301,7 @@ const stoneBurrower = {
     beforeUpdate(
         dt
     ) {
-
         for (
-
             let i =
                 burrowTrail.length -
                     1;
@@ -1185,9 +1310,7 @@ const stoneBurrower = {
                 0;
 
             i--
-
         ) {
-
             const particle =
                 burrowTrail[i];
 
@@ -1197,7 +1320,6 @@ const stoneBurrower = {
 
 
             particle.y -=
-
                 particle.lift *
                 dt;
 
@@ -1206,7 +1328,6 @@ const stoneBurrower = {
                 particle.life <=
                 0
             ) {
-
                 burrowTrail.splice(
                     i,
                     1
@@ -1225,13 +1346,11 @@ const stoneBurrower = {
         dt,
         api
     ) {
-
         const state =
             enemy.stoneBurrowerState;
 
 
         if (!state) {
-
             return;
         }
 
@@ -1253,10 +1372,8 @@ const stoneBurrower = {
             state.mode ===
             "underground"
         ) {
-
             const progress =
                 Math.min(
-
                     1,
 
                     state.modeTimer /
@@ -1269,39 +1386,30 @@ const stoneBurrower = {
             */
 
             const smooth =
-
                 progress *
                 progress *
-
                 (
                     3 -
-
                     2 *
                     progress
                 );
 
 
             enemy.x =
-
                 state.startX +
-
                 (
                     state.targetX -
                     state.startX
                 ) *
-
                 smooth;
 
 
             enemy.y =
-
                 state.startY +
-
                 (
                     state.targetY -
                     state.startY
                 ) *
-
                 smooth;
 
 
@@ -1317,7 +1425,6 @@ const stoneBurrower = {
                 state.trailTimer >=
                 0.065
             ) {
-
                 state.trailTimer -=
                     0.065;
 
@@ -1332,7 +1439,6 @@ const stoneBurrower = {
                 progress >=
                 1
             ) {
-
                 beginWarning(
                     enemy
                 );
@@ -1351,7 +1457,6 @@ const stoneBurrower = {
             state.mode ===
             "warning"
         ) {
-
             enemy.x =
                 state.targetX;
 
@@ -1369,18 +1474,12 @@ const stoneBurrower = {
 
 
             if (
-
                 state.modeTimer >=
                 this.warningDuration
-
             ) {
-
                 emerge(
-
                     enemy,
-
                     api,
-
                     this
                 );
             }
@@ -1398,38 +1497,28 @@ const stoneBurrower = {
             state.mode ===
             "surface"
         ) {
-
             enemy.speed =
                 state.surfaceSpeed;
 
 
             api.moveTowardPlayer(
-
                 enemy,
-
                 dt,
-
                 this.tracking
             );
 
 
             api.keepInsideArena(
-
                 enemy,
-
                 14,
-
                 false
             );
 
 
             if (
-
                 state.modeTimer >=
                 this.surfaceDuration
-
             ) {
-
                 beginDive(
                     enemy
                 );
@@ -1448,7 +1537,6 @@ const stoneBurrower = {
             state.mode ===
             "diving"
         ) {
-
             enemy.vx =
                 0;
 
@@ -1459,7 +1547,6 @@ const stoneBurrower = {
 
             const progress =
                 Math.min(
-
                     1,
 
                     state.modeTimer /
@@ -1474,11 +1561,9 @@ const stoneBurrower = {
 
             enemy.radius =
                 Math.max(
-
                     0.1,
 
                     state.diveStartRadius *
-
                     (
                         1 -
                         progress
@@ -1490,13 +1575,9 @@ const stoneBurrower = {
                 progress >=
                 1
             ) {
-
                 beginUndergroundTravel(
-
                     enemy,
-
                     api,
-
                     this
                 );
             }
@@ -1511,14 +1592,11 @@ const stoneBurrower = {
     drawBelow(
         ctx
     ) {
-
         for (
             const particle
             of burrowTrail
         ) {
-
             const alpha =
-
                 particle.life /
                 particle.maxLife;
 
@@ -1534,15 +1612,10 @@ const stoneBurrower = {
 
 
             ctx.arc(
-
                 particle.x,
-
                 particle.y,
-
                 particle.radius,
-
                 0,
-
                 Math.PI *
                     2
             );
@@ -1579,13 +1652,11 @@ const stoneBurrower = {
         enemy,
         ctx
     ) {
-
         const state =
             enemy.stoneBurrowerState;
 
 
         if (!state) {
-
             return;
         }
 
@@ -1602,19 +1673,14 @@ const stoneBurrower = {
             state.mode ===
             "underground"
         ) {
-
             const pulse =
-
                 (
                     Math.sin(
-
                         state.modeTimer *
                         16
                     ) +
-
                     1
                 ) /
-
                 2;
 
 
@@ -1629,9 +1695,7 @@ const stoneBurrower = {
 
 
             ctx.ellipse(
-
                 enemy.x,
-
                 enemy.y,
 
                 r *
@@ -1641,7 +1705,6 @@ const stoneBurrower = {
                     0.40,
 
                 0,
-
                 0,
 
                 Math.PI *
@@ -1669,14 +1732,10 @@ const stoneBurrower = {
 
                 i++
             ) {
-
                 const angle =
-
                     state.modeTimer *
-
                         (
                             2.1 +
-
                             i *
                                 0.18
                         ) +
@@ -1688,12 +1747,9 @@ const stoneBurrower = {
 
 
                 const distance =
-
                     r *
-
                     (
                         0.30 +
-
                         i *
                         0.09
                     );
@@ -1703,38 +1759,27 @@ const stoneBurrower = {
 
 
                 ctx.arc(
-
                     enemy.x +
-
                         Math.cos(
                             angle
                         ) *
-
                         distance,
 
-
                     enemy.y +
-
                         Math.sin(
                             angle
                         ) *
-
                         distance *
                         0.40 -
-
                         pulse *
                         3,
 
-
                     Math.max(
-
                         2,
 
                         r *
-
                         (
                             0.08 +
-
                             i *
                             0.008
                         )
@@ -1748,7 +1793,6 @@ const stoneBurrower = {
 
 
                 ctx.fillStyle =
-
                     i %
                     2 ===
                     0
@@ -1777,10 +1821,8 @@ const stoneBurrower = {
             state.mode ===
             "warning"
         ) {
-
             const progress =
                 Math.min(
-
                     1,
 
                     state.modeTimer /
@@ -1789,22 +1831,17 @@ const stoneBurrower = {
 
 
             const pulse =
-
                 (
                     Math.sin(
-
                         state.modeTimer *
                         24
                     ) +
-
                     1
                 ) /
-
                 2;
 
 
             const warningRadius =
-
                 r *
                 1.25;
 
@@ -1820,22 +1857,16 @@ const stoneBurrower = {
 
 
             ctx.arc(
-
                 enemy.x,
-
                 enemy.y,
-
                 warningRadius,
-
                 0,
-
                 Math.PI *
                     2
             );
 
 
             ctx.fillStyle =
-
                 `rgba(70,70,70,${
                     0.15 +
                     pulse *
@@ -1851,7 +1882,6 @@ const stoneBurrower = {
 
 
             ctx.strokeStyle =
-
                 `rgba(225,230,232,${
                     0.45 +
                     progress *
@@ -1883,9 +1913,7 @@ const stoneBurrower = {
 
                 i++
             ) {
-
                 drawCrack(
-
                     ctx,
 
                     enemy.x,
@@ -1917,9 +1945,7 @@ const stoneBurrower = {
 
                 i++
             ) {
-
                 const angle =
-
                     i *
                     Math.PI *
                     2 /
@@ -1932,32 +1958,23 @@ const stoneBurrower = {
 
 
                 ctx.arc(
-
                     enemy.x +
-
                         Math.cos(
                             angle
                         ) *
-
                         warningRadius *
                         0.70,
 
-
                     enemy.y +
-
                         Math.sin(
                             angle
                         ) *
-
                         warningRadius *
                         0.70,
 
-
                     r *
-
                     (
                         0.08 +
-
                         progress *
                         0.06
                     ),
@@ -1992,7 +2009,6 @@ const stoneBurrower = {
             state.mode ===
             "diving"
         ) {
-
             ctx.save();
 
 
@@ -2000,7 +2016,6 @@ const stoneBurrower = {
 
 
             ctx.ellipse(
-
                 enemy.x,
 
                 enemy.y +
@@ -2014,7 +2029,6 @@ const stoneBurrower = {
                     0.36,
 
                 0,
-
                 0,
 
                 Math.PI *
@@ -2036,11 +2050,8 @@ const stoneBurrower = {
                 enemy.radius >
                 1
             ) {
-
                 drawStoneBody(
-
                     enemy,
-
                     ctx
                 );
             }
@@ -2055,9 +2066,7 @@ const stoneBurrower = {
         */
 
         drawStoneBody(
-
             enemy,
-
             ctx
         );
     }
