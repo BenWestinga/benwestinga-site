@@ -48,9 +48,9 @@ export const config = {
 
         {
             enemy: "stone",
-            count: 16,
+            count: 20,
             start: 5,
-            duration: 40
+            duration: 50
         },
 
         {
@@ -62,9 +62,9 @@ export const config = {
 
         {
             enemy: "stoneThrower",
-            count: 3,
+            count: 8,
             start: 70,
-            duration: 1
+            duration: 20
         },
 
          {

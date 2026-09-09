@@ -183,7 +183,7 @@ const stoneRoller = {
     */
 
     abilityCooldown:
-        15,
+        6,
 
 
     onSpawn(
