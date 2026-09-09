@@ -1,4 +1,4 @@
-function drawStoneImage(
+function drawRockImage(
     enemy,
     ctx,
     api,
@@ -8,7 +8,7 @@ function drawStoneImage(
 
     const image =
         api.getAssetImage(
-            "stone.png"
+            "rock.png"
         );
 
 
@@ -35,26 +35,22 @@ function drawStoneImage(
     ) {
 
         ctx.shadowBlur =
-            18;
-
+            14;
 
         ctx.shadowColor =
-            "rgba(215,220,225,0.80)";
+            "rgba(230,235,240,0.8)";
     }
 
 
     ctx.beginPath();
-
 
     ctx.arc(
         0,
         0,
         r,
         0,
-        Math.PI *
-            2
+        Math.PI * 2
     );
-
 
     ctx.clip();
 
@@ -62,40 +58,32 @@ function drawStoneImage(
     if (
         image &&
         image.complete &&
-        image.naturalWidth >
-            0
+        image.naturalWidth > 0
     ) {
 
         ctx.drawImage(
-
             image,
-
             -r,
             -r,
-
-            r *
-                2,
-
-            r *
-                2
+            r * 2,
+            r * 2
         );
 
     } else {
 
-        ctx.fillStyle =
-            "#747a80";
+        /*
+            Fallback als rock.png
+            niet gevonden wordt.
+        */
 
+        ctx.fillStyle =
+            "#777d83";
 
         ctx.fillRect(
-
             -r,
             -r,
-
-            r *
-                2,
-
-            r *
-                2
+            r * 2,
+            r * 2
         );
     }
 
@@ -104,48 +92,29 @@ function drawStoneImage(
 
 
     /*
-        Lichte outline zodat
-        stone zichtbaar blijft.
+        Lichte outline zodat hij
+        zichtbaar blijft op mountain.png
     */
-
-    ctx.save();
-
 
     ctx.beginPath();
 
-
     ctx.arc(
-
         enemy.x,
-
         enemy.y,
-
         r,
-
         0,
-
-        Math.PI *
-            2
+        Math.PI * 2
     );
-
 
     ctx.lineWidth =
         3;
 
-
     ctx.strokeStyle =
-
         glow
-
             ? "#ffffff"
-
             : "#d0d5d9";
 
-
     ctx.stroke();
-
-
-    ctx.restore();
 }
 
 
@@ -184,17 +153,34 @@ const stoneRoller = {
 
 
     /*
-        Ability.
+        Als speler binnen deze
+        radius komt kan hij rollen.
     */
 
     triggerRadius:
         430,
 
+
+    /*
+        Eerst 0.5 sec stilstaan.
+    */
+
     chargeDuration:
         0.5,
 
+
+    /*
+        Daarna snel rollen.
+    */
+
     rollSpeed:
         520,
+
+
+    /*
+        Na muur-hit 15 seconden
+        cooldown.
+    */
 
     abilityCooldown:
         15,
@@ -217,7 +203,6 @@ const stoneRoller = {
                 0,
 
             rollAngle:
-
                 Math.random() *
                 Math.PI *
                 2,
@@ -251,11 +236,8 @@ const stoneRoller = {
 
         state.cooldown =
             Math.max(
-
                 0,
-
-                state.cooldown -
-                    dt
+                state.cooldown - dt
             );
 
 
@@ -263,9 +245,9 @@ const stoneRoller = {
             dt;
 
 
-        /* =========================================
-           NORMAAL
-           ========================================= */
+        /* =================================================
+           NORMAAL LOPEN
+           ================================================= */
 
         if (
             state.mode ===
@@ -273,11 +255,8 @@ const stoneRoller = {
         ) {
 
             api.moveTowardPlayer(
-
                 enemy,
-
                 dt,
-
                 this.tracking
             );
 
@@ -307,8 +286,7 @@ const stoneRoller = {
 
             if (
                 !enemy.enteredArena ||
-                state.cooldown >
-                    0
+                state.cooldown > 0
             ) {
 
                 return;
@@ -319,40 +297,41 @@ const stoneRoller = {
                 api.getPlayer();
 
 
+            const dx =
+                player.x -
+                enemy.x;
+
+
+            const dy =
+                player.y -
+                enemy.y;
+
+
             const distance =
                 Math.hypot(
-
-                    player.x -
-                        enemy.x,
-
-                    player.y -
-                        enemy.y
+                    dx,
+                    dy
                 );
 
 
             /*
-                Speler komt dichtbij:
-                ability starten.
+                Speler dichtbij genoeg:
+                roll attack voorbereiden.
             */
 
             if (
-
                 distance <=
                 this.triggerRadius
-
             ) {
 
                 state.mode =
                     "charging";
 
-
                 state.chargeTimer =
                     0;
 
-
                 enemy.vx =
                     0;
-
 
                 enemy.vy =
                     0;
@@ -363,9 +342,9 @@ const stoneRoller = {
         }
 
 
-        /* =========================================
-           0.5 SEC CHARGEN
-           ========================================= */
+        /* =================================================
+           CHARGE
+           ================================================= */
 
         if (
             state.mode ===
@@ -374,7 +353,6 @@ const stoneRoller = {
 
             enemy.vx =
                 0;
-
 
             enemy.vy =
                 0;
@@ -385,8 +363,8 @@ const stoneRoller = {
 
 
             /*
-                Stone begint al hard
-                rond te draaien.
+                Rock begint zichtbaar
+                steeds sneller te draaien.
             */
 
             state.rollAngle +=
@@ -395,10 +373,8 @@ const stoneRoller = {
 
 
             if (
-
                 state.chargeTimer >=
                 this.chargeDuration
-
             ) {
 
                 const player =
@@ -423,26 +399,26 @@ const stoneRoller = {
 
 
                 /*
-                    Snapshot player direction.
+                    Richting wordt hier
+                    vastgezet.
+
+                    Tijdens rollen trackt
+                    hij niet meer.
                 */
 
                 enemy.vx =
-
                     (
                         dx /
                         distance
                     ) *
-
                     this.rollSpeed;
 
 
                 enemy.vy =
-
                     (
                         dy /
                         distance
                     ) *
-
                     this.rollSpeed;
 
 
@@ -455,9 +431,9 @@ const stoneRoller = {
         }
 
 
-        /* =========================================
-           ROLL ATTACK
-           ========================================= */
+        /* =================================================
+           ROLLEN
+           ================================================= */
 
         if (
             state.mode ===
@@ -475,22 +451,18 @@ const stoneRoller = {
 
 
             /*
-                PNG rolt echt.
+                Rock PNG draait zichtbaar.
             */
 
             state.rollAngle +=
-
                 (
                     this.rollSpeed /
                     Math.max(
-
                         1,
-
                         enemy.radius *
-                            0.72
+                        0.72
                     )
                 ) *
-
                 dt;
 
 
@@ -507,6 +479,10 @@ const stoneRoller = {
                 false;
 
 
+            /*
+                LINKS
+            */
+
             if (
                 enemy.x <=
                 margin
@@ -515,29 +491,33 @@ const stoneRoller = {
                 enemy.x =
                     margin;
 
-
                 hitWall =
                     true;
             }
 
 
-            if (
+            /*
+                RECHTS
+            */
 
+            if (
                 enemy.x >=
                 canvas.width -
-                    margin
-
+                margin
             ) {
 
                 enemy.x =
                     canvas.width -
                     margin;
 
-
                 hitWall =
                     true;
             }
 
+
+            /*
+                BOVEN
+            */
 
             if (
                 enemy.y <=
@@ -547,24 +527,24 @@ const stoneRoller = {
                 enemy.y =
                     margin;
 
-
                 hitWall =
                     true;
             }
 
 
-            if (
+            /*
+                ONDER
+            */
 
+            if (
                 enemy.y >=
                 canvas.height -
-                    margin
-
+                margin
             ) {
 
                 enemy.y =
                     canvas.height -
                     margin;
-
 
                 hitWall =
                     true;
@@ -572,10 +552,11 @@ const stoneRoller = {
 
 
             /*
-                Muur geraakt:
-                direct weer normaal lopen.
+                Zodra hij een muur raakt:
 
-                Geen stop.
+                - roll stopt meteen
+                - normaal lopen
+                - 15 sec cooldown
             */
 
             if (
@@ -593,7 +574,6 @@ const stoneRoller = {
                 enemy.vx =
                     0;
 
-
                 enemy.vy =
                     0;
 
@@ -605,6 +585,10 @@ const stoneRoller = {
         }
     },
 
+
+    /* =================================================
+       DRAW
+       ================================================= */
 
     draw(
         enemy,
@@ -628,8 +612,7 @@ const stoneRoller = {
 
 
         /*
-            Tijdens charge:
-            zichtbaar trillen.
+            Tijdens charge trilt hij.
         */
 
         if (
@@ -645,39 +628,40 @@ const stoneRoller = {
 
 
             enemy.x +=
-
                 Math.sin(
-
                     state.shakeTime *
                     38
                 ) *
-
                 3;
 
 
             enemy.y +=
-
                 Math.cos(
-
                     state.shakeTime *
                     31
                 ) *
-
                 3;
 
 
-            drawStoneImage(
-
+            drawRockImage(
                 enemy,
-
                 ctx,
-
                 api,
-
-                state.rollAngle ||
-                    0,
-
+                state.rollAngle || 0,
                 true
+            );
+
+
+            /*
+                GEZICHT
+
+                Het gezicht draait niet
+                mee met de PNG zodat je
+                het duidelijk kunt zien.
+            */
+
+            api.drawEnemyFace(
+                enemy
             );
 
 
@@ -693,37 +677,28 @@ const stoneRoller = {
         }
 
 
-        drawStoneImage(
+        /*
+            Normale rock.
+        */
 
+        drawRockImage(
             enemy,
-
             ctx,
-
             api,
-
-            state.rollAngle ||
-                0,
-
+            state.rollAngle || 0,
             rolling
         );
 
 
         /*
-            Alleen face tijdens
-            normaal lopen.
+            ALTIJD een gezicht.
 
-            Tijdens rollen draait
-            alles mee.
+            Dus ook tijdens de roll.
         */
 
-        if (
-            !rolling
-        ) {
-
-            api.drawEnemyFace(
-                enemy
-            );
-        }
+        api.drawEnemyFace(
+            enemy
+        );
     }
 };
 

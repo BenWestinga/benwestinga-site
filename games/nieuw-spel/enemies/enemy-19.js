@@ -55,6 +55,10 @@ function moveAngleToward(
 }
 
 
+/* =====================================================
+   STONE DRAW
+   ===================================================== */
+
 function drawStoneCircle(
     ctx,
     api,
@@ -137,9 +141,6 @@ function drawStoneCircle(
     ctx.restore();
 
 
-    ctx.save();
-
-
     ctx.beginPath();
 
 
@@ -166,9 +167,39 @@ function drawStoneCircle(
 
 
     ctx.stroke();
+}
 
 
-    ctx.restore();
+/* =====================================================
+   STONE LOSKOPPELEN VAN OWNER
+   ===================================================== */
+
+function detachStoneFromOwner(
+    stone
+) {
+
+    const owner =
+        stone
+            ?.thrownStoneState
+            ?.owner;
+
+
+    const ownerState =
+        owner
+            ?.stoneThrowerState;
+
+
+    if (
+        ownerState
+            ?.activeStones instanceof Set
+    ) {
+
+        ownerState
+            .activeStones
+            .delete(
+                stone
+            );
+    }
 }
 
 
@@ -188,7 +219,7 @@ const thrownStoneDefinition = {
         "stone-thrower-ball",
 
     hp:
-        5,
+        3,
 
     size:
         1,
@@ -251,7 +282,8 @@ const thrownStoneDefinition = {
 
 
         /*
-            Steen bouncet oneindig.
+            Steen blijft oneindig
+            tegen muren bouncen.
         */
 
         api.keepInsideArena(
@@ -271,23 +303,17 @@ const thrownStoneDefinition = {
 
 
         /*
-            Zoek zijn eigen Stone Thrower.
+            BELANGRIJKE OPTIMALISATIE:
+
+            We zoeken de owner NIET meer
+            met getEnemies().find().
+
+            De steen bewaart rechtstreeks
+            een verwijzing naar zijn owner.
         */
 
         const owner =
-
-            api.getEnemies()
-                .find(
-
-                    enemy =>
-
-                        enemy &&
-                        enemy.id ===
-                            state.ownerEntityId &&
-                        enemy.definition
-                            ?.id ===
-                            "stone-thrower"
-                );
+            state.owner;
 
 
         if (
@@ -296,6 +322,16 @@ const thrownStoneDefinition = {
                 owner
             )
         ) {
+
+            detachStoneFromOwner(
+                stone
+            );
+
+
+            api.removeEnemy(
+                stone
+            );
+
 
             return;
         }
@@ -307,8 +343,7 @@ const thrownStoneDefinition = {
 
         if (
             !ownerState ||
-            ownerState
-                .carriedStones >=
+            ownerState.carriedStones >=
                 2
         ) {
 
@@ -316,15 +351,14 @@ const thrownStoneDefinition = {
         }
 
 
-        const distance =
-            Math.hypot(
+        const dx =
+            stone.x -
+            owner.x;
 
-                stone.x -
-                    owner.x,
 
-                stone.y -
-                    owner.y
-            );
+        const dy =
+            stone.y -
+            owner.y;
 
 
         const pickupRadius =
@@ -335,15 +369,23 @@ const thrownStoneDefinition = {
 
 
         /*
-            Komt de steen weer dichtbij
-            de Stone Thrower?
+            Geen Math.hypot nodig.
 
-            Dan pakt hij hem terug.
+            Kwadratische afstand is
+            iets goedkoper.
         */
 
         if (
-            distance <=
+
+            dx *
+            dx +
+
+            dy *
+            dy <=
+
+            pickupRadius *
             pickupRadius
+
         ) {
 
             ownerState
@@ -352,13 +394,30 @@ const thrownStoneDefinition = {
 
             ownerState
                 .pickupFlash =
-                0.25;
+                0.18;
+
+
+            ownerState
+                .activeStones
+                .delete(
+                    stone
+                );
 
 
             api.removeEnemy(
                 stone
             );
         }
+    },
+
+
+    onDeath(
+        stone
+    ) {
+
+        detachStoneFromOwner(
+            stone
+        );
     },
 
 
@@ -429,7 +488,7 @@ function throwStone(
 
 
     /*
-        Steen beweegt iets sneller
+        Steen iets sneller
         dan Stone Thrower.
     */
 
@@ -532,8 +591,12 @@ function throwStone(
 
                 thrownStoneState: {
 
-                    ownerEntityId:
-                        enemy.id,
+                    /*
+                        Rechtstreekse owner.
+                    */
+
+                    owner:
+                        enemy,
 
                     pickupDelay:
                         0.75,
@@ -548,13 +611,19 @@ function throwStone(
         );
 
 
-    /*
-        createEntity voegt hem niet
-        automatisch toe.
-    */
-
     api.getEnemies()
         .push(
+            stone
+        );
+
+
+    /*
+        Stone Thrower bewaart zelf
+        welke stenen van hem zijn.
+    */
+
+    state.activeStones
+        .add(
             stone
         );
 
@@ -568,7 +637,7 @@ function throwStone(
 
 
     state.throwFlash =
-        0.22;
+        0.18;
 }
 
 
@@ -607,8 +676,8 @@ const stoneThrower = {
 
 
     /*
-        Zelfde soort movement als
-        Big Sand / Big Grass Goon.
+        Zelfde soort beweging
+        als Big Goon.
     */
 
     chaseDuration:
@@ -633,7 +702,7 @@ const stoneThrower = {
 
 
     /*
-        Gegooide stenen.
+        Gegooide steen.
     */
 
     stoneHp:
@@ -697,11 +766,17 @@ const stoneThrower = {
                         enemy.x
                 ),
 
-            armorRotation:
 
-                Math.random() *
-                Math.PI *
-                2
+            /*
+                Hier bewaren we alleen
+                de eigen gegooide stenen.
+
+                Veel sneller dan elke
+                frame alle enemies doorzoeken.
+            */
+
+            activeStones:
+                new Set()
         };
 
 
@@ -757,11 +832,6 @@ const stoneThrower = {
             );
 
 
-        state.armorRotation +=
-            dt *
-            0.8;
-
-
         const player =
             api.getPlayer();
 
@@ -789,9 +859,9 @@ const stoneThrower = {
             );
 
 
-        /* =========================================
+        /* =================================================
            MOVEMENT
-           ========================================= */
+           ================================================= */
 
         state.movementTimer +=
             dt;
@@ -905,9 +975,9 @@ const stoneThrower = {
         }
 
 
-        /* =========================================
-           GOOIEN
-           ========================================= */
+        /* =================================================
+           THROW CHECK
+           ================================================= */
 
         if (
             !enemy.enteredArena ||
@@ -921,20 +991,29 @@ const stoneThrower = {
         }
 
 
-        const distanceToPlayer =
-            Math.hypot(
+        const dx =
+            player.x -
+            enemy.x;
 
-                player.x -
-                    enemy.x,
 
-                player.y -
-                    enemy.y
-            );
+        const dy =
+            player.y -
+            enemy.y;
 
+
+        /*
+            Ook hier geen Math.hypot.
+        */
 
         if (
 
-            distanceToPlayer <=
+            dx *
+            dx +
+
+            dy *
+            dy <=
+
+            this.throwRadius *
             this.throwRadius
 
         ) {
@@ -948,42 +1027,64 @@ const stoneThrower = {
     },
 
 
+    /* =================================================
+       DEATH
+       ================================================= */
+
     onDeath(
         enemy,
         api
     ) {
 
+        const state =
+            enemy.stoneThrowerState;
+
+
+        if (
+            !state
+                ?.activeStones
+        ) {
+
+            return;
+        }
+
+
         /*
-            Stenen van dode
-            Stone Thrower verwijderen.
+            Oude versie liep door
+            ALLE enemies.
+
+            Nieuwe versie loopt alleen
+            door stenen van deze thrower.
         */
 
         for (
-            const other
+            const stone
             of [
-                ...api.getEnemies()
+                ...state.activeStones
             ]
         ) {
 
             if (
-
-                other
-                    ?.stoneThrowerProjectile &&
-
-                other
-                    .thrownStoneState
-                    ?.ownerEntityId ===
-                    enemy.id
-
+                api.isEnemyAlive(
+                    stone
+                )
             ) {
 
                 api.removeEnemy(
-                    other
+                    stone
                 );
             }
         }
+
+
+        state.activeStones
+            .clear();
     },
 
+
+    /* =================================================
+       DRAW
+       ================================================= */
 
     draw(
         enemy,
@@ -1001,7 +1102,7 @@ const stoneThrower = {
 
 
         /*
-            BODY
+            BODY.
         */
 
         api.drawDefaultEnemy(
@@ -1023,103 +1124,107 @@ const stoneThrower = {
                     "#d4d9dd",
 
                 lineWidth:
-                    4
+                    3
             }
         );
 
 
         /*
-            STONE ARMOUR
+            ==========================================
+            SIMPELER ARMOR
+
+            Oude versie:
+            6 extra stone.png afbeeldingen
+            PER THROWER PER FRAME.
+
+            Nu:
+            maar 3 simpele cirkels.
+            ==========================================
         */
 
+        ctx.save();
+
+
         const armorAngles = [
-
-            -2.45,
-
-            -1.55,
-
-            -0.65,
-
-            0.55,
-
-            1.45,
-
+            -2.35,
+            0,
             2.35
         ];
 
 
         for (
-
-            let i =
-                0;
-
-            i <
-                armorAngles.length;
-
-            i++
-
+            const angle
+            of armorAngles
         ) {
 
-            const angle =
-
-                armorAngles[i] +
-
-                (
-                    state
-                        .armorRotation ||
-                    0
-                ) *
-
-                0.08;
-
-
-            drawStoneCircle(
-
-                ctx,
-
-                api,
-
+            const px =
 
                 enemy.x +
 
-                    Math.cos(
-                        angle
-                    ) *
+                Math.cos(
+                    angle
+                ) *
 
-                    r *
-                    0.78,
+                r *
+                0.72;
 
+
+            const py =
 
                 enemy.y +
 
-                    Math.sin(
-                        angle
-                    ) *
-
-                    r *
-                    0.78,
-
+                Math.sin(
+                    angle
+                ) *
 
                 r *
-                    0.20,
+                0.72;
 
 
-                (
-                    state
-                        .armorRotation ||
-                    0
-                ) +
+            ctx.beginPath();
 
-                i
+
+            ctx.arc(
+
+                px,
+
+                py,
+
+                r *
+                    0.19,
+
+                0,
+
+                Math.PI *
+                    2
             );
+
+
+            ctx.fillStyle =
+                "#969da2";
+
+
+            ctx.fill();
+
+
+            ctx.lineWidth =
+                2;
+
+
+            ctx.strokeStyle =
+                "#4a5054";
+
+
+            ctx.stroke();
         }
 
 
-        /*
-            =====================================
-            ZICHTBARE STENEN: 0, 1 OF 2
-            =====================================
-        */
+        ctx.restore();
+
+
+        /* =================================================
+           CARRIED STONES
+           ================================================= */
 
         const carried =
             Math.max(
@@ -1181,6 +1286,10 @@ const stoneThrower = {
             0.72;
 
 
+        /*
+            Eerste steen.
+        */
+
         if (
             carried >=
             1
@@ -1217,17 +1326,14 @@ const stoneThrower = {
 
                 ammoRadius,
 
-
-                -(
-                    state
-                        .armorRotation ||
-                    0
-                ) *
-
-                1.8
+                0
             );
         }
 
+
+        /*
+            Tweede steen.
+        */
 
         if (
             carried >=
@@ -1265,21 +1371,14 @@ const stoneThrower = {
 
                 ammoRadius,
 
-
-                (
-                    state
-                        .armorRotation ||
-                    0
-                ) *
-
-                1.8
+                0
             );
         }
 
 
-        /*
-            Nummer boven enemy.
-        */
+        /* =================================================
+           AMMO NUMBER
+           ================================================= */
 
         ctx.save();
 
@@ -1340,9 +1439,9 @@ const stoneThrower = {
         );
 
 
-        /*
-            Throw animation.
-        */
+        /* =================================================
+           THROW FLASH
+           ================================================= */
 
         if (
             state.throwFlash >
@@ -1374,29 +1473,22 @@ const stoneThrower = {
 
                     frontX *
                     r *
-                    1.35,
+                    1.25,
 
                 enemy.y +
 
                     frontY *
                     r *
-                    1.35
+                    1.25
             );
 
 
             ctx.lineWidth =
-                5;
+                4;
 
 
             ctx.strokeStyle =
-
-                `rgba(215,220,225,${
-                    Math.min(
-                        1,
-                        state.throwFlash /
-                        0.22
-                    )
-                })`;
+                "rgba(215,220,225,0.9)";
 
 
             ctx.stroke();
