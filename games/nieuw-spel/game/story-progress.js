@@ -3,6 +3,12 @@
     const SAVE_KEY =
         "nieuw-spel-story-progress-v3";
 
+    const LEGACY_OWNER_KEY =
+        SAVE_KEY + "-legacy-owner";
+
+    const MIGRATION_COMPLETE_PREFIX =
+        SAVE_KEY + "-migration-complete:";
+
 
     const WEAPONS = {
 
@@ -417,27 +423,9 @@
     }
 
 
-    function loadData() {
+    function normalizeProgress(parsed) {
 
         try {
-
-            const saved =
-                localStorage.getItem(
-                    SAVE_KEY
-                );
-
-
-            if (!saved) {
-
-                return createDefaultData();
-            }
-
-
-            const parsed =
-                JSON.parse(
-                    saved
-                );
-
 
             let completedLevels =
                 Array.isArray(
@@ -582,8 +570,338 @@
     }
 
 
+    function loadData(
+        key
+    ) {
+
+        try {
+
+            const saved =
+                localStorage.getItem(
+                    key
+                );
+
+
+            if (!saved) {
+
+                return null;
+            }
+
+
+            return normalizeProgress(
+                JSON.parse(
+                    saved
+                )
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Story progress could not be loaded:",
+                error
+            );
+
+            return null;
+        }
+    }
+
+
+    function normalizeUsername(
+        username
+    ) {
+
+        if (
+            typeof username !==
+            "string"
+        ) {
+
+            return "";
+        }
+
+
+        return username
+            .trim()
+            .toLowerCase();
+    }
+
+
+    function getAccountSaveKey(
+        username
+    ) {
+
+        return (
+            SAVE_KEY +
+            ":" +
+            normalizeUsername(
+                username
+            )
+        );
+    }
+
+
+    function getMigrationCompleteKey(
+        username
+    ) {
+
+        return (
+            MIGRATION_COMPLETE_PREFIX +
+            normalizeUsername(
+                username
+            )
+        );
+    }
+
+
+    function persistLocalData(
+        key,
+        progress
+    ) {
+
+        try {
+
+            localStorage.setItem(
+                key,
+                JSON.stringify(
+                    progress
+                )
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Story progress could not be cached locally:",
+                error
+            );
+        }
+    }
+
+
+    function getHighestCompletedLevelFrom(
+        progress
+    ) {
+
+        if (
+            !progress ||
+            progress.completedLevels.length ===
+            0
+        ) {
+
+            return 0;
+        }
+
+
+        return Math.max(
+            ...progress.completedLevels
+        );
+    }
+
+
+    function isMeaningfulProgress(
+        progress
+    ) {
+
+        return !!(
+            progress &&
+            (
+                progress.completedLevels.length >
+                    0 ||
+                progress.books >
+                    0 ||
+                progress.purchasedUpgrades.length >
+                    0 ||
+                progress.selectedWeapon !==
+                    "pistol"
+            )
+        );
+    }
+
+
+    function isMoreAdvancedProgress(
+        candidate,
+        current
+    ) {
+
+        if (!candidate) {
+
+            return false;
+        }
+
+
+        if (!current) {
+
+            return true;
+        }
+
+
+        const candidateCompleted =
+            candidate.completedLevels.length;
+
+        const currentCompleted =
+            current.completedLevels.length;
+
+
+        if (
+            candidateCompleted !==
+            currentCompleted
+        ) {
+
+            return candidateCompleted >
+                currentCompleted;
+        }
+
+
+        return getHighestCompletedLevelFrom(
+            candidate
+        ) >
+            getHighestCompletedLevelFrom(
+                current
+            );
+    }
+
+
+    function getLegacyOwner() {
+
+        try {
+
+            return normalizeUsername(
+                localStorage.getItem(
+                    LEGACY_OWNER_KEY
+                ) || ""
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Story progress legacy owner could not be read:",
+                error
+            );
+
+            return "";
+        }
+    }
+
+
+    function canUseLegacyForUser(
+        username
+    ) {
+
+        const owner =
+            getLegacyOwner();
+
+
+        return (
+            !owner ||
+            owner ===
+                normalizeUsername(
+                    username
+                )
+        );
+    }
+
+
+    function getLegacyDataForUser(
+        username
+    ) {
+
+        if (
+            !canUseLegacyForUser(
+                username
+            )
+        ) {
+
+            return null;
+        }
+
+
+        return loadData(
+            SAVE_KEY
+        );
+    }
+
+
+    function isMigrationCompleted(
+        username
+    ) {
+
+        try {
+
+            return localStorage.getItem(
+                getMigrationCompleteKey(
+                    username
+                )
+            ) === "true";
+
+        } catch (error) {
+
+            console.error(
+                "Story progress migration marker could not be read:",
+                error
+            );
+
+            return false;
+        }
+    }
+
+
+    function markLegacyMigrated(
+        username
+    ) {
+
+        try {
+
+            const normalizedUsername =
+                normalizeUsername(
+                    username
+                );
+
+
+            if (!getLegacyOwner()) {
+
+                localStorage.setItem(
+                    LEGACY_OWNER_KEY,
+                    normalizedUsername
+                );
+            }
+
+
+            localStorage.setItem(
+                getMigrationCompleteKey(
+                    normalizedUsername
+                ),
+                "true"
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Story progress migration marker could not be saved:",
+                error
+            );
+        }
+    }
+
+
     let data =
-        loadData();
+        createDefaultData();
+
+    let activeUsername =
+        null;
+
+    let activeSaveKey =
+        null;
+
+    let saveGeneration =
+        0;
+
+    let pendingServerSnapshot =
+        null;
+
+    let pendingServerGeneration =
+        0;
+
+    let saveWorkerRunning =
+        false;
 
 
     function updateBookCounter() {
@@ -628,15 +946,7 @@
     }
 
 
-    function saveData() {
-
-        localStorage.setItem(
-            SAVE_KEY,
-            JSON.stringify(
-                data
-            )
-        );
-
+    function dispatchProgressChanged() {
 
         updateBookCounter();
 
@@ -649,6 +959,408 @@
                         getData()
                 }
             )
+        );
+    }
+
+
+    function applyProgress(
+        progress
+    ) {
+
+        data =
+            normalizeProgress(
+                progress
+            );
+
+
+        dispatchProgressChanged();
+    }
+
+
+    async function processServerSaveQueue() {
+
+        while (
+            pendingServerSnapshot
+        ) {
+
+            const snapshot =
+                pendingServerSnapshot;
+
+            const generation =
+                pendingServerGeneration;
+
+
+            pendingServerSnapshot =
+                null;
+
+
+            if (
+                generation !==
+                    saveGeneration ||
+                !activeUsername
+            ) {
+
+                continue;
+            }
+
+
+            try {
+
+                await saveStoryProgress(
+                    snapshot
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Story progress could not be saved to the server:",
+                    error
+                );
+            }
+        }
+    }
+
+
+    function queueServerSave(
+        snapshot
+    ) {
+
+        if (
+            !activeUsername
+        ) {
+
+            return;
+        }
+
+
+        pendingServerSnapshot =
+            snapshot;
+
+        pendingServerGeneration =
+            saveGeneration;
+
+
+        if (
+            saveWorkerRunning
+        ) {
+
+            return;
+        }
+
+
+        saveWorkerRunning =
+            true;
+
+
+        Promise.resolve()
+            .then(
+                processServerSaveQueue
+            )
+            .finally(
+                () => {
+
+                    saveWorkerRunning =
+                        false;
+
+
+                    if (
+                        pendingServerSnapshot
+                    ) {
+
+                        queueServerSave(
+                            pendingServerSnapshot
+                        );
+                    }
+                }
+            );
+    }
+
+
+    async function uploadSelectedProgress(
+        progress,
+        source,
+        username,
+        generation
+    ) {
+
+        await saveStoryProgress(
+            progress
+        );
+
+
+        if (
+            generation !==
+            saveGeneration
+        ) {
+
+            return false;
+        }
+
+
+        if (
+            source ===
+            "legacy"
+        ) {
+
+            markLegacyMigrated(
+                username
+            );
+        }
+
+
+        return true;
+    }
+
+
+    function chooseLocalFallback(
+        accountCached,
+        legacyCached,
+        username
+    ) {
+
+        if (accountCached) {
+
+            return accountCached;
+        }
+
+
+        if (
+            legacyCached &&
+            getLegacyOwner() ===
+                normalizeUsername(
+                    username
+                )
+        ) {
+
+            return legacyCached;
+        }
+
+
+        return createDefaultData();
+    }
+
+
+    async function loadForUser(
+        username
+    ) {
+
+        const normalizedUsername =
+            normalizeUsername(
+                username
+            );
+
+
+        if (!normalizedUsername) {
+
+            logoutUser();
+
+            return getData();
+        }
+
+
+        activeUsername =
+            normalizedUsername;
+
+        activeSaveKey =
+            getAccountSaveKey(
+                normalizedUsername
+            );
+
+        saveGeneration++;
+
+        pendingServerSnapshot =
+            null;
+
+        const generation =
+            saveGeneration;
+
+        const accountCached =
+            loadData(
+                activeSaveKey
+            );
+
+        const legacyCached =
+            getLegacyDataForUser(
+                normalizedUsername
+            );
+
+        const migrationCompleted =
+            isMigrationCompleted(
+                normalizedUsername
+            );
+
+
+        try {
+
+            const response =
+                await getStoryProgress();
+
+
+            if (
+                generation !==
+                saveGeneration
+            ) {
+
+                return getData();
+            }
+
+
+            let selectedProgress =
+                response.exists
+                    ? normalizeProgress(
+                        response.progress
+                    )
+                    : createDefaultData();
+
+            let selectedSource =
+                response.exists
+                    ? "server"
+                    : "default";
+
+
+            if (
+                accountCached &&
+                isMeaningfulProgress(
+                    accountCached
+                ) &&
+                (
+                    selectedSource ===
+                        "default" ||
+                    isMoreAdvancedProgress(
+                        accountCached,
+                        selectedProgress
+                    )
+                )
+            ) {
+
+                selectedProgress =
+                    accountCached;
+
+                selectedSource =
+                    "account-cache";
+            }
+
+
+            if (
+                !migrationCompleted &&
+                legacyCached &&
+                isMeaningfulProgress(
+                    legacyCached
+                ) &&
+                (
+                    selectedSource ===
+                        "default" ||
+                    isMoreAdvancedProgress(
+                        legacyCached,
+                        selectedProgress
+                    )
+                )
+            ) {
+
+                selectedProgress =
+                    legacyCached;
+
+                selectedSource =
+                    "legacy";
+            }
+
+
+            if (
+                selectedSource !==
+                "server" &&
+                selectedSource !==
+                "default"
+            ) {
+
+                const uploaded =
+                    await uploadSelectedProgress(
+                        selectedProgress,
+                        selectedSource,
+                        normalizedUsername,
+                        generation
+                    );
+
+
+                if (!uploaded) {
+
+                    return getData();
+                }
+            }
+
+
+            applyProgress(
+                selectedProgress
+            );
+
+            persistLocalData(
+                activeSaveKey,
+                getData()
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Story progress synchronization failed:",
+                error
+            );
+
+            applyProgress(
+                chooseLocalFallback(
+                    accountCached,
+                    legacyCached,
+                    normalizedUsername
+                )
+            );
+        }
+
+
+        return getData();
+    }
+
+
+    function logoutUser() {
+
+        activeUsername =
+            null;
+
+        activeSaveKey =
+            null;
+
+        saveGeneration++;
+
+        pendingServerSnapshot =
+            null;
+
+        data =
+            createDefaultData();
+
+
+        dispatchProgressChanged();
+    }
+
+
+    function saveData() {
+
+        const snapshot =
+            getData();
+
+
+        if (
+            activeSaveKey
+        ) {
+
+            persistLocalData(
+                activeSaveKey,
+                snapshot
+            );
+        }
+
+
+        dispatchProgressChanged();
+
+        queueServerSave(
+            snapshot
         );
     }
 
@@ -1458,6 +2170,10 @@
         UPGRADES,
 
         getData,
+
+        loadForUser,
+
+        logoutUser,
 
         isLevelCompleted,
 

@@ -32,3 +32,25 @@ async function apiRequest(path, options = {}) {
 
     return data;
 }
+
+
+async function getStoryProgress() {
+
+    return apiRequest(
+        "/progress"
+    );
+}
+
+
+async function saveStoryProgress(progress) {
+
+    return apiRequest(
+        "/progress",
+        {
+            method: "POST",
+            body: JSON.stringify(
+                progress
+            )
+        }
+    );
+}

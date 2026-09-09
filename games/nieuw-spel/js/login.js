@@ -27,6 +27,25 @@ function showLoggedIn(username) {
 }
 
 
+async function loadAccountProgress(username) {
+
+    message.textContent =
+        "Loading story progress...";
+
+
+    if (
+        window.StoryProgress &&
+        typeof StoryProgress.loadForUser ===
+            "function"
+    ) {
+
+        await StoryProgress.loadForUser(
+            username
+        );
+    }
+}
+
+
 document
     .getElementById("show-login")
     .addEventListener("click", () => {
@@ -72,6 +91,10 @@ loginForm.addEventListener("submit", async event => {
         );
 
         loginForm.reset();
+        await loadAccountProgress(
+            data.username
+        );
+
         showLoggedIn(data.username);
 
     } catch (error) {
@@ -112,6 +135,10 @@ registerForm.addEventListener("submit", async event => {
         );
 
         registerForm.reset();
+        await loadAccountProgress(
+            data.username
+        );
+
         showLoggedIn(data.username);
 
     } catch (error) {
@@ -130,6 +157,16 @@ document
     .getElementById("logout-button")
     .addEventListener("click", async () => {
 
+        if (
+            window.StoryProgress &&
+            typeof StoryProgress.logoutUser ===
+                "function"
+        ) {
+
+            StoryProgress.logoutUser();
+        }
+
+
         try {
             await apiRequest(
                 "/logout",
@@ -146,6 +183,10 @@ document
 async function checkLogin() {
     try {
         const data = await apiRequest("/me");
+        await loadAccountProgress(
+            data.username
+        );
+
         showLoggedIn(data.username);
 
     } catch {

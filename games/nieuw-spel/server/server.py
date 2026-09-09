@@ -9,6 +9,7 @@ import base64
 import hmac
 import secrets
 import time
+import math
 
 
 PORT = 8091
@@ -36,6 +37,18 @@ def setup_database():
             user_id INTEGER NOT NULL,
             token_hash TEXT NOT NULL UNIQUE,
             expires_at INTEGER NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS story_progress (
+            user_id INTEGER PRIMARY KEY,
+            completed_levels TEXT NOT NULL,
+            books INTEGER NOT NULL,
+            selected_weapon TEXT NOT NULL,
+            purchased_upgrades TEXT NOT NULL,
+            updated_at INTEGER NOT NULL,
             FOREIGN KEY (user_id) REFERENCES users(id)
         )
     """)
@@ -119,6 +132,110 @@ def create_session(db, user_id):
     db.commit()
 
     return token
+
+
+def validate_story_progress(data):
+
+    if not isinstance(data, dict):
+        return None
+
+    completed_levels = data.get(
+        "completedLevels"
+    )
+
+    if not isinstance(completed_levels, list):
+        return None
+
+    normalized_levels = []
+
+    for level in completed_levels:
+
+        if (
+            isinstance(level, bool)
+            or not isinstance(level, int)
+            or level < 1
+            or level > 50
+        ):
+            return None
+
+        normalized_levels.append(level)
+
+    normalized_levels = sorted(
+        set(normalized_levels)
+    )
+
+    books = data.get(
+        "books"
+    )
+
+    if (
+        isinstance(books, bool)
+        or not isinstance(books, int)
+        or not math.isfinite(books)
+        or books < 0
+    ):
+        return None
+
+    selected_weapon = data.get(
+        "selectedWeapon"
+    )
+
+    if (
+        not isinstance(selected_weapon, str)
+        or len(selected_weapon) < 1
+        or len(selected_weapon) > 50
+    ):
+        return None
+
+    purchased_upgrades = data.get(
+        "purchasedUpgrades"
+    )
+
+    if (
+        not isinstance(purchased_upgrades, list)
+        or len(purchased_upgrades) > 100
+    ):
+        return None
+
+    normalized_upgrades = []
+
+    for upgrade_id in purchased_upgrades:
+
+        if (
+            not isinstance(upgrade_id, str)
+            or len(upgrade_id) < 1
+            or len(upgrade_id) > 80
+        ):
+            return None
+
+        normalized_upgrades.append(upgrade_id)
+
+    normalized_upgrades = list(
+        dict.fromkeys(normalized_upgrades)
+    )
+
+    return {
+        "completedLevels": normalized_levels,
+        "books": books,
+        "selectedWeapon": selected_weapon,
+        "purchasedUpgrades": normalized_upgrades
+    }
+
+
+def progress_from_row(row):
+
+    try:
+
+        return validate_story_progress({
+            "completedLevels": json.loads(row[0]),
+            "books": row[1],
+            "selectedWeapon": row[2],
+            "purchasedUpgrades": json.loads(row[3])
+        })
+
+    except:
+
+        return None
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -325,6 +442,84 @@ class Handler(BaseHTTPRequestHandler):
                 200,
                 {
                  "username": user[1]
+                },
+                self.session_cookie(token)
+            )
+
+            return
+
+
+        if self.path == "/progress":
+
+            token = self.get_session_token()
+
+            db = sqlite3.connect(DATABASE)
+
+            user = self.get_logged_in_user(db)
+
+            if not user:
+
+                db.close()
+
+                self.send_json(
+                    401,
+                    {
+                        "error":
+                        "Not logged in."
+                    }
+                )
+
+                return
+
+            row = db.execute(
+                """
+                SELECT
+                    completed_levels,
+                    books,
+                    selected_weapon,
+                    purchased_upgrades
+                FROM story_progress
+                WHERE user_id = ?
+                """,
+                (
+                    user[0],
+                )
+            ).fetchone()
+
+            db.close()
+
+            if not row:
+
+                self.send_json(
+                    200,
+                    {
+                        "exists": False,
+                        "progress": None
+                    },
+                    self.session_cookie(token)
+                )
+
+                return
+
+            progress = progress_from_row(row)
+
+            if progress is None:
+
+                self.send_json(
+                    500,
+                    {
+                        "error":
+                        "Stored progress is corrupt."
+                    }
+                )
+
+                return
+
+            self.send_json(
+                200,
+                {
+                    "exists": True,
+                    "progress": progress
                 },
                 self.session_cookie(token)
             )
@@ -605,6 +800,97 @@ class Handler(BaseHTTPRequestHandler):
                     "Logged out successfully."
                 },
                 delete_cookie
+            )
+
+            return
+
+
+        if self.path == "/progress":
+
+            token = self.get_session_token()
+
+            db = sqlite3.connect(DATABASE)
+
+            user = self.get_logged_in_user(db)
+
+            if not user:
+
+                db.close()
+
+                self.send_json(
+                    401,
+                    {
+                        "error":
+                        "Not logged in."
+                    }
+                )
+
+                return
+
+            data = self.read_json()
+
+            progress = validate_story_progress(
+                data
+            )
+
+            if progress is None:
+
+                db.close()
+
+                self.send_json(
+                    400,
+                    {
+                        "error":
+                        "Invalid story progress."
+                    }
+                )
+
+                return
+
+            db.execute(
+                """
+                INSERT INTO story_progress (
+                    user_id,
+                    completed_levels,
+                    books,
+                    selected_weapon,
+                    purchased_upgrades,
+                    updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    completed_levels = excluded.completed_levels,
+                    books = excluded.books,
+                    selected_weapon = excluded.selected_weapon,
+                    purchased_upgrades = excluded.purchased_upgrades,
+                    updated_at = excluded.updated_at
+                """,
+                (
+                    user[0],
+                    json.dumps(
+                        progress["completedLevels"]
+                    ),
+                    progress["books"],
+                    progress["selectedWeapon"],
+                    json.dumps(
+                        progress["purchasedUpgrades"]
+                    ),
+                    int(time.time())
+                )
+            )
+
+            db.commit()
+            db.close()
+
+            self.send_json(
+                200,
+                {
+                    "message":
+                    "Story progress saved.",
+                    "progress":
+                    progress
+                },
+                self.session_cookie(token)
             )
 
             return

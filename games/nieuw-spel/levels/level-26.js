@@ -37,53 +37,133 @@ export const config = {
     spawnGroups: [
 
         {
-            enemy: "stoneGoon",
-            count: 65,
-            start: 5,
-            duration: 125
-        },
-
-        {
-            enemy: "stone",
-            count: 30,
-            start: 10,
-            duration: 125
-        },
-
-        {
-            enemy: "insect",
-            count: 25,
-            start: 15,
-            duration: 120
-        },
-
-        {
-            enemy: "stoneThrower",
-            count: 10,
-            start: 25,
-            duration: 110
-        },
-
-        {
             enemy: "stoneRoller",
-            count: 9,
-            start: 35,
-            duration: 100
-        },
-
-        {
-            enemy: "stoner",
-            count: 3,
-            start: 55,
-            duration: 80
+            count: 5,
+            start: 5,
+            duration: 0
         },
 
         {
             enemy: "stoneBurrower",
-            count: 7,
-            start: 45,
-            duration: 95
-        }
+            count: 5,
+            start: 10,
+            duration: 10
+        },
+
+        {
+            enemy: "stoneRoller",
+            count: 5,
+            start: 18,
+            duration: 2
+        },
+
+        {
+            enemy: "stoneRoller",
+            count: 5,
+            start: 23,
+            duration: 0
+        },
+
+        {
+            enemy: "stoneBurrower",
+            count: 5,
+            start: 28,
+            duration: 10
+        },
+
+        {
+            enemy: "stoneRoller",
+            count: 5,
+            start: 35,
+            duration: 2
+        },
+
+        {
+            enemy: "stoneRoller",
+            count: 5,
+            start: 42,
+            duration: 0
+        },
+
+        {
+            enemy: "stoneBurrower",
+            count: 5,
+            start: 50,
+            duration: 10
+        },
+
+        {
+            enemy: "stoneRoller",
+            count: 5,
+            start: 60,
+            duration: 2
+        },
+
+        {
+            enemy: "stoneRoller",
+            count: 5,
+            start: 68,
+            duration: 0
+        },
+
+        {
+            enemy: "stoneBurrower",
+            count: 5,
+            start: 75,
+            duration: 10
+        },
+
+        {
+            enemy: "stoneRoller",
+            count: 5,
+            start: 80,
+            duration: 2
+        },
+
+        {
+            enemy: "stoneRoller",
+            count: 5,
+            start: 90,
+            duration: 0
+        },
+
+        {
+            enemy: "stoneBurrower",
+            count: 5,
+            start: 100,
+            duration: 10
+        },
+
+        {
+            enemy: "stoneRoller",
+            count: 5,
+            start: 120,
+            duration: 2
+        },
+
+        {
+            enemy: "stoneRoller",
+            count: 5,
+            start: 130,
+            duration: 0
+        },
+
+        {
+            enemy: "stoneBurrower",
+            count: 5,
+            start: 130,
+            duration: 10
+        },
+
+        {
+            enemy: "stoneRoller",
+            count: 5,
+            start: 140,
+            duration: 2
+        },
+
+
+        
     ]
 };
 
