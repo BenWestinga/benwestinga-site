@@ -321,7 +321,7 @@
             id: "piercingTip",
             name: "Piercing Tip",
             description:
-                "Bullets gain +2 pierce.",
+                "Each attack has a 50% chance for all bullets in that attack to gain +1 pierce.",
             cost: 4,
             requires: [
                 "armorCrack"
@@ -1890,19 +1890,14 @@
         }
 
 
-        let pierceBonus =
-            0;
-
-
-        if (
+        const piercingTipOwned =
             hasUpgrade(
                 "piercingTip"
-            )
-        ) {
+            );
 
-            pierceBonus +=
-                2;
-        }
+
+        const pierceBonus =
+            0;
 
 
         const frostBombInterval =
@@ -2079,9 +2074,19 @@
 
 
             piercing:
-                hasUpgrade(
-                    "piercingTip"
-                ),
+                piercingTipOwned,
+
+
+            piercingChance:
+                piercingTipOwned
+                    ? 0.50
+                    : 0,
+
+
+            piercingBonusOnProc:
+                piercingTipOwned
+                    ? 1
+                    : 0,
 
 
             railRoundsBonusPerHit:

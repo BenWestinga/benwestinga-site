@@ -322,6 +322,146 @@
 
         shotCounter++;
 
+        /*
+            ========================================
+            PIERCING TIP
+            ========================================
+
+            Eén random roll per attack / volley.
+
+            Dus bij shotgun:
+
+            attack faalt:
+            alle pellets normaal.
+
+            attack slaagt:
+            alle pellets krijgen +1 pierce.
+
+            NIET per pellet apart rollen.
+        */
+
+        const piercingChance =
+
+            Math.max(
+
+                0,
+
+                Math.min(
+
+                    1,
+
+                    numberModifier(
+                        "piercingChance",
+                        0
+                    )
+
+                )
+
+            );
+
+
+        const piercingBonusOnProc =
+
+            Math.max(
+
+                1,
+
+                Math.round(
+
+                    numberModifier(
+                        "piercingBonusOnProc",
+                        1
+                    )
+
+                )
+
+            );
+
+
+        const isPiercingAttack =
+
+            booleanModifier(
+                "piercing"
+            ) &&
+
+            piercingChance >
+                0 &&
+
+            Math.random() <
+                piercingChance;
+
+
+        if (
+            isPiercingAttack
+        ) {
+
+            for (
+                const projectile
+                of result
+            ) {
+
+                /*
+                    remainingPierce bepaalt
+                    hoeveel enemies deze bullet
+                    nog kan raken.
+                */
+
+                projectile.remainingPierce =
+
+                    Math.max(
+
+                        1,
+
+                        Math.round(
+
+                            Number(
+                                projectile
+                                    .remainingPierce
+                            ) ||
+                            1
+
+                        )
+
+                    ) +
+
+                    piercingBonusOnProc;
+
+
+                /*
+                    initialPierce moet ook omhoog.
+
+                    Rail Rounds en Return Shrapnel
+                    kunnen zo herkennen dat deze
+                    bullet daadwerkelijk een
+                    piercing bullet is.
+                */
+
+                projectile.initialPierce =
+
+                    Math.max(
+
+                        1,
+
+                        Math.round(
+
+                            Number(
+                                projectile
+                                    .initialPierce
+                            ) ||
+                            1
+
+                        )
+
+                    ) +
+
+                    piercingBonusOnProc;
+
+
+                projectile.isPiercingTip =
+                    true;
+            }
+        }
+
 
         const critEvery =
             numberModifier(
