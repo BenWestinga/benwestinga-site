@@ -54,7 +54,7 @@ export const config = {
 
         {
             enemy: "stone",
-            count: 10,
+            count: 15,
             start: 10,
             duration: 55
         },
@@ -96,7 +96,7 @@ export const config = {
 
         {
             enemy: "stoneBurrower",
-            count: 120,
+            count: 100,
             start: 120,
             duration: 380
         },
@@ -110,14 +110,14 @@ export const config = {
 
         {
             enemy: "stoneGoon",
-            count: 200,
+            count: 180,
             start: 120,
             duration: 280
         },
 
         {
             enemy: "stone",
-            count: 10,
+            count: 5,
             start: 130,
             duration: 30
         },
@@ -126,19 +126,19 @@ export const config = {
             enemy: "insect",
             count: 20,
             start: 115,
-            duration: 25
+            duration: 50
         },
 
         {
             enemy: "stoneThrower",
             count: 4,
             start: 115,
-            duration: 25
+            duration: 50
         },
 
         {
             enemy: "stoneRoller",
-            count: 10,
+            count: 5,
             start: 120,
             duration: 20
         },
