@@ -40,17 +40,17 @@ export const config = {
     spawnGroups: [
 
         {
-            enemy: "steenBen",
-            count: 1,
+            enemy: "insect",
+            count: 300,
             start: 5,
-            duration: 1
+            duration: 155
         },
 
         {
-            enemy: "stoner",
-            count: 1,
+            enemy: "stoneburrower",
+            count: 100,
             start: 5,
-            duration: 1
+            duration: 155
         }
 
 

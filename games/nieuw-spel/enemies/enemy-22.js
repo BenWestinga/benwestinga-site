@@ -854,7 +854,7 @@ const stoner = {
     */
 
     handHp:
-        10,
+        20,
 
     handSize:
         3,
