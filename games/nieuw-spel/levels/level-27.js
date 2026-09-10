@@ -52,16 +52,9 @@ export const config = {
 
         {
             enemy: "stoneGoon",
-
+            count: 20,
             start: 30,
-
-            formation: {
-                type: "grid",
-                side: "left",
-                rows: 8,
-                columns: 5,
-                spacing: 75
-            }
+            duration: 10
         },
 
         {
