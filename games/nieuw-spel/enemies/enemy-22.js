@@ -2298,7 +2298,7 @@ const stoner = {
     */
 
     hp:
-        25,
+        20,
 
     size:
         6,
@@ -2321,7 +2321,7 @@ const stoner = {
     */
 
     handHp:
-        10,
+        20,
 
     handSize:
         3,
