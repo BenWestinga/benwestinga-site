@@ -38,51 +38,51 @@ export const config = {
 
         {
             enemy: "stoneGoon",
-            count: 85,
+            count: 410,
             start: 5,
-            duration: 155
-        },
-
-        {
-            enemy: "stone",
-            count: 40,
-            start: 10,
-            duration: 150
-        },
-
-        {
-            enemy: "insect",
-            count: 34,
-            start: 15,
-            duration: 145
-        },
-
-        {
-            enemy: "stoneThrower",
-            count: 14,
-            start: 25,
-            duration: 135
-        },
-
-        {
-            enemy: "stoneRoller",
-            count: 13,
-            start: 30,
-            duration: 130
-        },
-
-        {
-            enemy: "stoner",
-            count: 5,
-            start: 45,
-            duration: 115
+            duration: 200
         },
 
         {
             enemy: "stoneBurrower",
-            count: 11,
-            start: 35,
-            duration: 125
+            count: 20,
+            start: 5,
+            duration: 200
+        },
+
+        {
+            enemy: "insect",
+            count: 100,
+            start: 5,
+            duration: 200
+        },
+
+        {
+            enemy: "stoneThrower",
+            count: 5,
+            start: 50,
+            duration: 20
+        },
+
+        {
+            enemy: "stoneRoller",
+            count: 6,
+            start: 110,
+            duration: 30
+        },
+
+        {
+            enemy: "stoner",
+            count: 2,
+            start: 150,
+            duration: 50
+        },
+
+        {
+            enemy: "stone",
+            count: 10,
+            start: 190,
+            duration: 60
         }
     ]
 };

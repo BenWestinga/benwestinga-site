@@ -2500,23 +2500,505 @@ function getRespawnPoint() {
 }
 
 
+// ======================================================
+// SAFE RESPAWN
+// ======================================================
+
+function isSafeRespawnPosition(
+    x,
+    y
+) {
+
+    const half =
+        player.size /
+        2;
+
+
+    /*
+        Hele speler moet binnen de wereld blijven.
+    */
+
+    if (
+
+        x - half < 0 ||
+
+        y - half < 0 ||
+
+        x + half >
+            WORLD_WIDTH ||
+
+        y + half >
+            WORLD_HEIGHT
+
+    ) {
+
+        return false;
+
+    }
+
+
+    /*
+        Speler mag niet in een muur / berg / rots staan.
+    */
+
+    if (
+        positionHasCollision(
+            x,
+            y
+        )
+    ) {
+
+        return false;
+
+    }
+
+
+    /*
+        Speler moet ook in het reeds onthulde
+        gedeelte van de story map staan.
+    */
+
+    if (
+        !positionInsideRevealedWindArea(
+            x,
+            y
+        )
+    ) {
+
+        return false;
+
+    }
+
+
+    /*
+        Niet direct in water of lava zetten.
+
+        We testen midden + vier punten rondom
+        de speler.
+    */
+
+    const hazardOffset =
+        player.size *
+        0.28;
+
+
+    const hazardPoints = [
+
+        {
+            x,
+            y
+        },
+
+        {
+            x:
+                x -
+                hazardOffset,
+
+            y:
+                y -
+                hazardOffset
+        },
+
+        {
+            x:
+                x +
+                hazardOffset,
+
+            y:
+                y -
+                hazardOffset
+        },
+
+        {
+            x:
+                x -
+                hazardOffset,
+
+            y:
+                y +
+                hazardOffset
+        },
+
+        {
+            x:
+                x +
+                hazardOffset,
+
+            y:
+                y +
+                hazardOffset
+        }
+
+    ];
+
+
+    for (
+        const point
+        of hazardPoints
+    ) {
+
+        if (
+            pointHazard(
+                point.x,
+                point.y
+            )
+        ) {
+
+            return false;
+
+        }
+
+    }
+
+
+    return true;
+
+}
+
+
+// ======================================================
+// DICHTSTBIJZIJNDE VEILIGE SPAWN ZOEKEN
+// ======================================================
+
+function findSafeRespawnPoint(
+    targetX,
+    targetY
+) {
+
+    /*
+        Eerst gewoon de echte levelpositie proberen.
+    */
+
+    if (
+        isSafeRespawnPosition(
+            targetX,
+            targetY
+        )
+    ) {
+
+        return {
+
+            x:
+                targetX,
+
+            y:
+                targetY
+
+        };
+
+    }
+
+
+    /*
+        Daarna in steeds grotere cirkels zoeken.
+
+        We beginnen al op 20 pixels afstand
+        en zoeken tot maximaal 240 pixels.
+
+        24 richtingen per cirkel zorgt ervoor
+        dat ook smalle vrije stukken gevonden
+        kunnen worden.
+    */
+
+    const searchStep =
+        20;
+
+
+    const maxSearchRadius =
+        240;
+
+
+    const directions =
+        24;
+
+
+    for (
+
+        let radius =
+            searchStep;
+
+        radius <=
+            maxSearchRadius;
+
+        radius +=
+            searchStep
+
+    ) {
+
+        for (
+
+            let i =
+                0;
+
+            i <
+                directions;
+
+            i++
+
+        ) {
+
+            const angle =
+
+                (
+                    i /
+                    directions
+                ) *
+
+                Math.PI *
+                2;
+
+
+            const x =
+
+                targetX +
+
+                Math.cos(
+                    angle
+                ) *
+
+                radius;
+
+
+            const y =
+
+                targetY +
+
+                Math.sin(
+                    angle
+                ) *
+
+                radius;
+
+
+            if (
+                isSafeRespawnPosition(
+                    x,
+                    y
+                )
+            ) {
+
+                return {
+
+                    x,
+                    y
+
+                };
+
+            }
+
+        }
+
+    }
+
+
+    /*
+        Noodoplossing:
+
+        Als rondom het level echt helemaal
+        geen geldige positie gevonden wordt,
+        proberen we hetzelfde rondom het
+        originele spawnpoint.
+    */
+
+    if (
+
+        targetX !==
+            spawnPoint.x ||
+
+        targetY !==
+            spawnPoint.y
+
+    ) {
+
+        if (
+            isSafeRespawnPosition(
+                spawnPoint.x,
+                spawnPoint.y
+            )
+        ) {
+
+            return {
+
+                x:
+                    spawnPoint.x,
+
+                y:
+                    spawnPoint.y
+
+            };
+
+        }
+
+
+        for (
+
+            let radius =
+                searchStep;
+
+            radius <=
+                maxSearchRadius;
+
+            radius +=
+                searchStep
+
+        ) {
+
+            for (
+
+                let i =
+                    0;
+
+                i <
+                    directions;
+
+                i++
+
+            ) {
+
+                const angle =
+
+                    (
+                        i /
+                        directions
+                    ) *
+
+                    Math.PI *
+                        2;
+
+
+                const x =
+
+                    spawnPoint.x +
+
+                    Math.cos(
+                        angle
+                    ) *
+
+                    radius;
+
+
+                const y =
+
+                    spawnPoint.y +
+
+                    Math.sin(
+                        angle
+                    ) *
+
+                    radius;
+
+
+                if (
+                    isSafeRespawnPosition(
+                        x,
+                        y
+                    )
+                ) {
+
+                    return {
+
+                        x,
+                        y
+
+                    };
+
+                }
+
+            }
+
+        }
+
+    }
+
+
+    /*
+        Absolute laatste fallback.
+
+        Dit hoort praktisch nooit nodig te zijn,
+        maar voorkomt dat de game crasht.
+    */
+
+    return {
+
+        x:
+            Math.max(
+
+                player.size /
+                    2,
+
+                Math.min(
+
+                    WORLD_WIDTH -
+                        player.size /
+                            2,
+
+                    targetX
+
+                )
+
+            ),
+
+        y:
+            Math.max(
+
+                player.size /
+                    2,
+
+                Math.min(
+
+                    WORLD_HEIGHT -
+                        player.size /
+                            2,
+
+                    targetY
+
+                )
+
+            )
+
+    };
+
+}
+
+
 function respawnPlayer() {
 
     const respawn =
         getRespawnPoint();
 
 
+    /*
+        Nooit meer blind exact op een
+        levelmarker zetten.
+
+        Eerst controleren of de hele
+        speler daar daadwerkelijk kan staan.
+    */
+
+    const safeRespawn =
+        findSafeRespawnPoint(
+
+            respawn.x,
+
+            respawn.y
+
+        );
+
+
     player.x =
-        respawn.x;
+        safeRespawn.x;
 
 
     player.y =
-        respawn.y;
+        safeRespawn.y;
 
 
-    // Voorkomt dat hij onmiddellijk
-    // opnieuw doodgaat als de spawn
-    // vlak langs water/lava ligt.
+    /*
+        Voorkomt dat hij onmiddellijk
+        opnieuw doodgaat als er door een
+        onverwachte mapsituatie toch iets
+        fout zit.
+    */
 
     hazardGraceUntil =
         performance.now() +
@@ -2539,8 +3021,6 @@ function respawnPlayer() {
     updateCamera();
 
 }
-
-
 // ======================================================
 // PLAYER DEAD
 // ======================================================

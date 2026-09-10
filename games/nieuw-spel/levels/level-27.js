@@ -37,53 +37,151 @@ export const config = {
     spawnGroups: [
 
         {
-            enemy: "stoneGoon",
-            count: 75,
+            enemy: "stoneBurrower",
+            count: 5,
             start: 5,
-            duration: 140
+            duration: 25
+        },
+        
+        {
+            enemy: "stoneThrower",
+            count: 5,
+            start: 5,
+            duration: 25
         },
 
         {
-            enemy: "stone",
-            count: 35,
-            start: 10,
-            duration: 140
+            enemy: "stoneGoon",
+
+            start: 30,
+
+            formation: {
+                type: "grid",
+                side: "left",
+                rows: 8,
+                columns: 5,
+                spacing: 75
+            }
         },
 
         {
             enemy: "insect",
             count: 30,
-            start: 15,
-            duration: 135
+            start: 25,
+            duration: 30
         },
 
         {
             enemy: "stoneThrower",
-            count: 12,
-            start: 25,
-            duration: 120
+            count: 6,
+            start: 40,
+            duration: 20
         },
 
         {
-            enemy: "stoneRoller",
-            count: 11,
-            start: 35,
-            duration: 115
+            enemy: "stone",
+            count: 5,
+            start: 70,
+            duration: 20
         },
 
         {
             enemy: "stoner",
-            count: 4,
-            start: 50,
-            duration: 100
+            count: 1,
+            start: 75,
+            duration: 1
         },
 
         {
-            enemy: "stoneBurrower",
-            count: 9,
-            start: 40,
-            duration: 110
-        }
+            enemy: "stoner",
+            count: 1,
+            start: 100,
+            duration: 1
+        },
+
+        {
+            enemy: "stoneburrower",
+            count: 5,
+            start: 125,
+            duration: 10
+        },
+
+        {
+            enemy: "insect",
+            count: 80,
+            start: 70,
+            duration: 80
+        },
+
+        {
+            enemy: "stoneGoon",
+
+            start: 55,
+
+            formation: {
+                type: "grid",
+                side: "right",
+                rows: 8,
+                columns: 5,
+                spacing: 75
+            }
+        },
+
+        {
+            enemy: "stoneGoon",
+
+            start: 65,
+
+            formation: {
+                type: "grid",
+                side: "left",
+                rows: 10,
+                columns: 5,
+                spacing: 75
+            }
+        },
+
+        {
+            enemy: "stoneGoon",
+
+            start: 75,
+
+            formation: {
+                type: "grid",
+                side: "right",
+                rows: 10,
+                columns: 5,
+                spacing: 75
+            }
+        },
+
+        {
+            enemy: "stoneGoon",
+
+            start: 100,
+
+            formation: {
+                type: "grid",
+                side: "right",
+                rows: 10,
+                columns: 5,
+                spacing: 75
+            }
+        },
+
+        {
+            enemy: "stoneGoon",
+
+            start: 130,
+
+            formation: {
+                type: "grid",
+                side: "left",
+                rows: 10,
+                columns: 5,
+                spacing: 75
+            }
+        },
     ]
 };
 
