@@ -6,6 +6,8 @@ import stoneRoller from "../enemies/enemy-21.js";
 import stoner from "../enemies/enemy-22.js";
 import stoneBurrower from "../enemies/enemy-23.js";
 
+import steenBen from "../enemies/boss-05.js";
+
 
 export const config = {
 
@@ -30,60 +32,29 @@ export const config = {
         insect,
         stoneRoller,
         stoner,
-        stoneBurrower
+        stoneBurrower,
+        steenBen
     },
 
 
     spawnGroups: [
 
         {
-            enemy: "stoneGoon",
-            count: 100,
+            enemy: "steenBen",
+            count: 1,
             start: 5,
-            duration: 175
-        },
-
-        {
-            enemy: "stone",
-            count: 48,
-            start: 5,
-            duration: 175
-        },
-
-        {
-            enemy: "insect",
-            count: 40,
-            start: 10,
-            duration: 170
-        },
-
-        {
-            enemy: "stoneThrower",
-            count: 17,
-            start: 20,
-            duration: 155
-        },
-
-        {
-            enemy: "stoneRoller",
-            count: 16,
-            start: 25,
-            duration: 150
+            duration: 1
         },
 
         {
             enemy: "stoner",
-            count: 6,
-            start: 40,
-            duration: 135
-        },
-
-        {
-            enemy: "stoneBurrower",
-            count: 14,
-            start: 30,
-            duration: 145
+            count: 1,
+            start: 5,
+            duration: 1
         }
+
+
+    
     ]
 };
 
