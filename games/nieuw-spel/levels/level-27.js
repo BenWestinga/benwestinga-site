@@ -115,73 +115,38 @@ export const config = {
 
         {
             enemy: "stoneGoon",
-
-            start: 55,
-
-            formation: {
-                type: "grid",
-                side: "right",
-                rows: 8,
-                columns: 5,
-                spacing: 75
-            }
+            count: 20,
+            start: 50,
+            duration: 10
         },
 
         {
             enemy: "stoneGoon",
-
-            start: 65,
-
-            formation: {
-                type: "grid",
-                side: "left",
-                rows: 10,
-                columns: 5,
-                spacing: 75
-            }
+            count: 20,
+            start: 70,
+            duration: 10
         },
 
         {
             enemy: "stoneGoon",
-
-            start: 75,
-
-            formation: {
-                type: "grid",
-                side: "right",
-                rows: 10,
-                columns: 5,
-                spacing: 75
-            }
+            count: 20,
+            start: 90,
+            duration: 10
         },
 
         {
             enemy: "stoneGoon",
-
-            start: 100,
-
-            formation: {
-                type: "grid",
-                side: "right",
-                rows: 10,
-                columns: 5,
-                spacing: 75
-            }
+            count: 20,
+            start: 115,
+            duration: 10
         },
 
         {
             enemy: "stoneGoon",
-
+            count: 20,
             start: 130,
-
-            formation: {
-                type: "grid",
-                side: "left",
-                rows: 10,
-                columns: 5,
-                spacing: 75
-            }
-        },
+            duration: 10
+        }
     ]
 };
 
