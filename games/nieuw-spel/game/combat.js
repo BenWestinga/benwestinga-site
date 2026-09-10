@@ -9,8 +9,8 @@
         smg: "smg4.js",
         smg4: "smg4.js",
         shotgun: "shotgun.js",
-        huntingRifle: "hunting_rifle.js",
-        hunting_rifle: "hunting_rifle.js",
+        huntingRifle: "hunting-rifle.js",
+        hunting_rifle: "hunting-rifle.js",
         ak: "ak.js"
     };
 
