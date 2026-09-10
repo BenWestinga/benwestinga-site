@@ -41,14 +41,14 @@ export const config = {
 
         {
             enemy: "insect",
-            count: 280,
+            count: 200,
             start: 5,
             duration: 155
         },
 
         {
             enemy: "stoneBurrower",
-            count: 50,
+            count: 40,
             start: 5,
             duration: 155
         },
