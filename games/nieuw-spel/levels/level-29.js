@@ -41,7 +41,7 @@ export const config = {
 
         {
             enemy: "insect",
-            count: 200,
+            count: 120,
             start: 5,
             duration: 155
         },
