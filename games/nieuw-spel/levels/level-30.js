@@ -136,12 +136,6 @@ export const config = {
             duration: 50
         },
 
-        {
-            enemy: "stoneRoller",
-            count: 5,
-            start: 120,
-            duration: 20
-        },
 
         {
             enemy: "stoneBurrower",
