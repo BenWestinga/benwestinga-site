@@ -34,7 +34,7 @@ const steenBen = {
     */
 
     hp:
-        250,
+        450,
 
 
     size:
@@ -109,7 +109,7 @@ const steenBen = {
         */
 
         dashSpeed:
-            1400,
+            600,
 
 
         /*
