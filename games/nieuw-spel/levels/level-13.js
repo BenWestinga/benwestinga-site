@@ -5,7 +5,6 @@ import shotgunGoon from "../enemies/enemy-12.js";
 import snake from "../enemies/enemy-13.js";
 import shielder from "../enemies/enemy-14.js";
 import snakeQueen from "../enemies/enemy-15.js";
-import warrior from "../enemies/enemy-16.js";
 
 export const config = {
 
@@ -29,7 +28,6 @@ export const config = {
         snake,
         shielder,
         snakeQueen,
-        warrior
 
     },
 

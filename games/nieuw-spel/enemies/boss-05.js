@@ -1908,6 +1908,46 @@ function updateAttackLogic(
             config.attack1;
 
 
+        const warningDuration =
+            attack.warningDuration ??
+            0;
+
+
+        /*
+            Level 25:
+            duidelijk 1 seconde knipperen
+            voordat de eerste steen komt.
+        */
+
+        if (
+            state.attackElapsed <
+            warningDuration
+        ) {
+
+            state.flash =
+                (
+                    Math.floor(
+                        state.attackElapsed /
+                        0.10
+                    ) %
+                    2
+                ) ===
+                0;
+
+
+            return;
+        }
+
+
+        state.flash =
+            false;
+
+
+        const activeAttackElapsed =
+            state.attackElapsed -
+            warningDuration;
+
+
         const spacing =
 
             attack.duration /
@@ -1923,7 +1963,7 @@ function updateAttackLogic(
             state.shotsFired <
                 attack.shots &&
 
-            state.attackElapsed >=
+            activeAttackElapsed >=
                 state.nextShotTime
 
         ) {
@@ -2065,93 +2105,125 @@ function updateCycle(
         );
 
 
-    const phaseDuration =
-        config.attackSystem
-            .phaseDuration;
-
-
-    const phaseCount =
-
-        config.attack3
-            ?.enabled
-
-            ? 6
-
-            : 4;
-
-
-    const cycleDuration =
-
-        phaseDuration *
-        phaseCount;
-
-
     state.cycleTime +=
         dt;
 
 
     /*
-        Nieuwe cyclus.
+        ======================================
+        BOSS 25
+
+        Oude cooldown:
+        15 sec idle.
+
+        Nieuwe cooldown:
+        7.5 sec idle.
+
+        De attacks zelf blijven
+        15 sec lang.
+        ======================================
     */
 
     if (
-
-        state.cycleTime >=
-        cycleDuration
-
+        !config.attack3
+            ?.enabled
     ) {
 
-        state.cycleTime %=
-            cycleDuration;
+        const idleDuration =
+            config.attackSystem
+                .idleDuration ??
+            7.5;
 
 
-        state.phase =
-            -1;
+        const attackDuration =
+            config.attackSystem
+                .attackDuration ??
+            config.attackSystem
+                .phaseDuration;
 
 
-        state.firstAttack =
-            null;
+        const cycleDuration =
+            idleDuration +
+            attackDuration +
+            idleDuration +
+            attackDuration;
 
-
-        endAttack(
-            enemy
-        );
-    }
-
-
-    const phase =
-        Math.min(
-
-            phaseCount -
-                1,
-
-            Math.floor(
-
-                state.cycleTime /
-                phaseDuration
-            )
-        );
-
-
-    if (
-        phase !==
-        state.phase
-    ) {
-
-        state.phase =
-            phase;
-
-
-        /*
-            ======================================
-            BOSS 25
-            ======================================
-        */
 
         if (
-            !config.attack3
-                ?.enabled
+            state.cycleTime >=
+            cycleDuration
         ) {
+
+            state.cycleTime %=
+                cycleDuration;
+
+
+            state.phase =
+                -1;
+
+
+            state.firstAttack =
+                null;
+
+
+            endAttack(
+                enemy
+            );
+        }
+
+
+        const firstAttackStart =
+            idleDuration;
+
+
+        const firstAttackEnd =
+            firstAttackStart +
+            attackDuration;
+
+
+        const secondAttackStart =
+            firstAttackEnd +
+            idleDuration;
+
+
+        let phase =
+            0;
+
+
+        if (
+            state.cycleTime >=
+            secondAttackStart
+        ) {
+
+            phase =
+                3;
+
+        } else if (
+            state.cycleTime >=
+            firstAttackEnd
+        ) {
+
+            phase =
+                2;
+
+        } else if (
+            state.cycleTime >=
+            firstAttackStart
+        ) {
+
+            phase =
+                1;
+        }
+
+
+        if (
+            phase !==
+            state.phase
+        ) {
+
+            state.phase =
+                phase;
+
 
             if (
                 phase ===
@@ -2197,51 +2269,129 @@ function updateCycle(
                     enemy
                 );
             }
+        }
+
+
+        updateAttackLogic(
+
+            enemy,
+
+            dt,
+
+            api,
+
+            config
+        );
+
+
+        return;
+    }
+
+
+    /*
+        ======================================
+        BOSS 30
+
+        Oude cycle blijft exact hetzelfde.
+        ======================================
+    */
+
+    const phaseDuration =
+        config.attackSystem
+            .phaseDuration;
+
+
+    const phaseCount =
+        6;
+
+
+    const cycleDuration =
+
+        phaseDuration *
+        phaseCount;
+
+
+    if (
+        state.cycleTime >=
+        cycleDuration
+    ) {
+
+        state.cycleTime %=
+            cycleDuration;
+
+
+        state.phase =
+            -1;
+
+
+        state.firstAttack =
+            null;
+
+
+        endAttack(
+            enemy
+        );
+    }
+
+
+    const phase =
+        Math.min(
+
+            phaseCount -
+                1,
+
+            Math.floor(
+
+                state.cycleTime /
+                phaseDuration
+            )
+        );
+
+
+    if (
+        phase !==
+        state.phase
+    ) {
+
+        state.phase =
+            phase;
+
+
+        if (
+            phase ===
+            1
+        ) {
+
+            startAttack(
+                enemy,
+                1
+            );
+
+        } else if (
+            phase ===
+            3
+        ) {
+
+            startAttack(
+                enemy,
+                2
+            );
+
+        } else if (
+            phase ===
+            5
+        ) {
+
+            startAttack(
+                enemy,
+                3
+            );
 
         } else {
 
-            /*
-                ==================================
-                BOSS 30
-                ==================================
-            */
-
-            if (
-                phase ===
-                1
-            ) {
-
-                startAttack(
-                    enemy,
-                    1
-                );
-
-            } else if (
-                phase ===
-                3
-            ) {
-
-                startAttack(
-                    enemy,
-                    2
-                );
-
-            } else if (
-                phase ===
-                5
-            ) {
-
-                startAttack(
-                    enemy,
-                    3
-                );
-
-            } else {
-
-                endAttack(
-                    enemy
-                );
-            }
+            endAttack(
+                enemy
+            );
         }
     }
 
@@ -2475,7 +2625,7 @@ function drawSteenBen(
 
 
         /*
-            Grijze tint over ben.png.
+            Grijze tint over Ben.png.
         */
 
         ctx.globalCompositeOperation =
@@ -2603,7 +2753,7 @@ const steenBen = {
     */
 
     hp:
-        200,
+        400,
 
 
     size:
@@ -2623,12 +2773,11 @@ const steenBen = {
 
 
     /*
-        BELANGRIJK:
-        lowercase ben.png
+        Exacte assetnaam.
     */
 
     image:
-        "ben.png",
+        "Ben.png",
 
 
     color:
@@ -2676,7 +2825,25 @@ const steenBen = {
 
     attackSystem: {
 
+        /*
+            Boss 30 gebruikt deze oude
+            phaseDuration nog steeds.
+        */
+
         phaseDuration:
+            15,
+
+
+        /*
+            Alleen Boss 25 gebruikt
+            deze twee waarden.
+        */
+
+        idleDuration:
+            7.5,
+
+
+        attackDuration:
             15
     },
 
@@ -2693,6 +2860,10 @@ const steenBen = {
 
         duration:
             15,
+
+
+        warningDuration:
+            1,
 
 
         /*
@@ -2752,7 +2923,7 @@ const steenBen = {
 
 
         warningDuration:
-            2,
+            1,
 
 
         warningFlashes:

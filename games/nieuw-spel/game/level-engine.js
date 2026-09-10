@@ -18,6 +18,9 @@
     const ENEMY_SIZE_BASE = 10;
     const ENEMY_SIZE_STEP = 4;
 
+    const PLAYER_SPAWN_SAFE_RADIUS = 520;
+    const RANDOM_SPAWN_ATTEMPTS = 48;
+
     let animationFrame = null;
     let activeContext = null;
     let activeConfig = null;
@@ -469,68 +472,343 @@
         return image;
     }
 
-    function randomSpawnPosition(radius) {
+    function randomSpawnPosition(
+        radius,
+        options = {}
+    ) {
+
         const margin =
             Math.max(
                 90,
                 radius * 2 + 30
             );
 
-        const side =
-            Math.floor(
-                Math.random() *
-                4
-            );
 
-        if (
-            side === 0
+        const player =
+            window.levelPlayer;
+
+
+        const validSides = [
+            "left",
+            "right",
+            "top",
+            "bottom"
+        ];
+
+
+        const forcedSide =
+            validSides.includes(
+                options.side
+            )
+                ? options.side
+                : null;
+
+
+        /*
+            Als een enemy bewust een kant
+            krijgt, respecteren we die ALTIJD.
+
+            Dus bijvoorbeeld:
+
+            randomSpawnPosition(
+                radius,
+                { side: "left" }
+            )
+
+            mag gewoon links spawnen,
+            zelfs wanneer de speler daar staat.
+        */
+        const ignoreSafeRadius =
+            options.ignorePlayerSafeRadius === true ||
+            forcedSide !== null;
+
+
+        function createPosition(
+            side
         ) {
-            return {
-                x:
-                    -margin,
 
-                y:
-                    Math.random() *
-                    canvas.height
-            };
-        }
+            if (
+                side === "left"
+            ) {
 
-        if (
-            side === 1
-        ) {
-            return {
-                x:
-                    canvas.width +
-                    margin,
+                return {
+                    x: -margin,
 
-                y:
-                    Math.random() *
-                    canvas.height
-            };
-        }
+                    y:
+                        Math.random() *
+                        canvas.height
+                };
+            }
 
-        if (
-            side === 2
-        ) {
+
+            if (
+                side === "right"
+            ) {
+
+                return {
+                    x:
+                        canvas.width +
+                        margin,
+
+                    y:
+                        Math.random() *
+                        canvas.height
+                };
+            }
+
+
+            if (
+                side === "top"
+            ) {
+
+                return {
+                    x:
+                        Math.random() *
+                        canvas.width,
+
+                    y: -margin
+                };
+            }
+
+
             return {
                 x:
                     Math.random() *
                     canvas.width,
 
                 y:
-                    -margin
+                    canvas.height +
+                    margin
             };
         }
 
-        return {
-            x:
-                Math.random() *
-                canvas.width,
 
-            y:
-                canvas.height +
-                margin
-        };
+        /*
+            Expliciet gekozen kant:
+            geen safe-radius controle.
+
+            Dit is de uitzondering
+            waar jij om vroeg.
+        */
+        if (
+            forcedSide
+        ) {
+
+            return createPosition(
+                forcedSide
+            );
+        }
+
+
+        /*
+            Geen geldige speler?
+            Dan gewoon oude random gedrag.
+        */
+        if (
+            !player ||
+            !player.alive ||
+            ignoreSafeRadius
+        ) {
+
+            const side =
+                validSides[
+                    Math.floor(
+                        Math.random() *
+                        validSides.length
+                    )
+                ];
+
+
+            return createPosition(
+                side
+            );
+        }
+
+
+        /*
+            Radius is vanaf het midden
+            van de speler.
+
+            Enemy-radius wordt erbij
+            opgeteld, zodat zelfs de RAND
+            van een grote enemy niet binnen
+            de safe zone begint.
+        */
+        const requiredDistance =
+            PLAYER_SPAWN_SAFE_RADIUS +
+            radius;
+
+
+        const requiredDistanceSquared =
+            requiredDistance *
+            requiredDistance;
+
+
+        /*
+            Eerst proberen we meerdere
+            gewone random spawnpunten.
+
+            Alleen een punt buiten de
+            safe radius wordt geaccepteerd.
+        */
+        for (
+            let attempt = 0;
+            attempt <
+                RANDOM_SPAWN_ATTEMPTS;
+            attempt++
+        ) {
+
+            const side =
+                validSides[
+                    Math.floor(
+                        Math.random() *
+                        validSides.length
+                    )
+                ];
+
+
+            const position =
+                createPosition(
+                    side
+                );
+
+
+            const dx =
+                position.x -
+                player.x;
+
+
+            const dy =
+                position.y -
+                player.y;
+
+
+            const distanceSquared =
+                dx * dx +
+                dy * dy;
+
+
+            if (
+                distanceSquared >=
+                requiredDistanceSquared
+            ) {
+
+                return position;
+            }
+        }
+
+
+        /*
+            EXTREME FALLBACK
+
+            Mocht random 48 keer toevallig
+            geen goede positie kiezen,
+            pakken we bewust het verst
+            mogelijke spawnpunt.
+
+            Hierdoor krijg je bijvoorbeeld
+            niet ineens een enemy links onder
+            achter je wanneer jij daar zelf
+            staat.
+        */
+
+        const candidates = [
+
+            {
+                x: -margin,
+                y: 0
+            },
+
+            {
+                x: -margin,
+                y: canvas.height
+            },
+
+            {
+                x:
+                    canvas.width +
+                    margin,
+                y: 0
+            },
+
+            {
+                x:
+                    canvas.width +
+                    margin,
+                y:
+                    canvas.height
+            },
+
+            {
+                x: 0,
+                y: -margin
+            },
+
+            {
+                x: canvas.width,
+                y: -margin
+            },
+
+            {
+                x: 0,
+                y:
+                    canvas.height +
+                    margin
+            },
+
+            {
+                x: canvas.width,
+                y:
+                    canvas.height +
+                    margin
+            }
+        ];
+
+
+        let bestPosition =
+            candidates[0];
+
+
+        let bestDistanceSquared =
+            -Infinity;
+
+
+        for (
+            const position
+            of candidates
+        ) {
+
+            const dx =
+                position.x -
+                player.x;
+
+
+            const dy =
+                position.y -
+                player.y;
+
+
+            const distanceSquared =
+                dx * dx +
+                dy * dy;
+
+
+            if (
+                distanceSquared >
+                bestDistanceSquared
+            ) {
+
+                bestDistanceSquared =
+                    distanceSquared;
+
+
+                bestPosition =
+                    position;
+            }
+        }
+
+
+        return bestPosition;
     }
 
     function isInsideArena(enemy) {

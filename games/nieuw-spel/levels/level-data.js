@@ -1,32 +1,3 @@
-// ======================================================
-// LEVEL DATA
-// ======================================================
-//
-// Level 1 staat NIET hier.
-// Level 1 blijft gewoon in level-01.js zoals hij nu is.
-//
-// Vanaf Level 2 kunnen we alle waves hier invullen.
-//
-// Spawn group voorbeeld:
-//
-// {
-//     enemy: "grassGoon",
-//     count: 30,
-//     start: 5,
-//     duration: 20
-// }
-//
-// start: 5 betekent:
-// eerste spawn vanaf 5 seconden.
-//
-// Omdat ieder level startDelayMs: 5000 heeft,
-// gebeurt er de eerste 5 seconden niets.
-//
-// duration bepaalt over hoeveel seconden
-// de enemies willekeurig worden verspreid.
-// ======================================================
-
-
 export const LEVEL_DATA = {
 
 
@@ -45,8 +16,26 @@ export const LEVEL_DATA = {
         startDelayMs: 5000,
 
         spawnGroups: [
+            {
+                enemy: "sandGoon",
+                count: 40,
+                start: 5,
+                duration: 30
+            },
 
-            // PLACEHOLDER
+            {
+                enemy: "sandBomb",
+                count: 6,
+                start: 20,
+                duration: 15
+            },
+
+            {
+                enemy: "bigsandGoon",
+                count: 5,
+                start: 35,
+                duration: 20
+            }
 
         ]
     },
