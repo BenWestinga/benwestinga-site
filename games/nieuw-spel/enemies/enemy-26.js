@@ -1,5 +1,4 @@
 const PHASES = {
-
     1: {
         size: 6,
         speed: "medium",
@@ -26,20 +25,28 @@ const snowMan = {
 
     name: "Snow Man",
 
-    behavior:
-        "three-phase-snowman",
+    behavior: "three-phase-snowman",
 
     /*
         FASE 1:
         30 HP
+        3 sneeuwballen:
+        - grote onderbal
+        - middelste body
+        - hoofd
 
         FASE 2:
         25 HP
+        grootste bal verdwijnt
+        - body
+        - hoofd
 
         FASE 3:
         12 HP
+        alleen hoofd
 
-        Totaal = 67 HP
+        Totaal:
+        67 HP
     */
 
     hp: 67,
@@ -50,52 +57,50 @@ const snowMan = {
 
     tracking: 0.5,
 
-    color:
-        "#f4fbff",
+    color: "#f4fbff",
 
-    image:
-        "snow.png",
+    image: "snow.png",
 
     /*
-        10 seconden volgen.
+        Beweging:
+
+        10 seconden speler volgen.
 
         Daarna 3 seconden
-        rechtdoor.
+        in één rechte lijn.
 
         Daarna opnieuw.
     */
 
-    followDuration:
-        10,
+    followDuration: 10,
 
-    straightDuration:
-        3,
+    straightDuration: 3,
 
     /*
-        Alleen fase 3.
+        Snowballs worden ALLEEN
+        in fase 1 geschoten.
     */
 
-    snowballCooldown:
-        3,
+    snowballCooldown: 3,
 
 
     modifyDamage(
         enemy,
         damage
     ) {
-
         /*
-            Snowstorm effect.
+            Snowstorm:
+
+            enemies pakken
+            de helft van damage.
         */
 
         if (
             window.IceWorldEffects
                 ?.active
         ) {
-
             return damage * 0.5;
         }
-
 
         return damage;
     },
@@ -104,39 +109,32 @@ const snowMan = {
     getPhase(
         enemy
     ) {
-
         /*
             Start:
             67 HP
 
-            30 damage nodig
-            voor fase 2.
-
-            Dus:
+            Eerste 30 HP:
             67 -> 37
 
-            Daarna 25 HP:
+            Daarna fase 2:
+            25 HP
             37 -> 12
 
-            Daarna laatste
-            12 HP.
+            Daarna fase 3:
+            laatste 12 HP.
         */
 
         if (
             enemy.hp > 37
         ) {
-
             return 1;
         }
-
 
         if (
             enemy.hp > 12
         ) {
-
             return 2;
         }
-
 
         return 3;
     },
@@ -147,86 +145,72 @@ const snowMan = {
         api,
         force = false
     ) {
-
         const newPhase =
             this.getPhase(
                 enemy
             );
 
-
         if (
             !force &&
-            enemy.phase ===
-                newPhase
+            enemy.phase === newPhase
         ) {
-
             return;
         }
-
 
         const oldPhase =
             enemy.phase;
 
-
         enemy.phase =
             newPhase;
-
 
         const data =
             PHASES[
                 newPhase
             ];
 
-
         enemy.size =
             data.size;
-
 
         enemy.radius =
             api.getEnemyRadius(
                 data.size
             );
 
-
         enemy.phaseBaseSpeed =
             api.getEnemySpeed(
                 data.speed
             );
 
-
         enemy.tracking =
             data.tracking;
 
-
         /*
-            Fasewissel effect.
+            Visueel effect als
+            hij van fase wisselt.
         */
 
         if (
             !force &&
-            oldPhase !==
-                newPhase
+            oldPhase !== newPhase
         ) {
-
             enemy.phaseFlash =
                 0.65;
         }
 
-
         /*
-            Wanneer fase 3 begint
-            niet meteen een bal afvuren.
+            Zodra fase 1 actief is
+            heeft hij zijn Snowball timer.
 
-            Eerst ongeveer 1 seconde.
+            In fase 2/3 wordt niet
+            meer geschoten.
         */
 
         if (
-            newPhase === 3 &&
-            oldPhase !== 3
+            newPhase === 1 &&
+            oldPhase !== 1
         ) {
-
             enemy.snowballTimer =
-                1;
+                this.snowballCooldown;
         }
     },
 
@@ -235,31 +219,23 @@ const snowMan = {
         enemy,
         api
     ) {
+        enemy.phase = 1;
 
-        enemy.phase =
-            1;
+        enemy.phaseFlash = 0;
 
-
-        enemy.phaseFlash =
-            0;
-
-
-        enemy.moveCycle =
-            0;
-
+        enemy.moveCycle = 0;
 
         enemy.moveMode =
             "follow";
 
-
         enemy.snowballTimer =
             this.snowballCooldown;
 
+        enemy.shootFlash = 0;
 
         enemy.visualTime =
             Math.random() *
             100;
-
 
         this.applyPhase(
             enemy,
@@ -267,20 +243,15 @@ const snowMan = {
             true
         );
 
-
         const stormMultiplier =
-
             window.IceWorldEffects
                 ?.active
-
                 ? 1.5
                 : 1;
-
 
         enemy.speed =
             enemy.phaseBaseSpeed *
             stormMultiplier;
-
 
         api.aimVelocityAtPlayer(
             enemy
@@ -294,7 +265,6 @@ const snowMan = {
         oldHp,
         api
     ) {
-
         this.applyPhase(
             enemy,
             api
@@ -307,9 +277,8 @@ const snowMan = {
         dt,
         api
     ) {
-
         /*
-            Controleer fase.
+            Fase steeds controleren.
         */
 
         this.applyPhase(
@@ -317,160 +286,140 @@ const snowMan = {
             api
         );
 
-
         enemy.visualTime +=
             dt;
-
 
         if (
             enemy.phaseFlash > 0
         ) {
-
             enemy.phaseFlash -=
                 dt;
         }
 
+        if (
+            enemy.shootFlash > 0
+        ) {
+            enemy.shootFlash -=
+                dt;
+        }
 
         /*
-            Snowstorm snelheid.
+            =================================
+            SNOWSTORM SPEED
+            =================================
         */
 
         const stormMultiplier =
-
             window.IceWorldEffects
                 ?.active
-
                 ? 1.5
                 : 1;
-
 
         enemy.speed =
             enemy.phaseBaseSpeed *
             stormMultiplier;
 
-
         /*
-            ==================================
+            =================================
             MOVEMENT CYCLE
-            ==================================
+            =================================
 
-            10 sec volgen
-            3 sec rechtdoor
+            10 sec follow
+            3 sec straight
         */
 
         const cycleLength =
             this.followDuration +
             this.straightDuration;
 
-
         const previousMode =
-
             enemy.moveCycle <
-                this.followDuration
-
+            this.followDuration
                 ? "follow"
                 : "straight";
-
 
         enemy.moveCycle +=
             dt;
 
-
         if (
             enemy.moveCycle >=
-                cycleLength
+            cycleLength
         ) {
-
             enemy.moveCycle %=
                 cycleLength;
         }
 
-
         const mode =
-
             enemy.moveCycle <
-                this.followDuration
-
+            this.followDuration
                 ? "follow"
                 : "straight";
 
-
         /*
-            Wanneer straight begint:
-            één keer richten.
+            Als straight begint:
 
-            Daarna richting vasthouden.
+            één keer richting speler
+            bepalen.
+
+            Daarna die richting vasthouden.
         */
 
         if (
-            mode !==
-                previousMode &&
-
-            mode ===
-                "straight"
+            mode !== previousMode &&
+            mode === "straight"
         ) {
-
             api.aimVelocityAtPlayer(
                 enemy
             );
         }
 
-
         enemy.moveMode =
             mode;
 
-
         /*
-            ==================================
-            VOLGEN
-            ==================================
+            =================================
+            FOLLOW
+            =================================
         */
 
         if (
-            mode ===
-            "follow"
+            mode === "follow"
         ) {
-
             api.moveTowardPlayer(
                 enemy,
                 dt,
                 enemy.tracking
             );
+        }
 
+        /*
+            =================================
+            STRAIGHT
+            =================================
+        */
 
-        } else {
-
-            /*
-                ==================================
-                RECHTDOOR
-                ==================================
-            */
-
+        else {
             const velocityLength =
                 Math.hypot(
                     enemy.vx,
                     enemy.vy
                 ) || 1;
 
-
             enemy.vx =
                 enemy.vx /
                 velocityLength *
                 enemy.speed;
-
 
             enemy.vy =
                 enemy.vy /
                 velocityLength *
                 enemy.speed;
 
-
             api.moveStraight(
                 enemy,
                 dt
             );
         }
-
 
         /*
             Arena binnenkomen.
@@ -482,23 +431,21 @@ const snowMan = {
                 enemy
             )
         ) {
-
             enemy.enteredArena =
                 true;
         }
 
-
         /*
             SnowMan blijft altijd
-            in het level.
+            binnen de map.
 
-            Bounce tegen muur.
+            Bij muur:
+            bounce.
         */
 
         if (
             enemy.enteredArena
         ) {
-
             api.keepInsideArena(
                 enemy,
                 14,
@@ -506,72 +453,74 @@ const snowMan = {
             );
         }
 
-
         /*
-            ==================================
-            FASE 3 SNOWBALL ATTACK
-            ==================================
+            =================================
+            FASE 1 SNOWBALL ATTACK
+            =================================
+
+            BELANGRIJK:
+
+            Alleen fase 1.
+
+            Dus alleen wanneer SnowMan
+            nog alle 3 lichaamsdelen heeft.
         */
 
         if (
-            enemy.phase === 3 &&
+            enemy.phase === 1 &&
             enemy.enteredArena
         ) {
-
             enemy.snowballTimer -=
                 dt;
 
-
             if (
-                enemy.snowballTimer <=
-                    0
+                enemy.snowballTimer <= 0
             ) {
-
                 enemy.snowballTimer +=
                     this.snowballCooldown;
 
+                /*
+                    Hoofdpositie van
+                    fase 1.
+                */
+
+                const headX =
+                    enemy.x;
+
+                const headY =
+                    enemy.y -
+                    enemy.radius *
+                    0.98;
 
                 /*
-                    Snowball wordt precies
-                    op SnowMan gespawned.
+                    Spawn echte Snowball
+                    enemy/object.
 
-                    Snowball.js ziet dat hij
-                    binnen de arena spawnt
-                    en richt hem daardoor
-                    op de speler.
+                    snowball.js richt deze
+                    één keer op player.
                 */
 
                 api.spawnEnemyAt(
                     "snowball",
-                    enemy.x,
-                    enemy.y
+                    headX,
+                    headY
                 );
 
-
                 /*
-                    Kleine attack animatie.
+                    Kleine shoot animatie.
                 */
 
                 enemy.shootFlash =
                     0.18;
             }
         }
-
-
-        if (
-            enemy.shootFlash > 0
-        ) {
-
-            enemy.shootFlash -=
-                dt;
-        }
     },
 
 
     /*
-        ======================================
-        VISUAL HELPER
-        ======================================
+        =========================================
+        SNOWBALL VISUAL HELPER
+        =========================================
     */
 
     drawSnowBall(
@@ -582,9 +531,7 @@ const snowMan = {
         radius,
         variant = 0
     ) {
-
         ctx.save();
-
 
         /*
             Schaduw.
@@ -595,37 +542,41 @@ const snowMan = {
         ctx.ellipse(
             x,
             y +
-                radius * 0.68,
+                radius *
+                0.68,
 
-            radius * 0.68,
-            radius * 0.20,
+            radius *
+                0.68,
+
+            radius *
+                0.20,
 
             0,
             0,
             Math.PI * 2
         );
 
-
         ctx.fillStyle =
             "rgba(30,80,100,0.12)";
 
         ctx.fill();
 
-
         /*
-            Hoofdbal.
+            Hoofdbal gradient.
         */
 
         const gradient =
             ctx.createRadialGradient(
-
                 x -
-                    radius * 0.28,
+                    radius *
+                    0.28,
 
                 y -
-                    radius * 0.30,
+                    radius *
+                    0.30,
 
-                radius * 0.05,
+                radius *
+                    0.05,
 
                 x,
                 y,
@@ -633,17 +584,18 @@ const snowMan = {
                 radius
             );
 
-
         gradient.addColorStop(
             0,
             "#ffffff"
         );
 
+        /*
+            Groot onderste deel.
+        */
 
         if (
             variant === 0
         ) {
-
             gradient.addColorStop(
                 0.65,
                 "#effaff"
@@ -653,12 +605,15 @@ const snowMan = {
                 1,
                 "#cceaf3"
             );
+        }
 
+        /*
+            Middelste deel.
+        */
 
-        } else if (
+        else if (
             variant === 1
         ) {
-
             gradient.addColorStop(
                 0.65,
                 "#eaf8fc"
@@ -668,10 +623,13 @@ const snowMan = {
                 1,
                 "#bfe3ee"
             );
+        }
 
+        /*
+            Hoofd.
+        */
 
-        } else {
-
+        else {
             gradient.addColorStop(
                 0.65,
                 "#f3fbff"
@@ -683,7 +641,6 @@ const snowMan = {
             );
         }
 
-
         ctx.beginPath();
 
         ctx.arc(
@@ -694,15 +651,14 @@ const snowMan = {
             Math.PI * 2
         );
 
-
         ctx.fillStyle =
             gradient;
 
         ctx.fill();
 
-
         /*
-            snow.png heel subtiel.
+            snow.png subtiel
+            in iedere bal.
         */
 
         if (
@@ -710,44 +666,34 @@ const snowMan = {
             image.complete &&
             image.naturalWidth > 0
         ) {
-
             ctx.save();
-
 
             ctx.beginPath();
 
             ctx.arc(
                 x,
                 y,
-                radius * 0.96,
+                radius *
+                    0.96,
                 0,
                 Math.PI * 2
             );
 
             ctx.clip();
 
-
             ctx.globalAlpha =
                 0.20;
 
-
             ctx.drawImage(
                 image,
-
-                x -
-                    radius,
-
-                y -
-                    radius,
-
+                x - radius,
+                y - radius,
                 radius * 2,
                 radius * 2
             );
 
-
             ctx.restore();
         }
-
 
         /*
             IJsblauwe rand.
@@ -763,164 +709,171 @@ const snowMan = {
             Math.PI * 2
         );
 
-
         ctx.strokeStyle =
             "#acd9e7";
-
 
         ctx.lineWidth =
             Math.max(
                 2,
-                radius * 0.055
+                radius *
+                    0.055
             );
-
 
         ctx.stroke();
 
-
         /*
-            Highlight.
+            Lichtreflectie.
         */
 
         ctx.beginPath();
 
         ctx.arc(
             x -
-                radius * 0.18,
+                radius *
+                0.18,
 
             y -
-                radius * 0.22,
+                radius *
+                0.22,
 
-            radius * 0.57,
+            radius *
+                0.57,
 
-            Math.PI * 1.08,
-            Math.PI * 1.60
+            Math.PI *
+                1.08,
+
+            Math.PI *
+                1.60
         );
-
 
         ctx.strokeStyle =
             "rgba(255,255,255,0.75)";
 
-
         ctx.lineWidth =
             Math.max(
                 2,
-                radius * 0.07
+                radius *
+                    0.07
             );
-
 
         ctx.lineCap =
             "round";
 
-
         ctx.stroke();
 
-
         /*
-            Iedere lichaamsbal ziet
-            iets anders uit.
+            =================================
+            UNIEKE DETAILS PER BAL
+            =================================
         */
 
         if (
             variant === 0
         ) {
-
             /*
-                Onderste grote bal.
+                Groot onderste deel:
+                twee kleine sneeuwdeukjes.
             */
 
             ctx.beginPath();
 
             ctx.arc(
                 x -
-                    radius * 0.30,
+                    radius *
+                    0.30,
 
                 y +
-                    radius * 0.18,
+                    radius *
+                    0.18,
 
-                radius * 0.08,
+                radius *
+                    0.08,
 
                 0,
                 Math.PI * 2
             );
-
 
             ctx.fillStyle =
                 "rgba(125,190,210,0.34)";
 
             ctx.fill();
 
-
             ctx.beginPath();
 
             ctx.arc(
                 x +
-                    radius * 0.25,
+                    radius *
+                    0.25,
 
                 y +
-                    radius * 0.38,
+                    radius *
+                    0.38,
 
-                radius * 0.06,
+                radius *
+                    0.06,
 
                 0,
                 Math.PI * 2
             );
 
             ctx.fill();
+        }
 
-
-        } else if (
+        else if (
             variant === 1
         ) {
-
             /*
-                Middelste lichaamsbal.
+                Middelste bal:
+                helder sneeuwpunt.
             */
 
             ctx.beginPath();
 
             ctx.arc(
                 x +
-                    radius * 0.28,
+                    radius *
+                    0.28,
 
                 y -
-                    radius * 0.06,
+                    radius *
+                    0.06,
 
-                radius * 0.07,
+                radius *
+                    0.07,
 
                 0,
                 Math.PI * 2
             );
 
-
             ctx.fillStyle =
                 "rgba(255,255,255,0.82)";
 
             ctx.fill();
+        }
 
-
-        } else {
-
+        else {
             /*
                 Hoofd:
-                klein sneeuwaccent.
+                subtiel sneeuwaccent.
             */
 
             ctx.beginPath();
 
             ctx.arc(
                 x -
-                    radius * 0.34,
+                    radius *
+                    0.34,
 
                 y -
-                    radius * 0.05,
+                    radius *
+                    0.05,
 
-                radius * 0.055,
+                radius *
+                    0.055,
 
                 0,
                 Math.PI * 2
             );
-
 
             ctx.fillStyle =
                 "rgba(110,190,215,0.28)";
@@ -928,10 +881,15 @@ const snowMan = {
             ctx.fill();
         }
 
-
         ctx.restore();
     },
 
+
+    /*
+        =========================================
+        BUTTONS
+        =========================================
+    */
 
     drawButtons(
         ctx,
@@ -939,72 +897,69 @@ const snowMan = {
         y,
         radius
     ) {
-
         ctx.save();
-
 
         ctx.fillStyle =
             "#547580";
 
-
         const buttonRadius =
             Math.max(
                 2.5,
-                radius * 0.075
+                radius *
+                    0.075
             );
-
 
         ctx.beginPath();
 
         ctx.arc(
             x,
             y -
-                radius * 0.18,
-
+                radius *
+                0.18,
             buttonRadius,
-
             0,
             Math.PI * 2
         );
 
         ctx.fill();
-
 
         ctx.beginPath();
 
         ctx.arc(
             x,
             y +
-                radius * 0.12,
-
+                radius *
+                0.12,
             buttonRadius,
-
             0,
             Math.PI * 2
         );
 
         ctx.fill();
-
 
         ctx.beginPath();
 
         ctx.arc(
             x,
             y +
-                radius * 0.42,
-
+                radius *
+                0.42,
             buttonRadius,
-
             0,
             Math.PI * 2
         );
 
         ctx.fill();
-
 
         ctx.restore();
     },
 
+
+    /*
+        =========================================
+        ARMS
+        =========================================
+    */
 
     drawArms(
         ctx,
@@ -1012,24 +967,20 @@ const snowMan = {
         y,
         radius
     ) {
-
         ctx.save();
-
 
         ctx.strokeStyle =
             "#98c9d8";
 
-
         ctx.lineWidth =
             Math.max(
                 3,
-                radius * 0.09
+                radius *
+                    0.09
             );
-
 
         ctx.lineCap =
             "round";
-
 
         /*
             Linkerarm.
@@ -1039,33 +990,35 @@ const snowMan = {
 
         ctx.moveTo(
             x -
-                radius * 0.56,
+                radius *
+                0.56,
 
             y -
-                radius * 0.05
+                radius *
+                0.05
         );
-
 
         ctx.lineTo(
             x -
-                radius * 1.02,
+                radius *
+                1.02,
 
             y -
-                radius * 0.32
+                radius *
+                0.32
         );
-
 
         ctx.lineTo(
             x -
-                radius * 1.18,
+                radius *
+                1.18,
 
             y -
-                radius * 0.16
+                radius *
+                0.16
         );
-
 
         ctx.stroke();
-
 
         /*
             Rechterarm.
@@ -1075,59 +1028,62 @@ const snowMan = {
 
         ctx.moveTo(
             x +
-                radius * 0.56,
+                radius *
+                0.56,
 
             y -
-                radius * 0.05
+                radius *
+                0.05
         );
-
 
         ctx.lineTo(
             x +
-                radius * 1.02,
+                radius *
+                1.02,
 
             y -
-                radius * 0.32
+                radius *
+                0.32
         );
-
 
         ctx.lineTo(
             x +
-                radius * 1.18,
+                radius *
+                1.18,
 
             y -
-                radius * 0.16
+                radius *
+                0.16
         );
-
 
         ctx.stroke();
-
 
         ctx.restore();
     },
 
 
+    /*
+        =========================================
+        PHASE CHANGE ANIMATION
+        =========================================
+    */
+
     drawPhaseFlash(
         enemy,
         ctx
     ) {
-
         if (
             enemy.phaseFlash <= 0
         ) {
-
             return;
         }
-
 
         const progress =
             1 -
             enemy.phaseFlash /
             0.65;
 
-
         ctx.save();
-
 
         ctx.beginPath();
 
@@ -1146,44 +1102,43 @@ const snowMan = {
             Math.PI * 2
         );
 
-
         ctx.strokeStyle =
             `rgba(190,240,255,${
                 1 - progress
             })`;
 
-
         ctx.lineWidth =
             6;
 
-
         ctx.stroke();
-
 
         ctx.restore();
     },
 
+
+    /*
+        =========================================
+        DRAW
+        =========================================
+    */
 
     draw(
         enemy,
         ctx,
         api
     ) {
-
         const image =
             api.getAssetImage(
                 this.image
             );
 
-
         const r =
             enemy.radius;
 
-
         /*
-            ==================================
+            =================================
             FASE 1
-            ==================================
+            =================================
 
                  HEAD
                   O
@@ -1191,88 +1146,70 @@ const snowMan = {
                 BODY
                   O
 
-             BIG BODY
-                 OOO
+              BIG BODY
+                 O
 
-            Grootste bal zit onderaan.
+            3 sneeuwballen.
         */
 
         if (
             enemy.phase === 1
         ) {
-
             const bottomRadius =
                 r * 0.72;
-
 
             const bodyRadius =
                 r * 0.51;
 
-
             const headRadius =
                 r * 0.37;
 
-
             const bottomX =
                 enemy.x;
-
 
             const bottomY =
                 enemy.y +
                 r * 0.34;
 
-
             const bodyX =
                 enemy.x;
-
 
             const bodyY =
                 enemy.y -
                 r * 0.37;
 
-
             const headX =
                 enemy.x;
-
 
             const headY =
                 enemy.y -
                 r * 0.98;
 
-
             /*
-                Grootste onderste bal.
+                Onderste grote bal.
             */
 
             this.drawSnowBall(
                 ctx,
                 image,
-
                 bottomX,
                 bottomY,
-
                 bottomRadius,
-
                 0
             );
 
-
             /*
-                Middelste lichaamsdeel.
+                Middelste bal.
             */
 
             this.drawSnowBall(
                 ctx,
                 image,
-
                 bodyX,
                 bodyY,
-
                 bodyRadius,
-
                 1
             );
-
 
             /*
                 Armen aan middelste bal.
@@ -1280,13 +1217,10 @@ const snowMan = {
 
             this.drawArms(
                 ctx,
-
                 bodyX,
                 bodyY,
-
                 bodyRadius
             );
-
 
             /*
                 Knoopjes.
@@ -1294,13 +1228,10 @@ const snowMan = {
 
             this.drawButtons(
                 ctx,
-
                 bodyX,
                 bodyY,
-
                 bodyRadius
             );
-
 
             /*
                 Hoofd.
@@ -1309,52 +1240,86 @@ const snowMan = {
             this.drawSnowBall(
                 ctx,
                 image,
-
                 headX,
                 headY,
-
                 headRadius,
-
                 2
             );
 
+            /*
+                Snowball shoot-effect.
+
+                Alleen fase 1.
+            */
+
+            if (
+                enemy.shootFlash > 0
+            ) {
+                const alpha =
+                    Math.min(
+                        1,
+                        enemy.shootFlash /
+                        0.18
+                    );
+
+                ctx.save();
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    headX,
+                    headY,
+
+                    headRadius *
+                        1.35,
+
+                    0,
+                    Math.PI * 2
+                );
+
+                ctx.strokeStyle =
+                    `rgba(220,250,255,${
+                        alpha
+                    })`;
+
+                ctx.lineWidth =
+                    5;
+
+                ctx.stroke();
+
+                ctx.restore();
+            }
 
             /*
-                Alleen hoofd krijgt
-                standaard boos gezicht.
+                ALLEEN hoofd
+                krijgt gezicht.
             */
 
             api.drawEnemyFace({
-
                 ...enemy,
 
-                x:
-                    headX,
+                x: headX,
 
-                y:
-                    headY,
+                y: headY,
 
                 radius:
                     headRadius
             });
-
 
             this.drawPhaseFlash(
                 enemy,
                 ctx
             );
 
-
             return;
         }
 
-
         /*
-            ==================================
+            =================================
             FASE 2
-            ==================================
+            =================================
 
-            Grootste onderste bal is weg.
+            Grootste bal is weg.
 
                  HEAD
                   O
@@ -1366,32 +1331,25 @@ const snowMan = {
         if (
             enemy.phase === 2
         ) {
-
             const bodyRadius =
                 r * 0.72;
-
 
             const headRadius =
                 r * 0.49;
 
-
             const bodyX =
                 enemy.x;
-
 
             const bodyY =
                 enemy.y +
                 r * 0.25;
 
-
             const headX =
                 enemy.x;
-
 
             const headY =
                 enemy.y -
                 r * 0.63;
-
 
             /*
                 Body.
@@ -1400,15 +1358,11 @@ const snowMan = {
             this.drawSnowBall(
                 ctx,
                 image,
-
                 bodyX,
                 bodyY,
-
                 bodyRadius,
-
                 1
             );
-
 
             /*
                 Armen.
@@ -1416,13 +1370,10 @@ const snowMan = {
 
             this.drawArms(
                 ctx,
-
                 bodyX,
                 bodyY,
-
                 bodyRadius
             );
-
 
             /*
                 Knoopjes.
@@ -1430,13 +1381,10 @@ const snowMan = {
 
             this.drawButtons(
                 ctx,
-
                 bodyX,
                 bodyY,
-
                 bodyRadius
             );
-
 
             /*
                 Hoofd.
@@ -1445,135 +1393,60 @@ const snowMan = {
             this.drawSnowBall(
                 ctx,
                 image,
-
                 headX,
                 headY,
-
                 headRadius,
-
                 2
             );
 
-
             api.drawEnemyFace({
-
                 ...enemy,
 
-                x:
-                    headX,
+                x: headX,
 
-                y:
-                    headY,
+                y: headY,
 
                 radius:
                     headRadius
             });
-
 
             this.drawPhaseFlash(
                 enemy,
                 ctx
             );
 
-
             return;
         }
 
-
         /*
-            ==================================
+            =================================
             FASE 3
-            ==================================
+            =================================
 
-            Alleen hoofd.
+            Alleen het hoofd.
 
-                  O
-
-            GEEN ROTATIE.
+            GEEN Snowball attack.
+            GEEN rotatie.
         */
 
         this.drawSnowBall(
             ctx,
             image,
-
             enemy.x,
             enemy.y,
-
             r,
-
             2
         );
 
-
-        /*
-            Kleine attack-flash
-            wanneer Snowball geschoten wordt.
-        */
-
-        if (
-            enemy.shootFlash > 0
-        ) {
-
-            const alpha =
-                Math.min(
-                    1,
-                    enemy.shootFlash /
-                    0.18
-                );
-
-
-            ctx.save();
-
-
-            ctx.beginPath();
-
-            ctx.arc(
-                enemy.x,
-                enemy.y,
-
-                r * 1.28,
-
-                0,
-                Math.PI * 2
-            );
-
-
-            ctx.strokeStyle =
-                `rgba(220,250,255,${
-                    alpha
-                })`;
-
-
-            ctx.lineWidth =
-                5;
-
-
-            ctx.stroke();
-
-
-            ctx.restore();
-        }
-
-
-        /*
-            Boos gezicht blijft op
-            laatste hoofd.
-        */
-
         api.drawEnemyFace({
-
             ...enemy,
 
-            x:
-                enemy.x,
+            x: enemy.x,
 
-            y:
-                enemy.y,
+            y: enemy.y,
 
-            radius:
-                r
+            radius: r
         });
-
 
         this.drawPhaseFlash(
             enemy,

@@ -3,15 +3,13 @@ let activeStorm =
 
 
 const effects =
-    window.IceWorldEffects || {
-
+    window.IceWorldEffects ||
+    {
         active: false,
 
-        speedMultiplier:
-            1.5,
+        speedMultiplier: 1.5,
 
-        damageMultiplier:
-            0.5
+        damageMultiplier: 0.5
     };
 
 
@@ -20,10 +18,8 @@ window.IceWorldEffects =
 
 
 function stopStorm() {
-
     activeStorm =
         null;
-
 
     effects.active =
         false;
@@ -45,11 +41,9 @@ const snowstorm = {
 
     speed: 0,
 
-    duration:
-        30,
+    duration: 30,
 
-    healInterval:
-        2,
+    healInterval: 2,
 
     collidesWithPlayer:
         false,
@@ -62,10 +56,8 @@ const snowstorm = {
         definition,
         api
     }) {
-
         /*
-            Er kan altijd maar één
-            SnowStorm actief zijn.
+            Maximaal één SnowStorm.
         */
 
         if (
@@ -74,13 +66,16 @@ const snowstorm = {
                 activeStorm
             )
         ) {
-
             return [];
         }
 
+        /*
+            Technisch enemy-object
+            buiten beeld zodat hij
+            in de engine blijft bestaan.
+        */
 
         return api.createEntity(
-
             definition,
 
             {
@@ -97,6 +92,10 @@ const snowstorm = {
 
                 speed: 0,
 
+                vx: 0,
+
+                vy: 0,
+
                 collidesWithPlayer:
                     false,
 
@@ -110,31 +109,29 @@ const snowstorm = {
     onSpawn(
         enemy
     ) {
-
         activeStorm =
             enemy;
-
 
         enemy.stormRemaining =
             this.duration;
 
-
         enemy.healTimer =
             this.healInterval;
 
+        enemy.visualTime =
+            0;
 
         effects.active =
             true;
     },
 
 
+    /*
+        SnowStorm zelf kan
+        niet geschoten worden.
+    */
+
     modifyDamage() {
-
-        /*
-            Snowstorm zelf is geen
-            normale enemy.
-        */
-
         return 0;
     },
 
@@ -143,56 +140,49 @@ const snowstorm = {
         dt,
         api
     ) {
-
         if (
             !activeStorm ||
             !api.isEnemyAlive(
                 activeStorm
             )
         ) {
-
-            effects.active =
-                false;
-
-            activeStorm =
-                null;
+            stopStorm();
 
             return;
         }
 
+        activeStorm.visualTime +=
+            dt;
 
         activeStorm.healTimer -=
             dt;
 
+        /*
+            Iedere 2 sec
+            iedere enemy +1 HP.
+        */
 
         while (
             activeStorm.healTimer <= 0
         ) {
-
             activeStorm.healTimer +=
                 this.healInterval;
-
 
             for (
                 const enemy
                 of api.getEnemies()
             ) {
-
                 if (
                     !enemy ||
                     enemy ===
                         activeStorm ||
-
                     enemy.hp <= 0 ||
-
                     !Number.isFinite(
                         enemy.maxHp
                     )
                 ) {
-
                     continue;
                 }
-
 
                 enemy.hp =
                     Math.min(
@@ -209,31 +199,24 @@ const snowstorm = {
         dt,
         api
     ) {
-
         if (
             enemy !==
             activeStorm
         ) {
-
             return;
         }
 
-
         enemy.stormRemaining -=
             dt;
-
 
         if (
             enemy.stormRemaining >
             0
         ) {
-
             return;
         }
 
-
         stopStorm();
-
 
         api.removeEnemy(
             enemy
@@ -241,40 +224,41 @@ const snowstorm = {
     },
 
 
+    /*
+        =====================================
+        STORM VISUAL
+        =====================================
+    */
+
     drawGlobal(
         ctx,
         api
     ) {
-
         if (
             !effects.active ||
             !activeStorm
         ) {
-
             return;
         }
-
 
         const canvas =
             api.getCanvas();
 
-
         const time =
-            performance.now() *
-            0.001;
-
+            activeStorm.visualTime ||
+            0;
 
         ctx.save();
 
-
         /*
-            Heel lichte witte waas,
-            zodat spel zichtbaar blijft.
+            Koude blauwe waas.
+
+            Duidelijk zichtbaar maar
+            transparant genoeg om te spelen.
         */
 
         ctx.fillStyle =
-            "rgba(230,248,255,0.055)";
-
+            "rgba(215,238,248,0.16)";
 
         ctx.fillRect(
             0,
@@ -283,107 +267,307 @@ const snowstorm = {
             canvas.height
         );
 
+        /*
+            Blauwe storm-vignette.
+        */
+
+        const vignette =
+            ctx.createRadialGradient(
+                canvas.width / 2,
+                canvas.height / 2,
+
+                Math.min(
+                    canvas.width,
+                    canvas.height
+                ) * 0.18,
+
+                canvas.width / 2,
+                canvas.height / 2,
+
+                Math.max(
+                    canvas.width,
+                    canvas.height
+                ) * 0.72
+            );
+
+        vignette.addColorStop(
+            0,
+            "rgba(255,255,255,0)"
+        );
+
+        vignette.addColorStop(
+            0.70,
+            "rgba(190,225,240,0.08)"
+        );
+
+        vignette.addColorStop(
+            1,
+            "rgba(145,198,220,0.26)"
+        );
+
+        ctx.fillStyle =
+            vignette;
+
+        ctx.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        /*
+            Sneeuwstrepen.
+
+            72 particles:
+            duidelijk maar niet extreem
+            zwaar.
+        */
 
         ctx.lineCap =
             "round";
 
-
         for (
             let i = 0;
-            i < 75;
+            i < 72;
             i++
         ) {
-
             const seed =
-                i * 97.731;
-
+                i * 97.123;
 
             const x =
                 (
-                    seed * 41 +
-                    time * 430
+                    seed * 29 +
+                    time * 500
                 ) %
                 (
                     canvas.width +
-                    180
+                    320
                 ) -
-                90;
-
+                160;
 
             const y =
                 (
                     seed * 17 +
-                    time * 240
+                    time * 270
                 ) %
                 (
                     canvas.height +
-                    100
+                    180
                 ) -
-                50;
-
+                90;
 
             const length =
-                16 +
-                (
-                    i % 7
-                ) *
-                3;
-
+                22 +
+                (i % 7) *
+                5;
 
             ctx.beginPath();
-
 
             ctx.moveTo(
                 x,
                 y
             );
 
-
             ctx.lineTo(
                 x + length,
-                y + length * 0.35
+                y +
+                    length *
+                    0.33
             );
-
 
             ctx.lineWidth =
                 1.5 +
-                (
-                    i % 3
-                );
-
+                (i % 3) *
+                0.8;
 
             ctx.strokeStyle =
                 `rgba(255,255,255,${
-                    0.10 +
-                    (
-                        i % 4
-                    ) *
-                    0.025
+                    0.18 +
+                    (i % 4) *
+                    0.045
                 })`;
-
 
             ctx.stroke();
         }
 
+        /*
+            Grotere sneeuwdeeltjes.
+        */
+
+        for (
+            let i = 0;
+            i < 28;
+            i++
+        ) {
+            const seed =
+                i * 123.77;
+
+            const x =
+                (
+                    seed * 41 +
+                    time * 175
+                ) %
+                canvas.width;
+
+            const y =
+                (
+                    seed * 23 +
+                    time * 125
+                ) %
+                canvas.height;
+
+            const radius =
+                1.8 +
+                (i % 3) *
+                0.9;
+
+            ctx.beginPath();
+
+            ctx.arc(
+                x,
+                y,
+                radius,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fillStyle =
+                "rgba(255,255,255,0.58)";
+
+            ctx.fill();
+        }
+
+        /*
+            IJsrand om heel scherm.
+        */
+
+        const borderAlpha =
+            0.18 +
+            Math.sin(
+                time * 2
+            ) *
+            0.03;
+
+        ctx.strokeStyle =
+            `rgba(210,245,255,${
+                borderAlpha
+            })`;
+
+        ctx.lineWidth =
+            16;
+
+        ctx.strokeRect(
+            8,
+            8,
+            canvas.width - 16,
+            canvas.height - 16
+        );
+
+        ctx.restore();
+    },
+
+
+    /*
+        Duidelijke tekst bovenin.
+    */
+
+    drawHud(
+        ctx,
+        api
+    ) {
+        if (
+            !effects.active ||
+            !activeStorm
+        ) {
+            return;
+        }
+
+        const canvas =
+            api.getCanvas();
+
+        const remaining =
+            Math.max(
+                0,
+                Math.ceil(
+                    activeStorm
+                        .stormRemaining
+                )
+            );
+
+        ctx.save();
+
+        ctx.textAlign =
+            "center";
+
+        ctx.textBaseline =
+            "middle";
+
+        ctx.font =
+            "bold 29px Arial";
+
+        ctx.lineWidth =
+            7;
+
+        ctx.strokeStyle =
+            "rgba(20,45,60,0.90)";
+
+        ctx.strokeText(
+            `❄ SNOWSTORM ${remaining}s ❄`,
+            canvas.width / 2,
+            86
+        );
+
+        ctx.fillStyle =
+            "#ffffff";
+
+        ctx.fillText(
+            `❄ SNOWSTORM ${remaining}s ❄`,
+            canvas.width / 2,
+            86
+        );
+
+        ctx.font =
+            "bold 15px Arial";
+
+        ctx.lineWidth =
+            4;
+
+        ctx.strokeStyle =
+            "rgba(20,45,60,0.82)";
+
+        const message =
+            "Enemies: 1.5× sneller  •  50% damage  •  +1 HP per 2 sec";
+
+        ctx.strokeText(
+            message,
+            canvas.width / 2,
+            116
+        );
+
+        ctx.fillStyle =
+            "rgba(245,253,255,0.98)";
+
+        ctx.fillText(
+            message,
+            canvas.width / 2,
+            116
+        );
 
         ctx.restore();
     },
 
 
     reset() {
-
         stopStorm();
     },
 
 
     onPlayerDeath() {
-
         stopStorm();
     },
 
 
     onLevelWin() {
-
         stopStorm();
     }
 };

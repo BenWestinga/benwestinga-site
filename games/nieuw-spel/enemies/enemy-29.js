@@ -35,10 +35,10 @@ const snowWorm = {
     */
 
     segmentCount:
-        13,
+        18,
 
     partHp:
-        4,
+        12,
 
     headSize:
         3,

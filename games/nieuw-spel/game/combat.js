@@ -1042,17 +1042,17 @@
                     )
                 ) {
 
-                    bullets.splice(
-                        i,
-                        1
-                    );
+                    /*
+                        Enemy is beschermd door
+                        SnowProtector.
 
+                        Geen damage.
+                        Geen pierce verliezen.
+                        Bullet blijft bestaan
+                        en vliegt door de enemy heen.
+                    */
 
-                    bulletRemoved =
-                        true;
-
-
-                    break;
+                    continue;
                 }
 
 

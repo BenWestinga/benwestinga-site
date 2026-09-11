@@ -1,735 +1,397 @@
-const worms =
-    new Map();
+const snowHealer = {
 
+    id: "snow-healer",
 
-let nextWormId =
-    1;
-
-
-function clearWorms() {
-
-    worms.clear();
-
-    nextWormId =
-        1;
-}
-
-
-const snowWorm = {
-
-    id: "snow-worm",
-
-    name: "Snow Worm",
+    name: "Snow Healer",
 
     behavior:
-        "snow-worm",
+        "snow-healer",
 
-    spawnSize: 3,
+    hp: 15,
 
-    speed:
-        "medium",
+    size: 4,
+
+    speed: "slow",
+
+    tracking: 0.7,
+
+    image: "snow.png",
 
     /*
-        SandWorm = 4.
-        SnowWorm = 4 + 9 = 13.
+        Heal gebied.
     */
 
-    segmentCount:
-        13,
+    healRadius: 230,
 
-    partHp:
-        4,
+    healAmount: 1,
 
-    headSize:
-        3,
+    healInterval: 1,
 
-    segmentSize:
-        2.3,
+    /*
+        Zelfde beweging
+        als SnowProtector.
+    */
 
-    headColor:
-        "#e7f9ff",
+    followDuration: 5,
 
-    segmentColor:
-        "#d4f1fa",
-
-    image:
-        "snow.png",
-
-    bodyOverlap:
-        4,
-
-    chaseDuration:
-        6,
-
-    chaseTracking:
-        0.4,
-
-    wanderDuration:
-        2,
-
-    turnSpeed:
-        0.75,
-
-
-    reset() {
-
-        clearWorms();
-    },
+    straightDuration: 10,
 
 
     modifyDamage(
         enemy,
         damage
     ) {
-
-        return (
+        if (
             window.IceWorldEffects
                 ?.active
-        )
-            ? damage * 0.5
-            : damage;
+        ) {
+            return damage * 0.5;
+        }
+
+        return damage;
     },
 
 
-    spawn({
-        definition,
-        position,
+    onSpawn(
+        enemy,
         api
-    }) {
-
-        const wormId =
-            nextWormId++;
-
-
-        const baseSpeed =
+    ) {
+        enemy.baseHealerSpeed =
             api.getEnemySpeed(
-                definition.speed
+                this.speed
             );
 
+        enemy.movementTimer =
+            0;
+
+        enemy.healTimer =
+            this.healInterval;
+
+        enemy.healPulse =
+            0;
+
+        enemy.healSpin =
+            Math.random() *
+            Math.PI *
+            2;
+
+        enemy.visualTime =
+            0;
 
         const multiplier =
-
             window.IceWorldEffects
                 ?.active
-
                 ? 1.5
                 : 1;
 
-
-        const speed =
-            baseSpeed *
+        enemy.speed =
+            enemy.baseHealerSpeed *
             multiplier;
 
-
-        const headRadius =
-            api.getEnemyRadius(
-                definition.headSize
-            );
-
-
-        const segmentRadius =
-            api.getEnemyRadius(
-                definition.segmentSize
-            );
-
-
-        const player =
-            api.getPlayer();
-
-
-        const angle =
-            Math.atan2(
-
-                player.y -
-                    position.y,
-
-                player.x -
-                    position.x
-            );
-
-
-        const worm = {
-
-            id:
-                wormId,
-
-            parts:
-                [],
-
-            baseSpeed,
-
-            speed,
-
-            angle,
-
-            modeTime:
-                0,
-
-            wanderDirection:
-
-                Math.random() <
-                0.5
-
-                    ? -1
-                    : 1
-        };
-
-
-        const totalParts =
-            1 +
-            definition.segmentCount;
-
-
-        for (
-            let i = 0;
-            i < totalParts;
-            i++
-        ) {
-
-            const isHead =
-                i === 0;
-
-
-            const radius =
-                isHead
-
-                    ? headRadius
-                    : segmentRadius;
-
-
-            const spacing =
-                headRadius +
-                segmentRadius -
-                definition.bodyOverlap;
-
-
-            const part =
-                api.createEntity(
-
-                    definition,
-
-                    {
-                        x:
-                            position.x -
-                            Math.cos(
-                                angle
-                            ) *
-                            spacing *
-                            i,
-
-                        y:
-                            position.y -
-                            Math.sin(
-                                angle
-                            ) *
-                            spacing *
-                            i
-                    },
-
-                    {
-                        hp:
-                            definition
-                                .partHp,
-
-                        maxHp:
-                            definition
-                                .partHp,
-
-                        radius,
-
-                        speed,
-
-                        tracking:
-                            definition
-                                .chaseTracking,
-
-                        color:
-                            isHead
-
-                                ? definition
-                                    .headColor
-
-                                : definition
-                                    .segmentColor,
-
-                        isWormPart:
-                            true,
-
-                        isWormHead:
-                            isHead,
-
-                        wormId,
-
-                        headRadius,
-
-                        segmentRadius,
-
-                        headColor:
-                            definition
-                                .headColor,
-
-                        segmentColor:
-                            definition
-                                .segmentColor,
-
-                        vx:
-                            Math.cos(
-                                angle
-                            ) *
-                            speed,
-
-                        vy:
-                            Math.sin(
-                                angle
-                            ) *
-                            speed
-                    }
-                );
-
-
-            worm.parts.push(
-                part
-            );
-        }
-
-
-        worms.set(
-            wormId,
-            worm
+        api.aimVelocityAtPlayer(
+            enemy
         );
-
-
-        return worm.parts;
     },
 
 
-    beforeUpdate(
+    update(
+        enemy,
         dt,
         api
     ) {
-
-        for (
-            const worm
-            of worms.values()
-        ) {
-
-            if (
-                worm.parts.length ===
-                0
-            ) {
-
-                continue;
-            }
-
-
-            const multiplier =
-
-                window.IceWorldEffects
-                    ?.active
-
-                    ? 1.5
-                    : 1;
-
-
-            worm.speed =
-                worm.baseSpeed *
-                multiplier;
-
-
-            const head =
-                worm.parts[0];
-
-
-            head.isWormHead =
-                true;
-
-
-            const cycleLength =
-                this.chaseDuration +
-                this.wanderDuration;
-
-
-            const previousMode =
-
-                worm.modeTime <
-                this.chaseDuration
-
-                    ? "chase"
-                    : "wander";
-
-
-            worm.modeTime +=
-                dt;
-
-
-            if (
-                worm.modeTime >=
-                cycleLength
-            ) {
-
-                worm.modeTime %=
-                    cycleLength;
-            }
-
-
-            const mode =
-
-                worm.modeTime <
-                this.chaseDuration
-
-                    ? "chase"
-                    : "wander";
-
-
-            if (
-                previousMode ===
-                    "chase" &&
-
-                mode ===
-                    "wander"
-            ) {
-
-                worm.wanderDirection =
-
-                    Math.random() <
-                    0.5
-
-                        ? -1
-                        : 1;
-
-
-                worm.angle =
-                    Math.atan2(
-                        head.vy,
-                        head.vx
-                    );
-            }
-
-
-            if (
-                mode ===
-                "chase"
-            ) {
-
-                const player =
-                    api.getPlayer();
-
-
-                const dx =
-                    player.x -
-                    head.x;
-
-
-                const dy =
-                    player.y -
-                    head.y;
-
-
-                const distance =
-                    Math.hypot(
-                        dx,
-                        dy
-                    ) || 1;
-
-
-                const desiredVx =
-                    dx /
-                    distance *
-                    worm.speed;
-
-
-                const desiredVy =
-                    dy /
-                    distance *
-                    worm.speed;
-
-
-                const steering =
-                    1 -
-                    Math.exp(
-                        -this
-                            .chaseTracking *
-                        dt
-                    );
-
-
-                head.vx +=
-                    (
-                        desiredVx -
-                        head.vx
-                    ) *
-                    steering;
-
-
-                head.vy +=
-                    (
-                        desiredVy -
-                        head.vy
-                    ) *
-                    steering;
-
-
-                worm.angle =
-                    Math.atan2(
-                        head.vy,
-                        head.vx
-                    );
-
-
-            } else {
-
-                worm.angle +=
-
-                    this.turnSpeed *
-                    worm
-                        .wanderDirection *
-                    dt;
-
-
-                head.vx =
-                    Math.cos(
-                        worm.angle
-                    ) *
-                    worm.speed;
-
-
-                head.vy =
-                    Math.sin(
-                        worm.angle
-                    ) *
-                    worm.speed;
-            }
-
-
-            head.x +=
-                head.vx *
-                dt;
-
-
-            head.y +=
-                head.vy *
-                dt;
-
-
-            head.speed =
-                worm.speed;
-
-
-            if (
-                !head.enteredArena &&
-                api.isInsideArena(
-                    head
-                )
-            ) {
-
-                head.enteredArena =
-                    true;
-            }
-
-
-            if (
-                head.enteredArena
-            ) {
-
-                api.keepInsideArena(
-                    head
-                );
-
-
-                worm.angle =
-                    Math.atan2(
-                        head.vy,
-                        head.vx
-                    );
-            }
-
-
-            /*
-                Alle 13 segmenten volgen
-                exact zoals bij SandWorm.
-            */
-
-            for (
-                let i = 1;
-                i <
-                    worm.parts.length;
-                i++
-            ) {
-
-                const previous =
-                    worm.parts[
-                        i - 1
-                    ];
-
-
-                const part =
-                    worm.parts[i];
-
-
-                part.isWormHead =
-                    false;
-
-
-                part.radius =
-                    part.segmentRadius;
-
-
-                part.color =
-                    part.segmentColor;
-
-
-                part.speed =
-                    worm.speed;
-
-
-                const dx =
-                    part.x -
-                    previous.x;
-
-
-                const dy =
-                    part.y -
-                    previous.y;
-
-
-                const distance =
-                    Math.hypot(
-                        dx,
-                        dy
-                    ) || 1;
-
-
-                const wantedDistance =
-                    Math.max(
-                        2,
-
-                        previous.radius +
-                        part.radius -
-                        this.bodyOverlap
-                    );
-
-
-                part.x =
-                    previous.x +
-                    dx /
-                    distance *
-                    wantedDistance;
-
-
-                part.y =
-                    previous.y +
-                    dy /
-                    distance *
-                    wantedDistance;
-
-
-                part.vx =
-                    head.vx;
-
-
-                part.vy =
-                    head.vy;
-            }
-        }
-    },
-
-
-    update() {
+        const multiplier =
+            window.IceWorldEffects
+                ?.active
+                ? 1.5
+                : 1;
+
+        enemy.speed =
+            enemy.baseHealerSpeed *
+            multiplier;
 
         /*
-            Hele worm wordt in
-            beforeUpdate bestuurd.
+            =================================
+            MOVEMENT
+            =================================
         */
-    },
 
+        const cycle =
+            this.followDuration +
+            this.straightDuration;
 
-    onDeath(
-        enemy
-    ) {
+        const previousMode =
+            enemy.movementTimer <
+            this.followDuration
+                ? "follow"
+                : "straight";
 
-        const worm =
-            worms.get(
-                enemy.wormId
-            );
+        enemy.movementTimer +=
+            dt;
 
-
-        if (!worm) {
-
-            return;
+        if (
+            enemy.movementTimer >=
+            cycle
+        ) {
+            enemy.movementTimer %=
+                cycle;
         }
 
+        const mode =
+            enemy.movementTimer <
+            this.followDuration
+                ? "follow"
+                : "straight";
 
-        const index =
-            worm.parts.indexOf(
+        if (
+            mode !== previousMode &&
+            mode === "straight"
+        ) {
+            api.aimVelocityAtPlayer(
                 enemy
             );
-
-
-        if (
-            index === -1
-        ) {
-
-            return;
         }
 
-
-        worm.parts.splice(
-            index,
-            1
-        );
-
-
         if (
-            worm.parts.length ===
-            0
+            mode === "follow"
         ) {
-
-            worms.delete(
-                enemy.wormId
+            api.moveTowardPlayer(
+                enemy,
+                dt,
+                this.tracking
             );
-
-            return;
         }
 
+        else {
+            const length =
+                Math.hypot(
+                    enemy.vx,
+                    enemy.vy
+                ) || 1;
+
+            enemy.vx =
+                enemy.vx /
+                length *
+                enemy.speed;
+
+            enemy.vy =
+                enemy.vy /
+                length *
+                enemy.speed;
+
+            api.moveStraight(
+                enemy,
+                dt
+            );
+        }
 
         /*
-            Hoofd dood:
-            volgende segment wordt hoofd.
+            Arena.
         */
 
         if (
-            index === 0
+            !enemy.enteredArena &&
+            api.isInsideArena(
+                enemy
+            )
         ) {
-
-            const newHead =
-                worm.parts[0];
-
-
-            newHead.isWormHead =
+            enemy.enteredArena =
                 true;
-
-
-            newHead.radius =
-                newHead.headRadius;
-
-
-            newHead.color =
-                newHead.headColor;
-
-
-            newHead.vx =
-                Math.cos(
-                    worm.angle
-                ) *
-                worm.speed;
-
-
-            newHead.vy =
-                Math.sin(
-                    worm.angle
-                ) *
-                worm.speed;
         }
+
+        if (
+            enemy.enteredArena
+        ) {
+            api.keepInsideArena(
+                enemy,
+                14,
+                true
+            );
+        }
+
+        /*
+            =================================
+            HEAL
+            =================================
+        */
+
+        enemy.healTimer -=
+            dt;
+
+        enemy.healSpin +=
+            dt * 0.78;
+
+        enemy.visualTime +=
+            dt;
+
+        if (
+            enemy.healTimer <= 0
+        ) {
+            enemy.healTimer +=
+                this.healInterval;
+
+            let healedSomething =
+                false;
+
+            for (
+                const target
+                of api.getEnemies()
+            ) {
+                if (
+                    !target ||
+                    target ===
+                        enemy ||
+                    target.hp <= 0 ||
+                    target.definition
+                        ?.id ===
+                        "snowstorm"
+                ) {
+                    continue;
+                }
+
+                const distance =
+                    Math.hypot(
+                        target.x -
+                            enemy.x,
+
+                        target.y -
+                            enemy.y
+                    );
+
+                if (
+                    distance >
+                    this.healRadius +
+                        target.radius
+                ) {
+                    continue;
+                }
+
+                if (
+                    target.hp <
+                    target.maxHp
+                ) {
+                    target.hp =
+                        Math.min(
+                            target.maxHp,
+
+                            target.hp +
+                            this.healAmount
+                        );
+
+                    healedSomething =
+                        true;
+                }
+            }
+
+            /*
+                Alleen pulse als
+                echt iemand geheald werd.
+            */
+
+            if (
+                healedSomething
+            ) {
+                enemy.healPulse =
+                    0.65;
+            }
+        }
+
+        if (
+            enemy.healPulse > 0
+        ) {
+            enemy.healPulse -=
+                dt;
+        }
+    },
+
+
+    /*
+        ======================================
+        PLUS ICON
+        ======================================
+    */
+
+    drawPlus(
+        ctx,
+        x,
+        y,
+        size,
+        alpha = 1
+    ) {
+        ctx.save();
+
+        ctx.fillStyle =
+            `rgba(225,255,240,${
+                0.94 * alpha
+            })`;
+
+        /*
+            Vertical.
+        */
+
+        ctx.fillRect(
+            x -
+                size * 0.14,
+
+            y -
+                size * 0.50,
+
+            size * 0.28,
+
+            size
+        );
+
+        /*
+            Horizontal.
+        */
+
+        ctx.fillRect(
+            x -
+                size * 0.50,
+
+            y -
+                size * 0.14,
+
+            size,
+
+            size * 0.28
+        );
+
+        ctx.strokeStyle =
+            `rgba(75,195,145,${
+                0.92 * alpha
+            })`;
+
+        ctx.lineWidth =
+            Math.max(
+                1.5,
+                size * 0.07
+            );
+
+        ctx.strokeRect(
+            x -
+                size * 0.14,
+
+            y -
+                size * 0.50,
+
+            size * 0.28,
+
+            size
+        );
+
+        ctx.strokeRect(
+            x -
+                size * 0.50,
+
+            y -
+                size * 0.14,
+
+            size,
+
+            size * 0.28
+        );
+
+        ctx.restore();
     },
 
 
@@ -738,102 +400,419 @@ const snowWorm = {
         ctx,
         api
     ) {
-
-        const image =
-            api.getAssetImage(
-                this.image
-            );
-
-
         const r =
             enemy.radius;
 
+        const pulse =
+            1 +
+            Math.sin(
+                enemy.visualTime *
+                2.4
+            ) *
+            0.025;
+
+        const auraRadius =
+            this.healRadius *
+            pulse;
+
+        /*
+            ==================================
+            HEAL AURA
+            ==================================
+        */
 
         ctx.save();
 
+        const auraGradient =
+            ctx.createRadialGradient(
+                enemy.x,
+                enemy.y,
+                r,
+
+                enemy.x,
+                enemy.y,
+                auraRadius
+            );
+
+        auraGradient.addColorStop(
+            0,
+            "rgba(185,255,225,0.08)"
+        );
+
+        auraGradient.addColorStop(
+            0.7,
+            "rgba(175,245,215,0.05)"
+        );
+
+        auraGradient.addColorStop(
+            1,
+            "rgba(205,255,235,0.13)"
+        );
 
         ctx.beginPath();
 
         ctx.arc(
             enemy.x,
             enemy.y,
-            r,
+            auraRadius,
             0,
             Math.PI * 2
         );
 
-
         ctx.fillStyle =
-            enemy.isWormHead
-
-                ? this.headColor
-                : this.segmentColor;
-
+            auraGradient;
 
         ctx.fill();
 
+        ctx.strokeStyle =
+            "rgba(205,255,230,0.42)";
+
+        ctx.lineWidth =
+            3;
+
+        ctx.stroke();
+
+        /*
+            ==================================
+            PLUS ICONS RONDOM AURA
+            ==================================
+
+            8 in plaats van heel veel:
+            duidelijk maar niet laggy.
+        */
+
+        const plusCount =
+            8;
+
+        for (
+            let i = 0;
+            i < plusCount;
+            i++
+        ) {
+            const angle =
+                enemy.healSpin +
+                i /
+                plusCount *
+                Math.PI *
+                2;
+
+            const x =
+                enemy.x +
+                Math.cos(
+                    angle
+                ) *
+                (
+                    auraRadius -
+                    10
+                );
+
+            const y =
+                enemy.y +
+                Math.sin(
+                    angle
+                ) *
+                (
+                    auraRadius -
+                    10
+                );
+
+            const size =
+                14 +
+                Math.sin(
+                    enemy.visualTime *
+                    2 +
+                    i
+                ) *
+                1.7;
+
+            this.drawPlus(
+                ctx,
+                x,
+                y,
+                size,
+                0.95
+            );
+        }
+
+        ctx.restore();
+
+        /*
+            ==================================
+            BODY
+            ==================================
+        */
+
+        api.drawDefaultEnemy(
+            enemy,
+
+            {
+                face: false,
+
+                color:
+                    "#eefcf8",
+
+                strokeStyle:
+                    "#79cbb0",
+
+                lineWidth:
+                    4
+            }
+        );
+
+        const image =
+            api.getAssetImage(
+                this.image
+            );
 
         if (
             image &&
             image.complete &&
             image.naturalWidth > 0
         ) {
-
             ctx.save();
+
+            ctx.beginPath();
+
+            ctx.arc(
+                enemy.x,
+                enemy.y,
+                r * 0.87,
+                0,
+                Math.PI * 2
+            );
 
             ctx.clip();
 
             ctx.globalAlpha =
-                0.78;
-
+                0.43;
 
             ctx.drawImage(
                 image,
-
-                enemy.x -
-                    r,
-
-                enemy.y -
-                    r,
-
+                enemy.x - r,
+                enemy.y - r,
                 r * 2,
                 r * 2
             );
 
-
             ctx.restore();
         }
 
+        ctx.save();
+
+        /*
+            ==================================
+            HEALER CAP
+            ==================================
+        */
+
+        ctx.beginPath();
+
+        ctx.arc(
+            enemy.x,
+            enemy.y -
+                r * 0.47,
+
+            r * 0.40,
+
+            Math.PI,
+            Math.PI * 2
+        );
+
+        ctx.lineTo(
+            enemy.x +
+                r * 0.42,
+
+            enemy.y -
+                r * 0.40
+        );
+
+        ctx.lineTo(
+            enemy.x -
+                r * 0.42,
+
+            enemy.y -
+                r * 0.40
+        );
+
+        ctx.closePath();
+
+        ctx.fillStyle =
+            "#f2fffb";
+
+        ctx.fill();
 
         ctx.strokeStyle =
-            "#9ed7e8";
-
+            "#83cdb7";
 
         ctx.lineWidth =
-            2;
-
+            3;
 
         ctx.stroke();
 
+        /*
+            Plus op muts.
+        */
 
-        ctx.restore();
+        this.drawPlus(
+            ctx,
 
+            enemy.x,
+
+            enemy.y -
+                r * 0.58,
+
+            r * 0.28,
+
+            1
+        );
 
         /*
-            Net als SandWorm alleen
-            hoofd met boos gezicht.
+            ==================================
+            HEALER COAT
+            ==================================
+        */
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            enemy.x -
+                r * 0.55,
+
+            enemy.y +
+                r * 0.06
+        );
+
+        ctx.lineTo(
+            enemy.x -
+                r * 0.45,
+
+            enemy.y +
+                r * 0.78
+        );
+
+        ctx.lineTo(
+            enemy.x,
+
+            enemy.y +
+                r * 0.92
+        );
+
+        ctx.lineTo(
+            enemy.x +
+                r * 0.45,
+
+            enemy.y +
+                r * 0.78
+        );
+
+        ctx.lineTo(
+            enemy.x +
+                r * 0.55,
+
+            enemy.y +
+                r * 0.06
+        );
+
+        ctx.closePath();
+
+        const coatGradient =
+            ctx.createLinearGradient(
+                enemy.x,
+                enemy.y,
+
+                enemy.x,
+                enemy.y + r
+            );
+
+        coatGradient.addColorStop(
+            0,
+            "#f4fff9"
+        );
+
+        coatGradient.addColorStop(
+            1,
+            "#c9f1e1"
+        );
+
+        ctx.fillStyle =
+            coatGradient;
+
+        ctx.fill();
+
+        ctx.strokeStyle =
+            "#73bea4";
+
+        ctx.lineWidth =
+            3;
+
+        ctx.stroke();
+
+        /*
+            Grote heal + op pak.
+        */
+
+        this.drawPlus(
+            ctx,
+
+            enemy.x,
+
+            enemy.y +
+                r * 0.40,
+
+            r * 0.56,
+
+            1
+        );
+
+        /*
+            ==================================
+            HEAL ANIMATION
+            ==================================
         */
 
         if (
-            enemy.isWormHead
+            enemy.healPulse > 0
         ) {
+            const progress =
+                1 -
+                enemy.healPulse /
+                0.65;
 
-            api.drawEnemyFace(
-                enemy
+            ctx.beginPath();
+
+            ctx.arc(
+                enemy.x,
+                enemy.y,
+
+                r *
+                (
+                    1 +
+                    progress *
+                    1.9
+                ),
+
+                0,
+                Math.PI * 2
             );
+
+            ctx.strokeStyle =
+                `rgba(145,255,205,${
+                    1 - progress
+                })`;
+
+            ctx.lineWidth =
+                5;
+
+            ctx.stroke();
         }
+
+        ctx.restore();
+
+        api.drawEnemyFace(
+            enemy
+        );
     }
 };
 
 
-export default snowWorm;
+export default snowHealer;
