@@ -194,7 +194,7 @@ const iceTank = {
     */
 
     iceBallCooldown:
-        30,
+        45,
 
     iceBallRadius:
         45,
