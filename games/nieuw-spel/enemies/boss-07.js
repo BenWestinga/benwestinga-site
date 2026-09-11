@@ -1128,7 +1128,7 @@ const iceTank = {
 
 
                 ctx.shadowColor =
-                    "#8eeaff";
+                    "#010404";
             }
 
 
@@ -1166,15 +1166,15 @@ const iceTank = {
             ctx.fillStyle =
                 icicle.flying
 
-                    ? "#bff5ff"
-                    : "#88d5ea";
+                    ? "#020c0e"
+                    : "#02090b";
 
 
             ctx.fill();
 
 
             ctx.strokeStyle =
-                "#effdff";
+                "#010808";
 
 
             ctx.lineWidth =
