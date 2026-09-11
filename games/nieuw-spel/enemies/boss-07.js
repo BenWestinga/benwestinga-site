@@ -177,39 +177,38 @@ const iceTank = {
         LARGE SPLITTING ICE BALL
         ==========================================
 
-        Every 30 seconds the Ice Tank fires
-        one large rotating ice ball directly
-        toward the player's current position.
+        Every 30 seconds the boss fires one
+        large rotating ice ball at the player.
 
-        Every wall hit:
-        - the current ball splits into 2
-        - both new pieces are smaller
-        - both new pieces are faster
-        - both pieces keep bouncing
-        - both can split again
+        Each wall contact counts as one bounce.
 
-        This happens for 5 split generations.
-        After generation 5 the final pieces
-        keep bouncing without splitting again.
+        Bounce 1 -> split in 2
+        Bounce 2 -> split again
+        Bounce 3 -> split again
+        Bounce 4 -> split again
+        Bounce 5 -> all pieces disappear
+
+        Every new generation is smaller and
+        faster than the previous generation.
     */
 
     iceBallCooldown:
-        45,
+        30,
 
     iceBallRadius:
-        45,
+        38,
 
     iceBallSpeed:
-        200,
+        270,
 
-    iceBallMaxSplits:
-        4,
+    iceBallMaxBounces:
+        5,
 
     iceBallSizeMultiplier:
         0.72,
 
     iceBallSpeedMultiplier:
-        1.01,
+        1.22,
 
     iceBallSplitAngle:
         0.36,
@@ -245,6 +244,42 @@ const iceTank = {
 
         iceBalls.length =
             0;
+    },
+
+
+    /*
+        ==========================================
+        BOSS DEATH = LEVEL WIN
+        ==========================================
+
+        Same completion behavior as the other
+        boss levels.
+    */
+
+    onDeath(
+        enemy,
+        api
+    ) {
+
+        icicles.length =
+            0;
+
+
+        iceBalls.length =
+            0;
+
+
+        api.completeLevelNow({
+
+            clearEnemies:
+                true,
+
+            stopSpawns:
+                true,
+
+            clearExplosions:
+                true
+        });
     },
 
 
@@ -441,7 +476,7 @@ const iceTank = {
 
             radius,
 
-            generation:
+            bounceCount:
                 0,
 
             rotation:
@@ -514,8 +549,8 @@ const iceTank = {
 
 
                 /*
-                    Vliegende ijspegel kan
-                    speler ook raken.
+                    Flying icicle can also
+                    hit the player.
                 */
 
                 if (
@@ -578,11 +613,6 @@ const iceTank = {
                 continue;
             }
 
-
-            /*
-                Stilstaande ijspegel:
-                klein lijnsegment als hazard.
-            */
 
             const half =
                 icicle.length /
@@ -653,6 +683,16 @@ const iceTank = {
             ==========================================
             LARGE ICE BALL PROJECTILES
             ==========================================
+
+            Every wall contact increases the shared
+            generation/bounce counter.
+
+            At bounce 1-4:
+            current piece disappears and becomes
+            two smaller, faster bouncing pieces.
+
+            At bounce 5:
+            current pieces disappear completely.
         */
 
         const canvas =
@@ -661,8 +701,7 @@ const iceTank = {
 
         for (
             let i =
-                iceBalls.length -
-                1;
+                iceBalls.length - 1;
 
             i >= 0;
 
@@ -731,6 +770,7 @@ const iceTank = {
 
                 hitVerticalWall =
                     true;
+
             } else if (
                 ball.x >=
                 canvas.width -
@@ -758,6 +798,7 @@ const iceTank = {
 
                 hitHorizontalWall =
                     true;
+
             } else if (
                 ball.y >=
                 canvas.height -
@@ -809,24 +850,36 @@ const iceTank = {
             }
 
 
+            const nextBounceCount =
+                (
+                    Number(
+                        ball.bounceCount
+                    ) ||
+                    0
+                ) +
+                1;
+
+
             /*
-                Final generation:
-                keep bouncing forever,
-                but do not split anymore.
+                Remove the current piece first.
+            */
+
+            iceBalls.splice(
+                i,
+                1
+            );
+
+
+            /*
+                Bounce 5: disappear.
+
+                No children are created anymore.
             */
 
             if (
-                ball.generation >=
-                this.iceBallMaxSplits
+                nextBounceCount >=
+                this.iceBallMaxBounces
             ) {
-
-                ball.vx =
-                    reflectedVx;
-
-
-                ball.vy =
-                    reflectedVy;
-
 
                 continue;
             }
@@ -858,12 +911,6 @@ const iceTank = {
                     reflectedVy,
                     reflectedVx
                 );
-
-
-            iceBalls.splice(
-                i,
-                1
-            );
 
 
             for (
@@ -925,9 +972,8 @@ const iceTank = {
                     radius:
                         newRadius,
 
-                    generation:
-                        ball.generation +
-                        1,
+                    bounceCount:
+                        nextBounceCount,
 
                     rotation:
                         ball.rotation,
@@ -1003,8 +1049,8 @@ const iceTank = {
 
 
         /*
-            ICE PEGEL:
-            iedere 3 seconden.
+            ICE ICICLE:
+            every 3 seconds.
         */
 
         enemy.icicleTimer -=
@@ -1027,13 +1073,8 @@ const iceTank = {
 
 
         /*
-            ==========================================
-            LARGE SPLITTING ICE BALL
-            ==========================================
-
-            Independent 30 second attack timer.
-            It keeps counting even when a SnowStorm
-            is active.
+            LARGE SPLITTING ICE BALL:
+            every 30 seconds.
         */
 
         enemy.iceBallTimer -=
@@ -1059,11 +1100,11 @@ const iceTank = {
         /*
             SNOWSTORM:
 
-            Timer telt alleen wanneer
-            GEEN SnowStorm actief is.
+            Timer only counts when there is
+            no active SnowStorm.
 
-            Na einde storm begint dus
-            opnieuw volledige 45 sec.
+            After a storm ends the boss needs
+            the full 45 seconds again.
         */
 
         if (
@@ -1128,7 +1169,7 @@ const iceTank = {
 
 
                 ctx.shadowColor =
-                    "#010404";
+                    "#8eeaff";
             }
 
 
@@ -1166,15 +1207,15 @@ const iceTank = {
             ctx.fillStyle =
                 icicle.flying
 
-                    ? "#020c0e"
-                    : "#02090b";
+                    ? "#bff5ff"
+                    : "#88d5ea";
 
 
             ctx.fill();
 
 
             ctx.strokeStyle =
-                "#010808";
+                "#effdff";
 
 
             ctx.lineWidth =
@@ -1303,13 +1344,13 @@ const iceTank = {
             ctx.stroke();
 
 
-            /*
-                Dark ice cracks.
-            */
-
             ctx.shadowBlur =
                 0;
 
+
+            /*
+                Ice cracks.
+            */
 
             ctx.strokeStyle =
                 "rgba(45,105,130,0.55)";
@@ -1370,11 +1411,7 @@ const iceTank = {
 
 
             /*
-                BLACK ROTATING CROSS.
-
-                Because the entire canvas context
-                is rotated above, the cross visibly
-                rotates together with the ice ball.
+                BLACK ROTATING CROSS
             */
 
             ctx.strokeStyle =
@@ -1719,8 +1756,8 @@ const iceTank = {
     /* =====================================================
        BOSS HUD
 
-       Same layout as Boss 6 / SteenBen.
-       Only the displayed name is different.
+       Same layout as SteenBen / Boss 6.
+       Only the displayed boss name is different.
        ===================================================== */
 
     drawHud(
@@ -1816,10 +1853,6 @@ const iceTank = {
             5;
 
 
-        /*
-            Name outline.
-        */
-
         ctx.strokeStyle =
             "rgba(0,0,0,0.80)";
 
@@ -1836,10 +1869,6 @@ const iceTank = {
         );
 
 
-        /*
-            Name.
-        */
-
         ctx.fillStyle =
             "#dddddd";
 
@@ -1855,10 +1884,6 @@ const iceTank = {
                 21
         );
 
-
-        /*
-            HP background.
-        */
 
         ctx.fillStyle =
             "rgba(0,0,0,0.78)";
@@ -1880,10 +1905,6 @@ const iceTank = {
         );
 
 
-        /*
-            HP.
-        */
-
         ctx.fillStyle =
             "#777777";
 
@@ -1900,10 +1921,6 @@ const iceTank = {
             height
         );
 
-
-        /*
-            Border.
-        */
 
         ctx.strokeStyle =
             "#ffffff";
@@ -1924,10 +1941,6 @@ const iceTank = {
             height
         );
 
-
-        /*
-            HP number.
-        */
 
         ctx.font =
             "bold 14px Arial";
