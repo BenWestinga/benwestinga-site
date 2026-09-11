@@ -1,31 +1,80 @@
-const snowProtector = {
+const worms =
+    new Map();
 
-    id: "snow-protector",
 
-    name: "Snow Protector",
+let nextWormId =
+    1;
+
+
+function clearWorms() {
+
+    worms.clear();
+
+    nextWormId =
+        1;
+}
+
+
+const snowWorm = {
+
+    id: "snow-worm",
+
+    name: "Snow Worm",
 
     behavior:
-        "protection-aura",
+        "snow-worm",
 
-    hp: 28,
+    spawnSize: 3,
 
-    size: 4,
+    speed:
+        "medium",
 
-    speed: "slow",
+    /*
+        SandWorm = 4.
+        SnowWorm = 4 + 9 = 13.
+    */
 
-    tracking: 0.7,
+    segmentCount:
+        13,
+
+    partHp:
+        4,
+
+    headSize:
+        3,
+
+    segmentSize:
+        2.3,
+
+    headColor:
+        "#e7f9ff",
+
+    segmentColor:
+        "#d4f1fa",
 
     image:
         "snow.png",
 
-    auraRadius:
-        230,
+    bodyOverlap:
+        4,
 
-    followDuration:
-        5,
+    chaseDuration:
+        6,
 
-    straightDuration:
-        10,
+    chaseTracking:
+        0.4,
+
+    wanderDuration:
+        2,
+
+    turnSpeed:
+        0.75,
+
+
+    reset() {
+
+        clearWorms();
+    },
 
 
     modifyDamage(
@@ -42,29 +91,20 @@ const snowProtector = {
     },
 
 
-    onSpawn(
-        enemy,
+    spawn({
+        definition,
+        position,
         api
-    ) {
+    }) {
 
-        enemy.baseProtectorSpeed =
+        const wormId =
+            nextWormId++;
+
+
+        const baseSpeed =
             api.getEnemySpeed(
-                this.speed
+                definition.speed
             );
-
-
-        enemy.movementTimer =
-            0;
-
-
-        enemy.previousMode =
-            "follow";
-
-
-        enemy.auraAnimation =
-            Math.random() *
-            Math.PI *
-            2;
 
 
         const multiplier =
@@ -76,14 +116,190 @@ const snowProtector = {
                 : 1;
 
 
-        enemy.speed =
-            enemy.baseProtectorSpeed *
+        const speed =
+            baseSpeed *
             multiplier;
 
 
-        api.aimVelocityAtPlayer(
-            enemy
+        const headRadius =
+            api.getEnemyRadius(
+                definition.headSize
+            );
+
+
+        const segmentRadius =
+            api.getEnemyRadius(
+                definition.segmentSize
+            );
+
+
+        const player =
+            api.getPlayer();
+
+
+        const angle =
+            Math.atan2(
+
+                player.y -
+                    position.y,
+
+                player.x -
+                    position.x
+            );
+
+
+        const worm = {
+
+            id:
+                wormId,
+
+            parts:
+                [],
+
+            baseSpeed,
+
+            speed,
+
+            angle,
+
+            modeTime:
+                0,
+
+            wanderDirection:
+
+                Math.random() <
+                0.5
+
+                    ? -1
+                    : 1
+        };
+
+
+        const totalParts =
+            1 +
+            definition.segmentCount;
+
+
+        for (
+            let i = 0;
+            i < totalParts;
+            i++
+        ) {
+
+            const isHead =
+                i === 0;
+
+
+            const radius =
+                isHead
+
+                    ? headRadius
+                    : segmentRadius;
+
+
+            const spacing =
+                headRadius +
+                segmentRadius -
+                definition.bodyOverlap;
+
+
+            const part =
+                api.createEntity(
+
+                    definition,
+
+                    {
+                        x:
+                            position.x -
+                            Math.cos(
+                                angle
+                            ) *
+                            spacing *
+                            i,
+
+                        y:
+                            position.y -
+                            Math.sin(
+                                angle
+                            ) *
+                            spacing *
+                            i
+                    },
+
+                    {
+                        hp:
+                            definition
+                                .partHp,
+
+                        maxHp:
+                            definition
+                                .partHp,
+
+                        radius,
+
+                        speed,
+
+                        tracking:
+                            definition
+                                .chaseTracking,
+
+                        color:
+                            isHead
+
+                                ? definition
+                                    .headColor
+
+                                : definition
+                                    .segmentColor,
+
+                        isWormPart:
+                            true,
+
+                        isWormHead:
+                            isHead,
+
+                        wormId,
+
+                        headRadius,
+
+                        segmentRadius,
+
+                        headColor:
+                            definition
+                                .headColor,
+
+                        segmentColor:
+                            definition
+                                .segmentColor,
+
+                        vx:
+                            Math.cos(
+                                angle
+                            ) *
+                            speed,
+
+                        vy:
+                            Math.sin(
+                                angle
+                            ) *
+                            speed
+                    }
+                );
+
+
+            worm.parts.push(
+                part
+            );
+        }
+
+
+        worms.set(
+            wormId,
+            worm
         );
+
+
+        return worm.parts;
     },
 
 
@@ -92,296 +308,427 @@ const snowProtector = {
         api
     ) {
 
-        const enemies =
-            api.getEnemies();
-
-
-        /*
-            Eerst alle oude SnowProtector
-            references opruimen.
-        */
-
         for (
-            const target
-            of enemies
+            const worm
+            of worms.values()
         ) {
 
             if (
-                !(
-                    target
-                        ?.guardianShieldSources
-                    instanceof Set
-                )
+                worm.parts.length ===
+                0
             ) {
 
                 continue;
             }
 
 
-            for (
-                const source
-                of [
-                    ...target
-                        .guardianShieldSources
-                ]
+            const multiplier =
+
+                window.IceWorldEffects
+                    ?.active
+
+                    ? 1.5
+                    : 1;
+
+
+            worm.speed =
+                worm.baseSpeed *
+                multiplier;
+
+
+            const head =
+                worm.parts[0];
+
+
+            head.isWormHead =
+                true;
+
+
+            const cycleLength =
+                this.chaseDuration +
+                this.wanderDuration;
+
+
+            const previousMode =
+
+                worm.modeTime <
+                this.chaseDuration
+
+                    ? "chase"
+                    : "wander";
+
+
+            worm.modeTime +=
+                dt;
+
+
+            if (
+                worm.modeTime >=
+                cycleLength
             ) {
 
-                if (
-                    source
-                        ?.definition
-                        ?.id ===
-                    this.id
-                ) {
-
-                    target
-                        .guardianShieldSources
-                        .delete(
-                            source
-                        );
-                }
+                worm.modeTime %=
+                    cycleLength;
             }
-        }
 
 
-        const protectors =
-            enemies.filter(
-                enemy =>
-                    enemy &&
-                    enemy.hp > 0 &&
-                    enemy.definition
-                        ?.id ===
-                        this.id
-            );
+            const mode =
+
+                worm.modeTime <
+                this.chaseDuration
+
+                    ? "chase"
+                    : "wander";
 
 
-        for (
-            const protector
-            of protectors
-        ) {
+            if (
+                previousMode ===
+                    "chase" &&
 
-            for (
-                const target
-                of enemies
+                mode ===
+                    "wander"
             ) {
 
-                if (
-                    !target ||
-                    target ===
-                        protector ||
+                worm.wanderDirection =
 
-                    target.hp <= 0 ||
+                    Math.random() <
+                    0.5
 
-                    target.definition
-                        ?.id ===
-                        this.id ||
+                        ? -1
+                        : 1;
 
-                    target.definition
-                        ?.id ===
-                        "snowstorm"
-                ) {
 
-                    continue;
-                }
+                worm.angle =
+                    Math.atan2(
+                        head.vy,
+                        head.vx
+                    );
+            }
+
+
+            if (
+                mode ===
+                "chase"
+            ) {
+
+                const player =
+                    api.getPlayer();
+
+
+                const dx =
+                    player.x -
+                    head.x;
+
+
+                const dy =
+                    player.y -
+                    head.y;
 
 
                 const distance =
                     Math.hypot(
+                        dx,
+                        dy
+                    ) || 1;
 
-                        target.x -
-                            protector.x,
 
-                        target.y -
-                            protector.y
+                const desiredVx =
+                    dx /
+                    distance *
+                    worm.speed;
+
+
+                const desiredVy =
+                    dy /
+                    distance *
+                    worm.speed;
+
+
+                const steering =
+                    1 -
+                    Math.exp(
+                        -this
+                            .chaseTracking *
+                        dt
                     );
 
 
-                if (
-                    distance >
-                    this.auraRadius +
-                    target.radius
-                ) {
-
-                    continue;
-                }
+                head.vx +=
+                    (
+                        desiredVx -
+                        head.vx
+                    ) *
+                    steering;
 
 
-                if (
-                    !(
-                        target
-                            .guardianShieldSources
-                        instanceof Set
-                    )
-                ) {
-
-                    target.guardianShieldSources =
-                        new Set();
-                }
+                head.vy +=
+                    (
+                        desiredVy -
+                        head.vy
+                    ) *
+                    steering;
 
 
-                target
-                    .guardianShieldSources
-                    .add(
-                        protector
+                worm.angle =
+                    Math.atan2(
+                        head.vy,
+                        head.vx
                     );
+
+
+            } else {
+
+                worm.angle +=
+
+                    this.turnSpeed *
+                    worm
+                        .wanderDirection *
+                    dt;
+
+
+                head.vx =
+                    Math.cos(
+                        worm.angle
+                    ) *
+                    worm.speed;
+
+
+                head.vy =
+                    Math.sin(
+                        worm.angle
+                    ) *
+                    worm.speed;
+            }
+
+
+            head.x +=
+                head.vx *
+                dt;
+
+
+            head.y +=
+                head.vy *
+                dt;
+
+
+            head.speed =
+                worm.speed;
+
+
+            if (
+                !head.enteredArena &&
+                api.isInsideArena(
+                    head
+                )
+            ) {
+
+                head.enteredArena =
+                    true;
+            }
+
+
+            if (
+                head.enteredArena
+            ) {
+
+                api.keepInsideArena(
+                    head
+                );
+
+
+                worm.angle =
+                    Math.atan2(
+                        head.vy,
+                        head.vx
+                    );
+            }
+
+
+            /*
+                Alle 13 segmenten volgen
+                exact zoals bij SandWorm.
+            */
+
+            for (
+                let i = 1;
+                i <
+                    worm.parts.length;
+                i++
+            ) {
+
+                const previous =
+                    worm.parts[
+                        i - 1
+                    ];
+
+
+                const part =
+                    worm.parts[i];
+
+
+                part.isWormHead =
+                    false;
+
+
+                part.radius =
+                    part.segmentRadius;
+
+
+                part.color =
+                    part.segmentColor;
+
+
+                part.speed =
+                    worm.speed;
+
+
+                const dx =
+                    part.x -
+                    previous.x;
+
+
+                const dy =
+                    part.y -
+                    previous.y;
+
+
+                const distance =
+                    Math.hypot(
+                        dx,
+                        dy
+                    ) || 1;
+
+
+                const wantedDistance =
+                    Math.max(
+                        2,
+
+                        previous.radius +
+                        part.radius -
+                        this.bodyOverlap
+                    );
+
+
+                part.x =
+                    previous.x +
+                    dx /
+                    distance *
+                    wantedDistance;
+
+
+                part.y =
+                    previous.y +
+                    dy /
+                    distance *
+                    wantedDistance;
+
+
+                part.vx =
+                    head.vx;
+
+
+                part.vy =
+                    head.vy;
             }
         }
     },
 
 
-    update(
-        enemy,
-        dt,
-        api
-    ) {
+    update() {
 
-        const multiplier =
-
-            window.IceWorldEffects
-                ?.active
-
-                ? 1.5
-                : 1;
-
-
-        enemy.speed =
-            enemy.baseProtectorSpeed *
-            multiplier;
-
-
-        const cycle =
-            this.followDuration +
-            this.straightDuration;
-
-
-        const previousMode =
-
-            enemy.movementTimer <
-            this.followDuration
-
-                ? "follow"
-                : "straight";
-
-
-        enemy.movementTimer +=
-            dt;
-
-
-        if (
-            enemy.movementTimer >=
-            cycle
-        ) {
-
-            enemy.movementTimer %=
-                cycle;
-        }
-
-
-        const mode =
-
-            enemy.movementTimer <
-            this.followDuration
-
-                ? "follow"
-                : "straight";
-
-
-        if (
-            mode !==
-            previousMode &&
-            mode ===
-            "straight"
-        ) {
-
-            api.aimVelocityAtPlayer(
-                enemy
-            );
-        }
-
-
-        if (
-            mode ===
-            "follow"
-        ) {
-
-            api.moveTowardPlayer(
-                enemy,
-                dt,
-                this.tracking
-            );
-
-        } else {
-
-            const length =
-                Math.hypot(
-                    enemy.vx,
-                    enemy.vy
-                ) || 1;
-
-
-            enemy.vx =
-                enemy.vx /
-                length *
-                enemy.speed;
-
-
-            enemy.vy =
-                enemy.vy /
-                length *
-                enemy.speed;
-
-
-            api.moveStraight(
-                enemy,
-                dt
-            );
-        }
-
-
-        if (
-            !enemy.enteredArena &&
-            api.isInsideArena(
-                enemy
-            )
-        ) {
-
-            enemy.enteredArena =
-                true;
-        }
-
-
-        if (
-            enemy.enteredArena
-        ) {
-
-            api.keepInsideArena(
-                enemy,
-                14,
-                true
-            );
-        }
-
-
-        enemy.auraAnimation +=
-            dt *
-            2.4;
+        /*
+            Hele worm wordt in
+            beforeUpdate bestuurd.
+        */
     },
 
 
     onDeath(
-        enemy,
-        api
+        enemy
     ) {
 
-        for (
-            const target
-            of api.getEnemies()
+        const worm =
+            worms.get(
+                enemy.wormId
+            );
+
+
+        if (!worm) {
+
+            return;
+        }
+
+
+        const index =
+            worm.parts.indexOf(
+                enemy
+            );
+
+
+        if (
+            index === -1
         ) {
 
-            target
-                ?.guardianShieldSources
-                ?.delete?.(
-                    enemy
-                );
+            return;
+        }
+
+
+        worm.parts.splice(
+            index,
+            1
+        );
+
+
+        if (
+            worm.parts.length ===
+            0
+        ) {
+
+            worms.delete(
+                enemy.wormId
+            );
+
+            return;
+        }
+
+
+        /*
+            Hoofd dood:
+            volgende segment wordt hoofd.
+        */
+
+        if (
+            index === 0
+        ) {
+
+            const newHead =
+                worm.parts[0];
+
+
+            newHead.isWormHead =
+                true;
+
+
+            newHead.radius =
+                newHead.headRadius;
+
+
+            newHead.color =
+                newHead.headColor;
+
+
+            newHead.vx =
+                Math.cos(
+                    worm.angle
+                ) *
+                worm.speed;
+
+
+            newHead.vy =
+                Math.sin(
+                    worm.angle
+                ) *
+                worm.speed;
         }
     },
 
@@ -392,17 +739,15 @@ const snowProtector = {
         api
     ) {
 
-        const pulse =
-            1 +
-            Math.sin(
-                enemy.auraAnimation || 0
-            ) *
-            0.035;
+        const image =
+            api.getAssetImage(
+                this.image
+            );
 
 
-        /*
-            BESCHERMINGSRADIUS
-        */
+        const r =
+            enemy.radius;
+
 
         ctx.save();
 
@@ -412,57 +757,20 @@ const snowProtector = {
         ctx.arc(
             enemy.x,
             enemy.y,
-            this.auraRadius *
-                pulse,
+            r,
             0,
             Math.PI * 2
         );
 
 
         ctx.fillStyle =
-            "rgba(235,250,255,0.075)";
+            enemy.isWormHead
+
+                ? this.headColor
+                : this.segmentColor;
+
 
         ctx.fill();
-
-
-        ctx.lineWidth =
-            4;
-
-
-        ctx.strokeStyle =
-            "rgba(245,253,255,0.55)";
-
-        ctx.stroke();
-
-
-        ctx.restore();
-
-
-        /*
-            BODY
-        */
-
-        api.drawDefaultEnemy(
-            enemy,
-            {
-                face: false,
-
-                color:
-                    "#dff7ff",
-
-                strokeStyle:
-                    "#8ac9dc",
-
-                lineWidth:
-                    4
-            }
-        );
-
-
-        const image =
-            api.getAssetImage(
-                this.image
-            );
 
 
         if (
@@ -473,34 +781,23 @@ const snowProtector = {
 
             ctx.save();
 
-            ctx.beginPath();
-
-            ctx.arc(
-                enemy.x,
-                enemy.y,
-                enemy.radius * 0.88,
-                0,
-                Math.PI * 2
-            );
-
             ctx.clip();
 
-
             ctx.globalAlpha =
-                0.72;
+                0.78;
 
 
             ctx.drawImage(
                 image,
 
                 enemy.x -
-                    enemy.radius,
+                    r,
 
                 enemy.y -
-                    enemy.radius,
+                    r,
 
-                enemy.radius * 2,
-                enemy.radius * 2
+                r * 2,
+                r * 2
             );
 
 
@@ -508,41 +805,12 @@ const snowProtector = {
         }
 
 
-        /*
-            Protector armour.
-        */
-
-        const r =
-            enemy.radius;
-
-
-        ctx.save();
-
-
         ctx.strokeStyle =
-            "#eefcff";
+            "#9ed7e8";
 
 
         ctx.lineWidth =
-            Math.max(
-                4,
-                r * 0.12
-            );
-
-
-        ctx.beginPath();
-
-
-        ctx.arc(
-            enemy.x,
-            enemy.y +
-                r * 0.12,
-
-            r * 0.68,
-
-            0.2,
-            Math.PI - 0.2
-        );
+            2;
 
 
         ctx.stroke();
@@ -551,11 +819,21 @@ const snowProtector = {
         ctx.restore();
 
 
-        api.drawEnemyFace(
-            enemy
-        );
+        /*
+            Net als SandWorm alleen
+            hoofd met boos gezicht.
+        */
+
+        if (
+            enemy.isWormHead
+        ) {
+
+            api.drawEnemyFace(
+                enemy
+            );
+        }
     }
 };
 
 
-export default snowProtector;
+export default snowWorm;
