@@ -199,10 +199,10 @@ const iceTank = {
         40,
 
     iceBallSpeed:
-        230,
+        120,
 
     iceBallMaxBounces:
-        5,
+        6,
 
     iceBallSizeMultiplier:
         0.72,
@@ -1208,7 +1208,7 @@ const iceTank = {
                 icicle.flying
 
                     ? "#010a0b"
-                    : "#88d5ea";
+                    : "#040c0e";
 
 
             ctx.fill();
