@@ -45,8 +45,9 @@ export const config = {
         { enemy: "snowGuy", count: 20, start: 30, duration: 20},
         { enemy: "snowstorm", count: 1, start: 60, duration: 1},
         { enemy: "snowGuy", count: 10, start: 50, duration: 5},
+        { enemy: "iceGoon", count: 40, start: 60, duration: 30},
         { enemy: "snowball", count: 50, start: 75, duration: 25},
-        { enemy: "snowMan", count: 8, start: 100, duration: 20},
+        { enemy: "snowMan", count: 3, start: 100, duration: 20},
         { enemy: "snowGuy", count: 20, start: 120, duration: 10},
         { enemy: "snowGuy", count: 30, start: 135, duration: 15},
 
