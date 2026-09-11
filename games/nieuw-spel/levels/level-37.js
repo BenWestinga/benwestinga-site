@@ -39,7 +39,7 @@ export const config = {
 
     spawnGroups: [
 
-        { enemy: "snowWorm", count: 14, start: 5, duration: 250},
+        { enemy: "snowWorm", count: 28, start: 5, duration: 250},
         { enemy: "snowHealer", count: 6, start: 5, duration: 250},
         { enemy: "snowProtector", count: 8, start: 5, duration: 250},
         { enemy: "iceGoon", count: 300, start: 5, duration: 100}
