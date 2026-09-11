@@ -43,7 +43,7 @@ export const config = {
 
     spawnGroups: [
 
-        // ENEMIES + BOSS 7 HIER
+        { enemy: "iceTank", count: 1, start: 5, duration: 1}
 
     ]
 };
