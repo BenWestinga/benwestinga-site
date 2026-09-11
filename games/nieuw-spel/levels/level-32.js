@@ -40,9 +40,9 @@ export const config = {
     spawnGroups: [
 
         { enemy: "snowball", count: 10, start: 5, duration: 1},
-        { enemy: "snowGuy", count: 80, start: 5, duration: 20},
+        { enemy: "snowGuy", count: 70, start: 5, duration: 20},
         { enemy: "snowball", count: 20, start: 25, duration: 5},
-        { enemy: "snowGuy", count: 80, start: 30, duration: 20},
+        { enemy: "snowGuy", count: 40, start: 30, duration: 20},
         { enemy: "snowstorm", count: 1, start: 50, duration: 1},
         { enemy: "snowGuy", count: 20, start: 50, duration: 5},
         { enemy: "snowball", count: 50, start: 75, duration: 25},
