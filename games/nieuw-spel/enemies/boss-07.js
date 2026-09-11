@@ -197,10 +197,10 @@ const iceTank = {
         30,
 
     iceBallRadius:
-        38,
+        45,
 
     iceBallSpeed:
-        270,
+        200,
 
     iceBallMaxSplits:
         5,
@@ -209,7 +209,7 @@ const iceTank = {
         0.72,
 
     iceBallSpeedMultiplier:
-        1.22,
+        1.01,
 
     iceBallSplitAngle:
         0.36,
