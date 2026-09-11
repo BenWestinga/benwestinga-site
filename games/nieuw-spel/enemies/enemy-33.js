@@ -7,17 +7,27 @@ const snowball = {
     behavior:
         "rolling-snowball",
 
+    /*
+        Snowball is een OBJECT.
+
+        Dus:
+        - geen gezicht
+        - 5 HP
+        - size 6
+        - medium speed
+    */
+
     hp: 5,
 
     size: 6,
 
     speed: "medium",
 
+    color:
+        "#f4fbff",
+
     image:
         "snow.png",
-
-    color:
-        "#f5fbff",
 
 
     modifyDamage(
@@ -25,12 +35,16 @@ const snowball = {
         damage
     ) {
 
-        return (
+        if (
             window.IceWorldEffects
                 ?.active
-        )
-            ? damage * 0.5
-            : damage;
+        ) {
+
+            return damage * 0.5;
+        }
+
+
+        return damage;
     },
 
 
@@ -44,74 +58,100 @@ const snowball = {
             api.getCanvas();
 
 
-        let spawnPosition = {
-            x:
-                position.x,
+        /*
+            Wordt hij BINNEN arena
+            gespawned?
 
-            y:
-                position.y
-        };
+            Dan komt hij van SnowMan.
+        */
 
+        const spawnedInside =
 
-        const insideArena =
-
-            spawnPosition.x >= 0 &&
-            spawnPosition.x <=
+            position.x >= 0 &&
+            position.x <=
                 canvas.width &&
 
-            spawnPosition.y >= 0 &&
-            spawnPosition.y <=
+            position.y >= 0 &&
+            position.y <=
                 canvas.height;
 
 
-        /*
-            Als SnowMan hem midden in
-            de arena maakt, behouden we
-            die positie.
-
-            Normale level-spawn:
-            ALLEEN links of rechts.
-        */
-
         if (
-            !insideArena
+            spawnedInside
         ) {
 
-            const alreadyLeftOrRight =
+            return api.createEntity(
 
-                spawnPosition.x < 0 ||
-                spawnPosition.x >
-                    canvas.width;
+                definition,
+
+                {
+                    x:
+                        position.x,
+
+                    y:
+                        position.y
+                },
+
+                {
+                    spawnedBySnowMan:
+                        true
+                }
+            );
+        }
 
 
-            if (
-                !alreadyLeftOrRight
-            ) {
+        /*
+            Normale level-spawn.
 
-                const side =
-                    Math.random() <
-                    0.5
+            Snowballs mogen alleen
+            precies links of rechts
+            verschijnen.
+        */
+
+        const side =
+
+            position.x < 0
+
+                ? "left"
+
+                : position.x >
+                    canvas.width
+
+                    ? "right"
+
+                    : Math.random() <
+                        0.5
 
                         ? "left"
                         : "right";
 
 
-                spawnPosition =
-                    api.randomSpawnPosition(
-                        api.getEnemyRadius(
-                            definition.size
-                        ),
-                        {
-                            side
-                        }
-                    );
-            }
-        }
+        const spawnPosition =
+            api.randomSpawnPosition(
+
+                api.getEnemyRadius(
+                    definition.size
+                ),
+
+                {
+                    side
+                }
+            );
 
 
         return api.createEntity(
+
             definition,
-            spawnPosition
+
+            spawnPosition,
+
+            {
+                spawnedBySnowMan:
+                    false,
+
+                spawnSide:
+                    side
+            }
         );
     },
 
@@ -128,10 +168,12 @@ const snowball = {
 
 
         enemy.rollAngle =
-            0;
+            Math.random() *
+            Math.PI *
+            2;
 
 
-        const multiplier =
+        const stormMultiplier =
 
             window.IceWorldEffects
                 ?.active
@@ -142,32 +184,24 @@ const snowball = {
 
         enemy.speed =
             enemy.baseSnowballSpeed *
-            multiplier;
+            stormMultiplier;
 
 
-        const canvas =
-            api.getCanvas();
+        /*
+            ==================================
+            SNOWMAN SNOWBALL
+            ==================================
 
+            Binnen arena gespawned.
 
-        const inside =
+            Richt één keer op speler.
 
-            enemy.x >= 0 &&
-            enemy.x <=
-                canvas.width &&
-
-            enemy.y >= 0 &&
-            enemy.y <=
-                canvas.height;
-
+            Daarna blijft hij rechtdoor gaan.
+        */
 
         if (
-            inside
+            enemy.spawnedBySnowMan
         ) {
-
-            /*
-                SnowMan attack:
-                recht op huidige speler af.
-            */
 
             api.aimVelocityAtPlayer(
                 enemy
@@ -183,19 +217,35 @@ const snowball = {
 
 
         /*
-            Normale spawn:
-            exact horizontaal van links/rechts.
+            ==================================
+            NORMALE LEVEL SNOWBALL
+            ==================================
+
+            Exact horizontaal.
+
+            Links -> rechts.
+
+            Rechts -> links.
         */
 
         enemy.vy =
             0;
 
 
-        enemy.vx =
-            enemy.x < 0
+        if (
+            enemy.spawnSide ===
+                "left"
+        ) {
 
-                ? enemy.speed
-                : -enemy.speed;
+            enemy.vx =
+                enemy.speed;
+
+
+        } else {
+
+            enemy.vx =
+                -enemy.speed;
+        }
     },
 
 
@@ -205,7 +255,11 @@ const snowball = {
         api
     ) {
 
-        const multiplier =
+        /*
+            Snowstorm snelheid.
+        */
+
+        const stormMultiplier =
 
             window.IceWorldEffects
                 ?.active
@@ -216,10 +270,15 @@ const snowball = {
 
         enemy.speed =
             enemy.baseSnowballSpeed *
-            multiplier;
+            stormMultiplier;
 
 
-        const length =
+        /*
+            Zelfde richting houden,
+            maar correcte actuele speed.
+        */
+
+        const velocityLength =
             Math.hypot(
                 enemy.vx,
                 enemy.vy
@@ -228,15 +287,19 @@ const snowball = {
 
         enemy.vx =
             enemy.vx /
-            length *
+            velocityLength *
             enemy.speed;
 
 
         enemy.vy =
             enemy.vy /
-            length *
+            velocityLength *
             enemy.speed;
 
+
+        /*
+            Rechtdoor bewegen.
+        */
 
         api.moveStraight(
             enemy,
@@ -244,7 +307,15 @@ const snowball = {
         );
 
 
+        /*
+            Snowball zelf MAG draaien.
+
+            Dit is een los rollend object,
+            niet de SnowMan.
+        */
+
         enemy.rollAngle +=
+
             enemy.speed /
             Math.max(
                 10,
@@ -252,6 +323,10 @@ const snowball = {
             ) *
             dt;
 
+
+        /*
+            Binnen arena registreren.
+        */
 
         if (
             !enemy.enteredArena &&
@@ -266,11 +341,8 @@ const snowball = {
 
 
         /*
-            Volgens jouw algemene regel
-            blijft hij daarna in de map.
-
-            Hij bounced dus tegen muren
-            totdat hij kapotgeschoten wordt.
+            Snowball blijft in map
+            en bounced tegen muren.
         */
 
         if (
@@ -296,15 +368,86 @@ const snowball = {
             enemy.radius;
 
 
+        const image =
+            api.getAssetImage(
+                this.image
+            );
+
+
         ctx.save();
+
 
         ctx.translate(
             enemy.x,
             enemy.y
         );
 
+
         ctx.rotate(
             enemy.rollAngle || 0
+        );
+
+
+        /*
+            Zachte schaduw.
+        */
+
+        ctx.beginPath();
+
+        ctx.ellipse(
+            0,
+            r * 0.62,
+
+            r * 0.72,
+            r * 0.19,
+
+            0,
+            0,
+            Math.PI * 2
+        );
+
+
+        ctx.fillStyle =
+            "rgba(30,80,100,0.12)";
+
+
+        ctx.fill();
+
+
+        /*
+            Sneeuwbal gradient.
+        */
+
+        const gradient =
+            ctx.createRadialGradient(
+
+                -r * 0.30,
+                -r * 0.32,
+
+                r * 0.08,
+
+                0,
+                0,
+
+                r
+            );
+
+
+        gradient.addColorStop(
+            0,
+            "#ffffff"
+        );
+
+
+        gradient.addColorStop(
+            0.55,
+            "#f3fbfe"
+        );
+
+
+        gradient.addColorStop(
+            1,
+            "#c3e6f0"
         );
 
 
@@ -320,16 +463,15 @@ const snowball = {
 
 
         ctx.fillStyle =
-            "#f7fcff";
+            gradient;
+
 
         ctx.fill();
 
 
-        const image =
-            api.getAssetImage(
-                this.image
-            );
-
+        /*
+            snow.png subtiel erin.
+        */
 
         if (
             image &&
@@ -339,16 +481,31 @@ const snowball = {
 
             ctx.save();
 
+
+            ctx.beginPath();
+
+            ctx.arc(
+                0,
+                0,
+                r * 0.96,
+                0,
+                Math.PI * 2
+            );
+
+
             ctx.clip();
 
+
             ctx.globalAlpha =
-                0.85;
+                0.23;
 
 
             ctx.drawImage(
                 image,
+
                 -r,
                 -r,
+
                 r * 2,
                 r * 2
             );
@@ -358,17 +515,8 @@ const snowball = {
         }
 
 
-        ctx.lineWidth =
-            3;
-
-        ctx.strokeStyle =
-            "#a9ddec";
-
-        ctx.stroke();
-
-
         /*
-            Rollende lijnen.
+            Buitenrand.
         */
 
         ctx.beginPath();
@@ -376,23 +524,170 @@ const snowball = {
         ctx.arc(
             0,
             0,
-            r * 0.67,
-            -0.9,
-            0.9
+            r,
+            0,
+            Math.PI * 2
         );
 
+
         ctx.strokeStyle =
-            "#87c9df";
+            "#9fd4e3";
+
+
+        ctx.lineWidth =
+            Math.max(
+                2,
+                r * 0.055
+            );
+
 
         ctx.stroke();
+
+
+        /*
+            Groot highlight.
+        */
+
+        ctx.beginPath();
+
+        ctx.arc(
+            -r * 0.12,
+            -r * 0.10,
+
+            r * 0.65,
+
+            Math.PI * 1.12,
+            Math.PI * 1.60
+        );
+
+
+        ctx.strokeStyle =
+            "rgba(255,255,255,0.84)";
+
+
+        ctx.lineWidth =
+            Math.max(
+                3,
+                r * 0.07
+            );
+
+
+        ctx.lineCap =
+            "round";
+
+
+        ctx.stroke();
+
+
+        /*
+            Rollende sneeuwpatronen.
+
+            Omdat ctx zelf roteert,
+            zie je daadwerkelijk dat
+            de bal rolt.
+        */
+
+        ctx.beginPath();
+
+        ctx.arc(
+            0,
+            0,
+
+            r * 0.64,
+
+            -0.90,
+            0.65
+        );
+
+
+        ctx.strokeStyle =
+            "rgba(109,190,215,0.47)";
+
+
+        ctx.lineWidth =
+            Math.max(
+                2,
+                r * 0.045
+            );
+
+
+        ctx.stroke();
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            r * 0.15,
+            -r * 0.12,
+
+            r * 0.31,
+
+            1,
+            2.65
+        );
+
+
+        ctx.strokeStyle =
+            "rgba(130,205,225,0.38)";
+
+
+        ctx.lineWidth =
+            Math.max(
+                2,
+                r * 0.035
+            );
+
+
+        ctx.stroke();
+
+
+        /*
+            Paar kleine sneeuwplekjes.
+        */
+
+        ctx.fillStyle =
+            "rgba(255,255,255,0.68)";
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            r * 0.31,
+            r * 0.20,
+
+            r * 0.075,
+
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            -r * 0.37,
+            r * 0.10,
+
+            r * 0.055,
+
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
 
 
         ctx.restore();
 
 
-        api.drawEnemyFace(
-            enemy
-        );
+        /*
+            GEEN drawEnemyFace().
+
+            Snowball is een object,
+            geen levende enemy met gezicht.
+        */
     }
 };
 
