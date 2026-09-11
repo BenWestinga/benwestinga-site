@@ -193,13 +193,13 @@ const iceTank = {
     */
 
     iceBallCooldown:
-        30,
+        40,
 
     iceBallRadius:
-        38,
+        40,
 
     iceBallSpeed:
-        270,
+        230,
 
     iceBallMaxBounces:
         5,
@@ -208,7 +208,7 @@ const iceTank = {
         0.72,
 
     iceBallSpeedMultiplier:
-        1.22,
+        1.02,
 
     iceBallSplitAngle:
         0.36,
@@ -1169,7 +1169,7 @@ const iceTank = {
 
 
                 ctx.shadowColor =
-                    "#8eeaff";
+                    "#010d10";
             }
 
 
@@ -1207,7 +1207,7 @@ const iceTank = {
             ctx.fillStyle =
                 icicle.flying
 
-                    ? "#bff5ff"
+                    ? "#010a0b"
                     : "#88d5ea";
 
 
@@ -1215,7 +1215,7 @@ const iceTank = {
 
 
             ctx.strokeStyle =
-                "#effdff";
+                "#000405";
 
 
             ctx.lineWidth =
