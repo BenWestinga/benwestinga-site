@@ -203,7 +203,7 @@ const iceTank = {
         200,
 
     iceBallMaxSplits:
-        5,
+        4,
 
     iceBallSizeMultiplier:
         0.72,
