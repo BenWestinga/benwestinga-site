@@ -42,12 +42,12 @@ export const config = {
         { enemy: "snowMan", count: 5, start: 5, duration: 1},
         { enemy: "snowProtector", count: 2, start: 15, duration: 1},
         { enemy: "snowHealer", count: 2, start: 15, duration: 1},
-        { enemy: "iceGoon", count: 150, start: 50, duration: 100},
+        { enemy: "iceGoon", count: 450, start: 50, duration: 100},
         { enemy: "snowstorm", count: 1, start: 50, duration: 1},
-        { enemy: "snowHealer", count: 1, start: 100, duration: 1},
-        { enemy: "snowhealer", count: 2, start: 100, duration: 1},
+        { enemy: "snowHealer", count: 2, start: 100, duration: 1},
+        { enemy: "snowMan", count: 3, start: 100, duration: 1},
         { enemy: "snowProtector", count: 2, start: 100, duration: 1},
-        { enemy: "snowBall", count: 40, start: 120, duration: 20},
+        { enemy: "snowball", count: 40, start: 120, duration: 20},
 
     ]
 };
