@@ -97,7 +97,7 @@ const snowWarriorShield = {
         "snow-warrior-shield",
 
     hp:
-        40,
+        100,
 
     size:
         3.2,
@@ -308,7 +308,7 @@ const snowWarrior = {
     behavior:
         "shield-bomber",
 
-    hp: 30,
+    hp: 80,
 
     size: 5,
 
@@ -316,28 +316,28 @@ const snowWarrior = {
         "medium",
 
     tracking:
-        0.75,
+        1.00,
 
     image:
         "snow.png",
 
     shieldHp:
-        40,
+        100,
 
     shieldSize:
         3.2,
 
     shieldTurnSpeed:
-        0.42,
+        1.42,
 
     bombCooldown:
         6,
 
     bombFlightDuration:
-        1,
+        0.8,
 
     bombRadius:
-        72,
+        100,
 
 
     reset() {
