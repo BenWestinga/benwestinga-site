@@ -2,155 +2,96 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
 
     <title>New Game</title>
 
-    <link rel="stylesheet" href="css/login.css">
-    <link rel="stylesheet" href="css/map.css">
-    <link rel="stylesheet" href="css/level.css">
-    <link rel="stylesheet" href="css/story-ui.css">
+
+    <link
+        rel="stylesheet"
+        href="css/login.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/map.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/level.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/story-ui.css"
+    >
+
 </head>
+
 
 <body>
 
     <main>
 
-        <h1>NEW GAME</h1>
+
+        <h1>
+            NEW GAME
+        </h1>
 
 
-        <!-- ACCOUNT MENU -->
+        <!-- =========================================
+             MAIN MENU
+             ========================================= -->
 
-        <div id="account-menu">
+        <section
+            id="game-menu"
+            hidden
+        >
 
-            <button id="show-login">
-                LOG IN
-            </button>
+            <h2>
+                MAIN MENU
+            </h2>
 
-            <button id="show-register">
-                CREATE NEW ACCOUNT
-            </button>
-
-        </div>
-
-
-        <!-- LOGIN -->
-
-        <form id="login-form" hidden>
-
-            <h2>Log In</h2>
-
-            <input
-                id="login-username"
-                type="text"
-                placeholder="Username"
-                required
-            >
-
-            <input
-                id="login-password"
-                type="password"
-                placeholder="Password"
-                required
-            >
-
-            <button type="submit">
-                LOG IN
-            </button>
-
-            <button
-                type="button"
-                class="back-button"
-            >
-                BACK
-            </button>
-
-        </form>
-
-
-        <!-- CREATE ACCOUNT -->
-
-        <form id="register-form" hidden>
-
-            <h2>Create Account</h2>
-
-            <input
-                id="register-username"
-                type="text"
-                placeholder="Username"
-                minlength="5"
-                maxlength="25"
-                required
-            >
-
-            <p>
-                Username must be 5–25 characters.
-            </p>
-
-            <input
-                id="register-password"
-                type="password"
-                placeholder="Password"
-                minlength="8"
-                required
-            >
-
-            <input
-                id="register-password-confirm"
-                type="password"
-                placeholder="Confirm password"
-                minlength="8"
-                required
-            >
-
-            <button type="submit">
-                CREATE ACCOUNT
-            </button>
-
-            <button
-                type="button"
-                class="back-button"
-            >
-                BACK
-            </button>
-
-        </form>
-
-
-        <!-- MAIN MENU -->
-
-        <section id="game-menu" hidden>
-
-            <h2>MAIN MENU</h2>
 
             <p>
                 Logged in as:
                 <strong id="current-user"></strong>
             </p>
 
+
             <button id="story-button">
                 STORY MODE
             </button>
+
 
             <button id="endless-button">
                 ENDLESS MODE
             </button>
 
+
             <button id="back-to-games-button">
                 BACK TO BEN GAMES
-            </button>
-
-            <button id="logout-button">
-                LOG OUT
             </button>
 
         </section>
 
 
-        <!-- STORY MAP -->
+        <!-- =========================================
+             STORY MAP
+             ========================================= -->
 
-        <section id="story-map" hidden>
+        <section
+            id="story-map"
+            hidden
+        >
 
             <canvas
                 id="map-canvas"
@@ -182,6 +123,7 @@
                     WEAPONS
                 </button>
 
+
                 <button id="upgrades-button">
                     UPGRADES
                 </button>
@@ -206,7 +148,11 @@
                         ×
                     </button>
 
-                    <h2>WEAPONS</h2>
+
+                    <h2>
+                        WEAPONS
+                    </h2>
+
 
                     <div id="weapon-list"></div>
 
@@ -232,7 +178,11 @@
                         ×
                     </button>
 
-                    <h2>SPECIAL UPGRADES</h2>
+
+                    <h2>
+                        SPECIAL UPGRADES
+                    </h2>
+
 
                     <div id="upgrade-list"></div>
 
@@ -243,26 +193,40 @@
         </section>
 
 
-        <!-- LEVEL -->
+        <!-- =========================================
+             LEVEL
+             ========================================= -->
 
-        <section id="level-screen" hidden>
+        <section
+            id="level-screen"
+            hidden
+        >
 
             <canvas id="level-canvas"></canvas>
 
         </section>
 
 
-        <!-- PAUSE MENU -->
+        <!-- =========================================
+             PAUSE MENU
+             ========================================= -->
 
-        <div id="pause-menu" hidden>
+        <div
+            id="pause-menu"
+            hidden
+        >
 
             <div id="pause-menu-box">
 
-                <h2>PAUSED</h2>
+                <h2>
+                    PAUSED
+                </h2>
+
 
                 <button id="continue-button">
                     CONTINUE
                 </button>
+
 
                 <button
                     id="leave-level-button"
@@ -270,6 +234,7 @@
                 >
                     LEAVE LEVEL
                 </button>
+
 
                 <button id="leave-story-button">
                     LEAVE STORY MODE
@@ -280,58 +245,78 @@
         </div>
 
 
-        <!-- THREE-LINE MENU BUTTON -->
+        <!-- =========================================
+             THREE-LINE MENU BUTTON
+             ========================================= -->
 
         <button
             id="menu-button"
             aria-label="Pause menu"
             hidden
         >
+
             <span></span>
             <span></span>
             <span></span>
+
         </button>
 
 
-        <p id="message"></p>
+        <p id="message">
+            Checking Ben Games account...
+        </p>
 
     </main>
 
 
-    <!-- ACCOUNT -->
+    <!-- =========================================
+         ACCOUNT API
+         ========================================= -->
 
     <script src="js/api.js"></script>
 
 
-    <!-- STORY SYSTEM -->
+    <!-- =========================================
+         STORY PROGRESS
+         ========================================= -->
 
     <script src="game/story-progress.js"></script>
 
 
-    <!-- ACCOUNT LOGIN -->
+    <!-- =========================================
+         CENTRAL ACCOUNT CHECK
+         ========================================= -->
 
     <script src="js/login.js"></script>
 
 
-    <!-- STORY MAP -->
+    <!-- =========================================
+         STORY MAP
+         ========================================= -->
 
     <script src="screens/map.js"></script>
 
     <script src="screens/shop.js"></script>
+
     <script src="screens/upgrades.js"></script>
 
 
-    <!-- GAMEPLAY -->
+    <!-- =========================================
+         GAMEPLAY
+         ========================================= -->
 
     <script src="game/player.js"></script>
 
     <script src="game/upgrade-effects.js"></script>
 
     <script src="game/combat.js"></script>
+
     <script src="game/level-engine.js"></script>
 
 
-    <!-- PAUSE -->
+    <!-- =========================================
+         PAUSE
+         ========================================= -->
 
     <script src="screens/pause-menu.js"></script>
 

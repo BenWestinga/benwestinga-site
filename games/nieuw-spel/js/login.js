@@ -1,33 +1,49 @@
-const accountMenu = document.getElementById("account-menu");
-const loginForm = document.getElementById("login-form");
-const registerForm = document.getElementById("register-form");
-const gameMenu = document.getElementById("game-menu");
-
-const message = document.getElementById("message");
-const currentUser = document.getElementById("current-user");
+const gameMenu =
+    document.getElementById(
+        "game-menu"
+    );
 
 
-function showAccountMenu() {
-    accountMenu.hidden = false;
-    loginForm.hidden = true;
-    registerForm.hidden = true;
-    gameMenu.hidden = true;
-    message.textContent = "";
+const message =
+    document.getElementById(
+        "message"
+    );
+
+
+const currentUser =
+    document.getElementById(
+        "current-user"
+    );
+
+
+/* =========================================================
+   SHOW LOGGED IN MENU
+   ========================================================= */
+
+function showLoggedIn(
+    username
+) {
+
+    currentUser.textContent =
+        username;
+
+
+    gameMenu.hidden =
+        false;
+
+
+    message.textContent =
+        "";
 }
 
 
-function showLoggedIn(username) {
-    accountMenu.hidden = true;
-    loginForm.hidden = true;
-    registerForm.hidden = true;
-    gameMenu.hidden = false;
+/* =========================================================
+   LOAD STORY PROGRESS
+   ========================================================= */
 
-    currentUser.textContent = username;
-    message.textContent = "";
-}
-
-
-async function loadAccountProgress(username) {
+async function loadAccountProgress(
+    username
+) {
 
     message.textContent =
         "Loading story progress...";
@@ -35,164 +51,129 @@ async function loadAccountProgress(username) {
 
     if (
         window.StoryProgress &&
-        typeof StoryProgress.loadForUser ===
+        typeof StoryProgress
+            .loadForUser ===
             "function"
     ) {
 
-        await StoryProgress.loadForUser(
-            username
-        );
+        await StoryProgress
+            .loadForUser(
+                username
+            );
     }
 }
 
 
-document
-    .getElementById("show-login")
-    .addEventListener("click", () => {
-        accountMenu.hidden = true;
-        loginForm.hidden = false;
-    });
-
+/* =========================================================
+   RETURN TO BEN GAMES
+   ========================================================= */
 
 document
-    .getElementById("show-register")
-    .addEventListener("click", () => {
-        accountMenu.hidden = true;
-        registerForm.hidden = false;
-    });
+    .getElementById(
+        "back-to-games-button"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            window.location.href =
+                "/";
+        }
+    );
 
 
-document
-    .querySelectorAll(".back-button")
-    .forEach(button => {
-        button.addEventListener("click", showAccountMenu);
-    });
+/* =========================================================
+   CENTRAL LOGIN REDIRECT
+   ========================================================= */
+
+function redirectToCentralLogin() {
+
+    const returnUrl =
+        window.location.pathname +
+        window.location.search;
 
 
-loginForm.addEventListener("submit", async event => {
-    event.preventDefault();
+    window.location.replace(
+        "/?login=1&next=" +
+        encodeURIComponent(
+            returnUrl
+        )
+    );
+}
 
-    const username =
-        document.getElementById("login-username").value;
 
-    const password =
-        document.getElementById("login-password").value;
+/* =========================================================
+   CHECK CENTRAL BEN GAMES ACCOUNT
+   ========================================================= */
+
+async function checkLogin() {
+
+    message.textContent =
+        "Checking Ben Games account...";
+
+
+    let accountData;
+
 
     try {
-        const data = await apiRequest(
-            "/login",
-            {
-                method: "POST",
-                body: JSON.stringify({
-                    username,
-                    password
-                })
-            }
-        );
 
-        loginForm.reset();
-        await loadAccountProgress(
-            data.username
-        );
+        accountData =
+            await apiRequest(
+                "/me"
+            );
 
-        showLoggedIn(data.username);
+    } catch {
 
-    } catch (error) {
-        message.textContent = error.message;
-    }
-});
+        /*
+            No valid Ben Games session.
 
+            Do NOT create a separate account here.
 
-registerForm.addEventListener("submit", async event => {
-    event.preventDefault();
+            Redirect to the central website login.
+        */
 
-    const username =
-        document.getElementById("register-username").value;
+        redirectToCentralLogin();
 
-    const password =
-        document.getElementById("register-password").value;
-
-    const confirmPassword =
-        document.getElementById("register-password-confirm").value;
-
-
-    if (password !== confirmPassword) {
-        message.textContent = "Passwords do not match.";
         return;
     }
 
 
+    /*
+        We have a valid site-wide account.
+
+        Now load the existing New Game progress
+        belonging to exactly this username.
+    */
+
     try {
-        const data = await apiRequest(
-            "/register",
-            {
-                method: "POST",
-                body: JSON.stringify({
-                    username,
-                    password
-                })
-            }
-        );
 
-        registerForm.reset();
         await loadAccountProgress(
-            data.username
+            accountData.username
         );
 
-        showLoggedIn(data.username);
 
-    } catch (error) {
-        message.textContent = error.message;
-    }
-});
-
-document
-    .getElementById("back-to-games-button")
-    .addEventListener("click", () => {
-
-        window.location.href = "/";
-    });
-
-document
-    .getElementById("logout-button")
-    .addEventListener("click", async () => {
-
-        if (
-            window.StoryProgress &&
-            typeof StoryProgress.logoutUser ===
-                "function"
-        ) {
-
-            StoryProgress.logoutUser();
-        }
-
-
-        try {
-            await apiRequest(
-                "/logout",
-                {
-                    method: "POST"
-                }
-            );
-        } catch {}
-
-        showAccountMenu();
-    });
-
-
-async function checkLogin() {
-    try {
-        const data = await apiRequest("/me");
-        await loadAccountProgress(
-            data.username
+        showLoggedIn(
+            accountData.username
         );
 
-        showLoggedIn(data.username);
+    } catch (
+        error
+    ) {
 
-    } catch {
-        showAccountMenu();
+        console.error(
+            "Story progress could not be loaded:",
+            error
+        );
+
+
+        message.textContent =
+            "Your account is logged in, but story progress could not be loaded.";
     }
 }
 
+
+/* =========================================================
+   START
+   ========================================================= */
 
 checkLogin();

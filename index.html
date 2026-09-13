@@ -1,35 +1,643 @@
 <!DOCTYPE html>
 <html lang="nl">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Ben's Games</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <link rel="stylesheet" href="style.css">
+    <title>Ben Games</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+    <script
+        src="script.js"
+        defer
+    ></script>
 </head>
 
 <body>
 
-    <h1>Ben Games</h1>
+    <!-- =========================================
+         TOP BAR
+         ========================================= -->
 
-    <h2>Mijn games</h2>
+    <header class="topbar">
 
-    <a href="games/blue-dot/">
-        <button class="game-button">
+        <a
+            href="/"
+            class="brand"
+        >
 
-            <img
-                src="games/blue-dot/Ben.png"
-                alt="Ben Survival"
-                style="width:40px; height:40px; border-radius:50%; object-fit:cover;"
+            <div class="brand-logo">
+                B
+            </div>
+
+            <div class="brand-text">
+
+                <span class="brand-name">
+                    BEN GAMES
+                </span>
+
+                <span class="brand-subtitle">
+                    Game Hub
+                </span>
+
+            </div>
+
+        </a>
+
+
+        <nav class="top-navigation">
+
+            <a href="/">
+                HOME
+            </a>
+
+            <a href="#games">
+                GAMES
+            </a>
+
+        </nav>
+
+
+        <!-- ACCOUNT BUTTON -->
+
+        <div
+            id="account-area"
+            class="account-area"
+        >
+
+            <button
+                id="account-button"
+                class="account-button"
+                type="button"
+                aria-expanded="false"
             >
 
-            <span>Ben Survival</span>
+                <span class="account-avatar">
+                    👤
+                </span>
 
-        </button>
-    </a>
+                <span id="account-label">
+                    LOG IN
+                </span>
 
-    <a href="games/nieuw-spel/">NEW GAME</a>
+                <span class="account-arrow">
+                    ▾
+                </span>
+
+            </button>
+
+
+            <!-- ACCOUNT DROPDOWN -->
+
+            <div
+                id="account-dropdown"
+                class="account-dropdown"
+                hidden
+            >
+
+                <div class="account-dropdown-header">
+
+                    <span class="dropdown-small-text">
+                        SIGNED IN AS
+                    </span>
+
+                    <strong id="dropdown-username">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="dropdown-divider"></div>
+
+
+                <button
+                    id="view-account-button"
+                    class="dropdown-button"
+                    type="button"
+                >
+                    MY ACCOUNT
+                </button>
+
+
+                <button
+                    id="dropdown-logout-button"
+                    class="dropdown-button dropdown-danger"
+                    type="button"
+                >
+                    LOG OUT
+                </button>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================================
+         MAIN
+         ========================================= -->
+
+    <main>
+
+        <!-- HERO -->
+
+        <section class="hero">
+
+            <div class="hero-glow hero-glow-one"></div>
+            <div class="hero-glow hero-glow-two"></div>
+
+            <div class="hero-content">
+
+                <div class="hero-label">
+                    BEN'S GAME HUB
+                </div>
+
+                <h1>
+                    BEN GAMES
+                </h1>
+
+                <p class="hero-description">
+                    One account. All my games.
+                </p>
+
+                <a
+                    href="#games"
+                    class="hero-button"
+                >
+                    VIEW GAMES
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================================
+             GAMES
+             ========================================= -->
+
+        <section
+            id="games"
+            class="games-section"
+        >
+
+            <div class="section-heading">
+
+                <div>
+
+                    <span class="section-eyebrow">
+                        LIBRARY
+                    </span>
+
+                    <h2>
+                        MY GAMES
+                    </h2>
+
+                </div>
+
+
+                <p>
+                    Log in once and use the same account
+                    across Ben Games.
+                </p>
+
+            </div>
+
+
+            <div class="games-grid">
+
+                <!-- BEN SURVIVAL -->
+
+                <button
+                    class="game-card"
+                    type="button"
+                    data-game-url="/games/blue-dot/"
+                    data-game-name="Ben Survival"
+                >
+
+                    <div class="game-card-art ben-survival-art">
+
+                        <img
+                            src="games/blue-dot/Ben.png"
+                            alt="Ben Survival"
+                        >
+
+                    </div>
+
+
+                    <div class="game-card-content">
+
+                        <span class="game-status">
+                            AVAILABLE
+                        </span>
+
+                        <h3>
+                            Ben Survival
+                        </h3>
+
+                        <p>
+                            Enter Ben Survival and try
+                            to survive for as long as possible.
+                        </p>
+
+
+                        <div class="game-card-bottom">
+
+                            <span>
+                                PLAY GAME
+                            </span>
+
+                            <span class="play-arrow">
+                                →
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </button>
+
+
+                <!-- NEW GAME -->
+
+                <button
+                    class="game-card"
+                    type="button"
+                    data-game-url="/games/nieuw-spel/"
+                    data-game-name="New Game"
+                >
+
+                    <div class="game-card-art new-game-art">
+
+                        <div class="new-game-orb">
+                            ●
+                        </div>
+
+                    </div>
+
+
+                    <div class="game-card-content">
+
+                        <span class="game-status">
+                            STORY GAME
+                        </span>
+
+                        <h3>
+                            New Game
+                        </h3>
+
+                        <p>
+                            Continue your story,
+                            unlock weapons and defeat bosses.
+                        </p>
+
+
+                        <div class="game-card-bottom">
+
+                            <span>
+                                PLAY GAME
+                            </span>
+
+                            <span class="play-arrow">
+                                →
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================================
+         FOOTER
+         ========================================= -->
+
+    <footer>
+
+        <span>
+            BEN GAMES
+        </span>
+
+        <span>
+            benwestinga.com
+        </span>
+
+    </footer>
+
+
+    <!-- =========================================
+         LOGIN / REGISTER MODAL
+         ========================================= -->
+
+    <div
+        id="auth-modal"
+        class="modal-overlay"
+        hidden
+    >
+
+        <div class="modal-box auth-modal-box">
+
+            <button
+                class="modal-close"
+                id="close-auth-modal"
+                type="button"
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+
+            <div class="modal-brand">
+
+                <div class="modal-logo">
+                    B
+                </div>
+
+                <div>
+
+                    <span>
+                        BEN GAMES
+                    </span>
+
+                    <strong>
+                        ACCOUNT
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- TABS -->
+
+            <div class="auth-tabs">
+
+                <button
+                    id="login-tab"
+                    class="auth-tab active"
+                    type="button"
+                >
+                    LOG IN
+                </button>
+
+                <button
+                    id="register-tab"
+                    class="auth-tab"
+                    type="button"
+                >
+                    CREATE ACCOUNT
+                </button>
+
+            </div>
+
+
+            <!-- LOGIN -->
+
+            <form
+                id="login-form"
+                class="auth-form"
+            >
+
+                <h2>
+                    Welcome back
+                </h2>
+
+                <p class="auth-description">
+                    Log in to continue to your games.
+                </p>
+
+
+                <label for="login-username">
+                    Username
+                </label>
+
+                <input
+                    id="login-username"
+                    type="text"
+                    autocomplete="username"
+                    required
+                >
+
+
+                <label for="login-password">
+                    Password
+                </label>
+
+                <input
+                    id="login-password"
+                    type="password"
+                    autocomplete="current-password"
+                    required
+                >
+
+
+                <button
+                    class="primary-auth-button"
+                    type="submit"
+                >
+                    LOG IN
+                </button>
+
+            </form>
+
+
+            <!-- REGISTER -->
+
+            <form
+                id="register-form"
+                class="auth-form"
+                hidden
+            >
+
+                <h2>
+                    Create account
+                </h2>
+
+                <p class="auth-description">
+                    This account will be used for all Ben Games.
+                </p>
+
+
+                <label for="register-username">
+                    Username
+                </label>
+
+                <input
+                    id="register-username"
+                    type="text"
+                    minlength="5"
+                    maxlength="25"
+                    autocomplete="username"
+                    required
+                >
+
+                <small>
+                    5–25 characters.
+                </small>
+
+
+                <label for="register-password">
+                    Password
+                </label>
+
+                <input
+                    id="register-password"
+                    type="password"
+                    minlength="8"
+                    autocomplete="new-password"
+                    required
+                >
+
+                <small>
+                    At least 8 characters.
+                </small>
+
+
+                <label for="register-password-confirm">
+                    Confirm password
+                </label>
+
+                <input
+                    id="register-password-confirm"
+                    type="password"
+                    minlength="8"
+                    autocomplete="new-password"
+                    required
+                >
+
+
+                <button
+                    class="primary-auth-button"
+                    type="submit"
+                >
+                    CREATE ACCOUNT
+                </button>
+
+            </form>
+
+
+            <p
+                id="auth-message"
+                class="auth-message"
+            ></p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================
+         ACCOUNT DETAILS MODAL
+         ========================================= -->
+
+    <div
+        id="account-modal"
+        class="modal-overlay"
+        hidden
+    >
+
+        <div class="modal-box account-modal-box">
+
+            <button
+                id="close-account-modal"
+                class="modal-close"
+                type="button"
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+
+            <div class="account-profile-avatar">
+                👤
+            </div>
+
+
+            <span class="account-profile-label">
+                BEN GAMES ACCOUNT
+            </span>
+
+
+            <h2 id="account-profile-username">
+                Username
+            </h2>
+
+
+            <div class="account-status-box">
+
+                <div>
+
+                    <span class="status-dot"></span>
+
+                    <strong>
+                        Signed in
+                    </strong>
+
+                </div>
+
+                <p>
+                    This account is active across Ben Games.
+                </p>
+
+            </div>
+
+
+            <div class="account-info-row">
+
+                <span>
+                    Account
+                </span>
+
+                <strong id="account-info-username">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div class="account-info-row">
+
+                <span>
+                    New Game save
+                </span>
+
+                <strong>
+                    Connected
+                </strong>
+
+            </div>
+
+
+            <button
+                id="account-modal-logout-button"
+                class="account-logout-button"
+                type="button"
+            >
+                LOG OUT
+            </button>
+
+        </div>
+
+    </div>
 
 </body>
+
 </html>
