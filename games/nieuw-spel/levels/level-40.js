@@ -43,7 +43,19 @@ export const config = {
 
     spawnGroups: [
 
-        // ENEMIES + BOSS 8 HIER
+        { enemy: "snowstorm", count: 1, start: 5, duration: 1},
+        { enemy: "iceGoon", count: 150, start: 5, duration: 175},
+        { enemy: "snowGuy", count: 30, start: 5, duration: 175},
+        { enemy: "snowMan", count: 10, start: 5, duration: 175},
+        { enemy: "snowball", count: 100, start: 5, duration: 175},
+        { enemy: "snowProtector", count: 6, start: 5, duration: 175},
+        { enemy: "snowWorm", count: 10, start: 5, duration: 175},
+        { enemy: "snowHealer", count: 8, start: 5, duration: 175},
+        { enemy: "snowWarrior", count: 5, start: 5, duration: 175},
+        { enemy: "icePuller", count: 6, start: 5, duration: 175},
+        { enemy: "iceGoon", count: 400, start: 175, duration: 200},
+
+        { enemy: "iceTank", count: 1, start: 180, duration: 1},
 
     ]
 };
