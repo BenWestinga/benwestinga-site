@@ -21,7 +21,7 @@
     const BASE_STORM_BURST_CHANCE = 0.12;
     const BASE_STORM_BURST_RADIUS = 105;
     const BASE_STORM_BURST_DAMAGE_FACTOR = 0.45;
-    const BASE_FROST_SPLASH_RADIUS = 170;
+    const BASE_FROST_SPLASH_RADIUS = 470;
     const BASE_FROST_SPLASH_DAMAGE = 3;
 
     function numberModifier(
