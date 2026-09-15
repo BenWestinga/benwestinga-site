@@ -18,7 +18,7 @@
     const ENEMY_SIZE_BASE = 10;
     const ENEMY_SIZE_STEP = 4;
 
-    const PLAYER_SPAWN_SAFE_RADIUS = 520;
+    const PLAYER_SPAWN_SAFE_RADIUS = 1020;
     const RANDOM_SPAWN_ATTEMPTS = 48;
 
     let animationFrame = null;
