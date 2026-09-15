@@ -21,6 +21,8 @@
     const BASE_STORM_BURST_CHANCE = 0.12;
     const BASE_STORM_BURST_RADIUS = 105;
     const BASE_STORM_BURST_DAMAGE_FACTOR = 0.45;
+    const BASE_FROST_SPLASH_RADIUS = 170;
+    const BASE_FROST_SPLASH_DAMAGE = 3;
 
     function numberModifier(
         name,
@@ -2160,18 +2162,31 @@
             );
         }
 
+    }
+
+
+    function triggerFrostSplash({
+
+        x,
+
+        y,
+
+        enemies,
+
+        damageEnemy,
+
+        isGuardianShielded
+
+    }) {
 
         frostBursts.push({
 
-            x:
-                target.x,
+            x,
 
-            y:
-                target.y,
+            y,
 
             radius:
-                target.radius +
-                28,
+                BASE_FROST_SPLASH_RADIUS,
 
             remaining:
                 0.34,
@@ -2179,6 +2194,69 @@
             maxRemaining:
                 0.34
         });
+
+
+        const snapshot =
+            [
+                ...enemies
+            ];
+
+
+        for (
+            const enemy
+            of snapshot
+        ) {
+
+            if (
+
+                !enemy ||
+
+                Number(
+                    enemy.hp
+                ) <=
+                0
+            ) {
+
+                continue;
+            }
+
+
+            const distance =
+                Math.hypot(
+
+                    enemy.x -
+                    x,
+
+                    enemy.y -
+                    y
+                );
+
+
+            if (
+                distance >
+                BASE_FROST_SPLASH_RADIUS +
+                    enemy.radius
+            ) {
+
+                continue;
+            }
+
+
+            dealEffectDamage({
+
+                enemy,
+
+                damage:
+                    BASE_FROST_SPLASH_DAMAGE,
+
+                bullet:
+                    null,
+
+                damageEnemy,
+
+                isGuardianShielded
+            });
+        }
     }
 
 
@@ -2324,6 +2402,8 @@
 
         player,
 
+        damageEnemy,
+
         isGuardianShielded
 
     }) {
@@ -2453,6 +2533,22 @@
 
                 continue;
             }
+
+
+            triggerFrostSplash({
+
+                x:
+                    projectile.target.x,
+
+                y:
+                    projectile.target.y,
+
+                enemies,
+
+                damageEnemy,
+
+                isGuardianShielded
+            });
 
 
             if (
@@ -3223,6 +3319,9 @@
 
             player:
                 context.player,
+
+            damageEnemy:
+                context.damageEnemy,
 
             isGuardianShielded:
                 context
