@@ -3,7 +3,7 @@ const lavaGoon = {
     name: "Lava Goon",
     behavior: "bouncing-lava-goon",
 
-    hp: 4,
+    hp: 10,
     size: 2,
     speed: "medium",
 

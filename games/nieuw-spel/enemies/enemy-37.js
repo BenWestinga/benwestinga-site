@@ -405,7 +405,7 @@ const lavaGolem = {
     name: "Lava Golem",
     behavior: "chasing-lava-golem",
 
-    hp: 150,
+    hp: 120,
     size: 10,
     speed: "medium",
     tracking: 1,

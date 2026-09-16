@@ -47,7 +47,7 @@ const lavaWizard = {
     explosionRadius: 105,
     fireballLifetime: 8,
 
-    shieldDuration: 3,
+    shieldDuration: 5,
     shieldRecharge: 17,
 
     reset() {
@@ -81,9 +81,6 @@ const lavaWizard = {
 
             enemy.shieldRemaining =
                 this.shieldDuration;
-
-            enemy.vx = 0;
-            enemy.vy = 0;
 
             return 0;
         }
@@ -392,8 +389,6 @@ const lavaWizard = {
 
         if (enemy.shieldActive) {
             enemy.shieldRemaining -= dt;
-            enemy.vx = 0;
-            enemy.vy = 0;
 
             if (
                 enemy.shieldRemaining <= 0
@@ -412,11 +407,7 @@ const lavaWizard = {
                     );
                 }
             }
-
-            return;
-        }
-
-        if (
+        } else if (
             enemy
                 .shieldCooldownRemaining >
             0

@@ -215,7 +215,7 @@ const plasmaGuy = {
     attackCooldown: 8,
 
     chargeTurnSpeed: 2.4,
-    firingTurnSpeed: 0.38,
+    firingTurnSpeed: 0.19,
     beamWidth: 24,
 
     onSpawn(enemy, api) {

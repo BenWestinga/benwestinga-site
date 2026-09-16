@@ -42,13 +42,13 @@ const meteor = {
     behavior: "falling-meteor",
 
     hp: 1,
-    size: 7,
+    size: 17.5,
     speed: 0,
 
     color: "#3a2118",
     image: "lava.png",
 
-    fallDuration: 1.8,
+    fallDuration: 2.8,
     fallHeight: 560,
     impactRadius: 95,
     lavaDuration: 10,
@@ -512,6 +512,7 @@ const meteor = {
         );
 
         ctx.beginPath();
+
         ctx.arc(
             0,
             0,
@@ -539,6 +540,7 @@ const meteor = {
             ctx.save();
 
             ctx.beginPath();
+
             ctx.arc(
                 0,
                 0,
@@ -607,6 +609,7 @@ const meteor = {
         ctx.lineWidth = 4;
 
         ctx.beginPath();
+
         ctx.arc(
             0,
             0,
