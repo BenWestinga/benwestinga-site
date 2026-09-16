@@ -9,6 +9,10 @@ import lavaGolem, {
 import lavaWizard from "../enemies/enemy-38.js";
 import plasmaGuy from "../enemies/enemy-39.js";
 import lavaBen from "../enemies/boss-09.js";
+import lavaBurrower from "../enemies/enemy-40.js.js";
+import emberHealer from "../enemies/enemy-41.js.js";
+import ashPhantom from "../enemies/enemy-42.js";
+
 
 
 export const config = {
@@ -32,18 +36,21 @@ export const config = {
         lavaGolemite,
         lavaWizard,
         plasmaGuy,
-        lavaBen
+        lavaBen,
+        lavaBurrower,
+        emberHealer,
+        ashPhantom
     },
 
     spawnGroups: [
 
         { enemy: "lavaGoon", count: 5, start: 5, duration: 175},
         { enemy: "meteor", count: 5, start: 5, duration: 175},
-        { enemy: "lavaWave", count: 50, start: 5, duration: 175},
+        { enemy: "lavaWave", count: 5, start: 5, duration: 175},
         { enemy: "lavaGolem", count: 5, start: 5, duration: 175},
-        { enemy: "lavaWizard", count: 5, start: 5, duration: 175},
-        { enemy: "plasmaGuy", count: 5, start: 5, duration: 175},
-        { enemy: "lavaBen", count: 1, start: 5, duration: 1},
+        { enemy: "lavaBurrower", count: 5, start: 5, duration: 175},
+        { enemy: "emberHealer", count: 5, start: 5, duration: 175},
+        { enemy: "ashPhantom", count: 5, start: 5, duration: 1},
         
     ]
 };
