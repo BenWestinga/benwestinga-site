@@ -1,4 +1,34 @@
-function absorbOverlappingBullets(enemy) {
+function circleTouchesWave(
+    enemy,
+    x,
+    y,
+    radius,
+    widthMultiplier
+) {
+    const horizontalRadius =
+        enemy.radius * widthMultiplier + radius;
+
+    const verticalRadius =
+        enemy.radius + radius;
+
+    const normalizedX =
+        (x - enemy.x) / horizontalRadius;
+
+    const normalizedY =
+        (y - enemy.y) / verticalRadius;
+
+    return (
+        normalizedX * normalizedX +
+        normalizedY * normalizedY <=
+        1
+    );
+}
+
+
+function absorbOverlappingBullets(
+    enemy,
+    widthMultiplier
+) {
     const bullets = window.bullets;
 
     if (!Array.isArray(bullets)) {
@@ -16,15 +46,14 @@ function absorbOverlappingBullets(enemy) {
             continue;
         }
 
-        const distance =
-            Math.hypot(
-                bullet.x - enemy.x,
-                bullet.y - enemy.y
-            );
-
         if (
-            distance <=
-            bullet.radius + enemy.radius
+            circleTouchesWave(
+                enemy,
+                bullet.x,
+                bullet.y,
+                bullet.radius,
+                widthMultiplier
+            )
         ) {
             bullet.remainingPierce = 0;
             bullets.splice(i, 1);
@@ -42,11 +71,17 @@ const lavaWave = {
     size: 18,
     speed: "mediumFast",
 
+    widthMultiplier: 2.5,
+
     color: "#ff5a0a",
     image: "lava.png",
 
     modifyDamage(enemy) {
-        absorbOverlappingBullets(enemy);
+        absorbOverlappingBullets(
+            enemy,
+            this.widthMultiplier
+        );
+
         return 0;
     },
 
@@ -62,6 +97,10 @@ const lavaWave = {
                 definition.size
             );
 
+        const halfWidth =
+            radius *
+            definition.widthMultiplier;
+
         const side =
             Math.random() < 0.5
                 ? "left"
@@ -69,7 +108,7 @@ const lavaWave = {
 
         const position =
             api.randomSpawnPosition(
-                radius,
+                halfWidth,
                 {
                     side
                 }
@@ -98,7 +137,7 @@ const lavaWave = {
             position,
             {
                 spawnSide: side,
-                collidesWithPlayer: true
+                collidesWithPlayer: false
             }
         );
     },
@@ -115,11 +154,6 @@ const lavaWave = {
                 : -enemy.speed;
 
         enemy.vy = 0;
-
-        enemy.waveAnimation =
-            Math.random() *
-            Math.PI *
-            2;
     },
 
     update(enemy, dt, api) {
@@ -132,8 +166,26 @@ const lavaWave = {
 
         api.moveStraight(enemy, dt);
 
-        enemy.waveAnimation +=
-            dt * 5;
+        absorbOverlappingBullets(
+            enemy,
+            this.widthMultiplier
+        );
+
+        const player =
+            api.getPlayer();
+
+        if (
+            circleTouchesWave(
+                enemy,
+                player.x,
+                player.y,
+                player.radius,
+                this.widthMultiplier
+            )
+        ) {
+            api.killPlayer();
+            return;
+        }
 
         if (
             !enemy.enteredArena &&
@@ -170,9 +222,12 @@ const lavaWave = {
             enemy.y
         );
 
-        if (direction < 0) {
-            ctx.scale(-1, 1);
-        }
+        ctx.scale(
+            direction < 0
+                ? -this.widthMultiplier
+                : this.widthMultiplier,
+            1
+        );
 
         const gradient =
             ctx.createLinearGradient(
@@ -257,7 +312,6 @@ const lavaWave = {
         ) {
             ctx.save();
             ctx.clip();
-
             ctx.globalAlpha = 0.48;
 
             ctx.drawImage(
@@ -274,44 +328,6 @@ const lavaWave = {
         ctx.strokeStyle = "#ffbd45";
         ctx.lineWidth = 5;
         ctx.stroke();
-
-        for (
-            let i = 0;
-            i < 4;
-            i++
-        ) {
-            const y =
-                -r * 0.50 +
-                i * r * 0.34;
-
-            const wobble =
-                Math.sin(
-                    enemy.waveAnimation +
-                    i * 1.4
-                ) *
-                r *
-                0.10;
-
-            ctx.beginPath();
-
-            ctx.moveTo(
-                -r * 0.62,
-                y
-            );
-
-            ctx.quadraticCurveTo(
-                -r * 0.08,
-                y + wobble,
-                r * 0.50,
-                y - r * 0.08
-            );
-
-            ctx.strokeStyle =
-                "rgba(255,235,120,0.72)";
-
-            ctx.lineWidth = 3;
-            ctx.stroke();
-        }
 
         ctx.restore();
     }

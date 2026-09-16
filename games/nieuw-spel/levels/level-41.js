@@ -8,6 +8,7 @@ import lavaGolem, {
 
 import lavaWizard from "../enemies/enemy-38.js";
 import plasmaGuy from "../enemies/enemy-39.js";
+import lavaBen from "../enemies/boss-09.js";
 
 
 export const config = {
@@ -30,7 +31,8 @@ export const config = {
         lavaGolem,
         lavaGolemite,
         lavaWizard,
-        plasmaGuy
+        plasmaGuy,
+        lavaBen
     },
 
     spawnGroups: [
@@ -41,6 +43,8 @@ export const config = {
         { enemy: "lavaGolem", count: 5, start: 5, duration: 175},
         { enemy: "lavaWizard", count: 5, start: 5, duration: 175},
         { enemy: "plasmaGuy", count: 5, start: 5, duration: 175},
+        { enemy: "lavaBen", count: 1, start: 5, duration: 1},
+        
     ]
 };
 
