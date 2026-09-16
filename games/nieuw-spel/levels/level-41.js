@@ -9,8 +9,8 @@ import lavaGolem, {
 import lavaWizard from "../enemies/enemy-38.js";
 import plasmaGuy from "../enemies/enemy-39.js";
 import lavaBen from "../enemies/boss-09.js";
-import lavaBurrower from "../enemies/enemy-40.js.js";
-import emberHealer from "../enemies/enemy-41.js.js";
+import lavaBurrower from "../enemies/enemy-40.js";
+import emberHealer from "../enemies/enemy-41.js";
 import ashPhantom from "../enemies/enemy-42.js";
 
 
