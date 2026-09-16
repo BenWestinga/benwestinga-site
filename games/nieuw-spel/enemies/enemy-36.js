@@ -1,18 +1,19 @@
-function circleTouchesWave(
+function circleTouchesWaveArea(
     enemy,
     x,
     y,
     radius,
-    heightMultiplier
+    horizontalScale,
+    verticalScale,
+    radiusContribution = 1
 ) {
     const horizontalRadius =
-        enemy.radius +
-        radius;
+        enemy.radius * horizontalScale +
+        radius * radiusContribution;
 
     const verticalRadius =
-        enemy.radius *
-        heightMultiplier +
-        radius;
+        enemy.radius * verticalScale +
+        radius * radiusContribution;
 
     const normalizedX =
         (x - enemy.x) /
@@ -32,7 +33,8 @@ function circleTouchesWave(
 
 function absorbOverlappingBullets(
     enemy,
-    heightMultiplier
+    heightMultiplier,
+    bulletHitboxScale
 ) {
     const bullets =
         window.bullets;
@@ -54,12 +56,14 @@ function absorbOverlappingBullets(
         }
 
         if (
-            circleTouchesWave(
+            circleTouchesWaveArea(
                 enemy,
                 bullet.x,
                 bullet.y,
                 bullet.radius,
-                heightMultiplier
+                bulletHitboxScale,
+                heightMultiplier *
+                    bulletHitboxScale
             )
         ) {
             bullet.remainingPierce = 0;
@@ -71,7 +75,9 @@ function absorbOverlappingBullets(
 
 const lavaWave = {
     id: "lava-wave",
+
     name: "Lava Wave",
+
     behavior: "horizontal-lava-wave",
 
     hp: 1,
@@ -81,18 +87,47 @@ const lavaWave = {
     speed: "mediumFast",
 
     /*
-        De golf is nu 2.5 keer hoger
-        in plaats van 2.5 keer breder.
+        Zichtbare golf is 2.5 keer hoger.
     */
 
     heightMultiplier: 2.5,
+
+    /*
+        De dodelijke hitbox zit expres
+        binnen de zichtbare golf.
+
+        Hierdoor mag de speler gedeeltelijk
+        door de buitenrand heen bewegen.
+    */
+
+    playerHitboxWidthScale: 0.66,
+
+    playerHitboxHeightScale: 0.74,
+
+    /*
+        Slechts 25% van de radius van de
+        speler wordt bij de hitbox opgeteld.
+
+        Daardoor voelt een aanraking met
+        alleen de buitenkant minder streng.
+    */
+
+    playerRadiusContribution: 0.25,
+
+    /*
+        Kogels worden nog wel bijna over
+        de volledige golf tegengehouden.
+    */
+
+    bulletHitboxScale: 0.90,
 
     color: "#ff5a0a",
 
     modifyDamage(enemy) {
         absorbOverlappingBullets(
             enemy,
-            this.heightMultiplier
+            this.heightMultiplier,
+            this.bulletHitboxScale
         );
 
         return 0;
@@ -150,6 +185,16 @@ const lavaWave = {
             position,
             {
                 spawnSide: side,
+
+                /*
+                    De standaard ronde hitbox
+                    wordt uitgeschakeld.
+
+                    De kleinere elliptische
+                    hitbox wordt in update
+                    gecontroleerd.
+                */
+
                 collidesWithPlayer: false
             }
         );
@@ -184,19 +229,37 @@ const lavaWave = {
 
         absorbOverlappingBullets(
             enemy,
-            this.heightMultiplier
+            this.heightMultiplier,
+            this.bulletHitboxScale
         );
 
         const player =
             api.getPlayer();
 
+        /*
+            Vloeiende elliptische hitbox.
+
+            Horizontaal:
+            66% van de basisbreedte.
+
+            Verticaal:
+            74% van de zichtbare hoogte.
+        */
+
         if (
-            circleTouchesWave(
+            circleTouchesWaveArea(
                 enemy,
+
                 player.x,
                 player.y,
                 player.radius,
-                this.heightMultiplier
+
+                this.playerHitboxWidthScale,
+
+                this.heightMultiplier *
+                    this.playerHitboxHeightScale,
+
+                this.playerRadiusContribution
             )
         ) {
             api.killPlayer();
@@ -234,22 +297,17 @@ const lavaWave = {
             enemy.y
         );
 
-        /*
-            Horizontaal spiegelen voor
-            de bewegingsrichting.
-
-            Verticaal 2.5 keer uitrekken.
-        */
-
         ctx.scale(
-            direction < 0 ? -1 : 1,
+            direction < 0
+                ? -1
+                : 1,
+
             this.heightMultiplier
         );
 
         /*
-            Eén eenvoudige gradient.
-            Geen lava.png, clipping of
-            zware shadows meer.
+            Simpele gradient zonder
+            zware lava-texture.
         */
 
         const gradient =
@@ -328,6 +386,7 @@ const lavaWave = {
             "#ff9d36";
 
         ctx.lineWidth = 3;
+
         ctx.stroke();
 
         ctx.restore();
