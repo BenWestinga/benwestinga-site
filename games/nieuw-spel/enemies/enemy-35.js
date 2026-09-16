@@ -8,27 +8,19 @@ function absorbOverlappingBullets(enemy) {
         return;
     }
 
-    for (
-        let i = bullets.length - 1;
-        i >= 0;
-        i--
-    ) {
+    for (let i = bullets.length - 1; i >= 0; i--) {
         const bullet = bullets[i];
 
         if (!bullet) {
             continue;
         }
 
-        const distance =
-            Math.hypot(
-                bullet.x - enemy.x,
-                bullet.y - enemy.y
-            );
+        const distance = Math.hypot(
+            bullet.x - enemy.x,
+            bullet.y - enemy.y
+        );
 
-        if (
-            distance <=
-            bullet.radius + enemy.radius
-        ) {
+        if (distance <= bullet.radius + enemy.radius) {
             bullet.remainingPierce = 0;
             bullets.splice(i, 1);
         }
@@ -70,81 +62,52 @@ const meteor = {
         return 0;
     },
 
-    spawn({
-        definition,
-        api
-    }) {
-        const canvas =
-            api.getCanvas();
+    spawn({ definition, api }) {
+        const canvas = api.getCanvas();
+        const meteorRadius = api.getEnemyRadius(definition.size);
 
-        const meteorRadius =
-            api.getEnemyRadius(
-                definition.size
-            );
+        const padding = Math.max(
+            definition.impactRadius + 18,
+            meteorRadius + 24
+        );
 
-        const padding =
-            Math.max(
-                definition.impactRadius + 18,
-                meteorRadius + 24
-            );
+        const availableWidth = Math.max(
+            0,
+            canvas.width - padding * 2
+        );
 
-        const availableWidth =
-            Math.max(
-                0,
-                canvas.width - padding * 2
-            );
+        const availableHeight = Math.max(
+            0,
+            canvas.height - padding * 2
+        );
 
-        const availableHeight =
-            Math.max(
-                0,
-                canvas.height - padding * 2
-            );
+        const targetX = availableWidth > 0
+            ? padding + Math.random() * availableWidth
+            : canvas.width / 2;
 
-        const targetX =
-            availableWidth > 0
-                ? padding +
-                  Math.random() * availableWidth
-                : canvas.width / 2;
-
-        const targetY =
-            availableHeight > 0
-                ? padding +
-                  Math.random() * availableHeight
-                : canvas.height / 2;
+        const targetY = availableHeight > 0
+            ? padding + Math.random() * availableHeight
+            : canvas.height / 2;
 
         const horizontalOffset =
-            (
-                Math.random() < 0.5
-                    ? -1
-                    : 1
-            ) *
-            (
-                90 +
-                Math.random() * 90
-            );
+            (Math.random() < 0.5 ? -1 : 1) *
+            (90 + Math.random() * 90);
 
         return api.createEntity(
             definition,
             {
-                x:
-                    targetX +
-                    horizontalOffset,
-
-                y:
-                    targetY -
-                    definition.fallHeight
+                x: targetX + horizontalOffset,
+                y: targetY - definition.fallHeight
             },
             {
                 targetX,
                 targetY,
 
                 startX:
-                    targetX +
-                    horizontalOffset,
+                    targetX + horizontalOffset,
 
                 startY:
-                    targetY -
-                    definition.fallHeight,
+                    targetY - definition.fallHeight,
 
                 fallRemaining:
                     definition.fallDuration,
@@ -153,20 +116,11 @@ const meteor = {
                     definition.fallDuration,
 
                 rotation:
-                    Math.random() *
-                    Math.PI *
-                    2,
+                    Math.random() * Math.PI * 2,
 
                 rotationSpeed:
-                    (
-                        Math.random() < 0.5
-                            ? -1
-                            : 1
-                    ) *
-                    (
-                        2.4 +
-                        Math.random() * 1.4
-                    ),
+                    (Math.random() < 0.5 ? -1 : 1) *
+                    (2.4 + Math.random() * 1.4),
 
                 collidesWithPlayer: false
             }
@@ -205,16 +159,15 @@ const meteor = {
     update(enemy, dt, api) {
         enemy.fallRemaining -= dt;
 
-        const progress =
-            Math.max(
-                0,
-                Math.min(
-                    1,
-                    1 -
-                    enemy.fallRemaining /
-                    enemy.fallMax
-                )
-            );
+        const progress = Math.max(
+            0,
+            Math.min(
+                1,
+                1 -
+                enemy.fallRemaining /
+                enemy.fallMax
+            )
+        );
 
         const eased =
             progress * progress;
@@ -238,16 +191,10 @@ const meteor = {
         enemy.rotation +=
             enemy.rotationSpeed * dt;
 
-        if (
-            api.playerTouchesCircle(
-                enemy.x,
-                enemy.y,
-                enemy.radius
-            )
-        ) {
-            api.killPlayer();
-            return;
-        }
+        /*
+            Tijdens het vallen heeft de meteoriet
+            expres geen botsing met de speler.
+        */
 
         if (enemy.fallRemaining > 0) {
             return;
@@ -267,9 +214,7 @@ const meteor = {
                 this.lavaDuration,
 
             pulse:
-                Math.random() *
-                Math.PI *
-                2
+                Math.random() * Math.PI * 2
         });
 
         api.createExplosion(
@@ -279,18 +224,35 @@ const meteor = {
             0.32
         );
 
+        /*
+            Pas op het moment van landen
+            wordt de volledige landingscirkel
+            gevaarlijk.
+        */
+
+        if (
+            api.playerTouchesCircle(
+                enemy.targetX,
+                enemy.targetY,
+                this.impactRadius
+            )
+        ) {
+            api.killPlayer();
+        }
+
         api.removeEnemy(enemy);
     },
 
     drawBelow(ctx, api) {
-        for (const pool of lavaPools) {
-            const lifeRatio =
-                Math.max(
-                    0,
-                    pool.remaining /
-                    pool.maxRemaining
-                );
+        /*
+            GELANDE LAVAPLEKKEN
 
+            De kleursterkte neemt niet af.
+            Na 10 seconden verdwijnt de plek
+            in één keer samen met de hitbox.
+        */
+
+        for (const pool of lavaPools) {
             const pulse =
                 1 +
                 Math.sin(pool.pulse) *
@@ -304,6 +266,7 @@ const meteor = {
                     pool.x,
                     pool.y,
                     radius * 0.12,
+
                     pool.x,
                     pool.y,
                     radius
@@ -311,28 +274,23 @@ const meteor = {
 
             gradient.addColorStop(
                 0,
-                `rgba(255,222,72,${
-                    0.88 * lifeRatio
-                })`
+                "rgba(255,45,24,0.98)"
             );
 
             gradient.addColorStop(
                 0.42,
-                `rgba(255,111,12,${
-                    0.82 * lifeRatio
-                })`
+                "rgba(220,0,0,0.94)"
             );
 
             gradient.addColorStop(
                 1,
-                `rgba(116,24,8,${
-                    0.64 * lifeRatio
-                })`
+                "rgba(72,0,0,0.86)"
             );
 
             ctx.save();
 
             ctx.beginPath();
+
             ctx.arc(
                 pool.x,
                 pool.y,
@@ -345,9 +303,7 @@ const meteor = {
             ctx.fill();
 
             ctx.strokeStyle =
-                `rgba(255,180,35,${
-                    0.9 * lifeRatio
-                })`;
+                "rgba(255,38,20,0.98)";
 
             ctx.lineWidth = 4;
             ctx.stroke();
@@ -355,33 +311,33 @@ const meteor = {
             ctx.restore();
         }
 
-        for (
-            const enemy
-            of api.getEnemies()
-        ) {
+        /*
+            LANDINGSWAARSCHUWINGEN
+        */
+
+        for (const enemy of api.getEnemies()) {
             if (
                 !enemy ||
                 enemy.hp <= 0 ||
-                enemy.definition?.id !==
-                    this.id
+                enemy.definition?.id !== this.id
             ) {
                 continue;
             }
 
-            const progress =
-                Math.max(
-                    0,
-                    Math.min(
-                        1,
-                        1 -
-                        enemy.fallRemaining /
-                        enemy.fallMax
-                    )
-                );
+            const progress = Math.max(
+                0,
+                Math.min(
+                    1,
+                    1 -
+                    enemy.fallRemaining /
+                    enemy.fallMax
+                )
+            );
 
             ctx.save();
 
             ctx.beginPath();
+
             ctx.arc(
                 enemy.targetX,
                 enemy.targetY,
@@ -391,16 +347,16 @@ const meteor = {
             );
 
             ctx.fillStyle =
-                `rgba(255,90,10,${
-                    0.08 +
-                    progress * 0.15
+                `rgba(190,0,0,${
+                    0.10 +
+                    progress * 0.22
                 })`;
 
             ctx.fill();
 
             ctx.strokeStyle =
-                `rgba(255,196,65,${
-                    0.42 +
+                `rgba(255,38,22,${
+                    0.48 +
                     progress * 0.50
                 })`;
 
@@ -413,29 +369,41 @@ const meteor = {
     },
 
     draw(enemy, ctx, api) {
-        const r = enemy.radius;
+        const progress = Math.max(
+            0,
+            Math.min(
+                1,
+                1 -
+                enemy.fallRemaining /
+                enemy.fallMax
+            )
+        );
 
-        const progress =
-            Math.max(
-                0,
-                Math.min(
-                    1,
-                    1 -
-                    enemy.fallRemaining /
-                    enemy.fallMax
-                )
-            );
+        /*
+            De meteoriet begint op 18% grootte
+            en groeit naar zijn volledige grootte.
+        */
+
+        const visualScale =
+            0.18 +
+            progress * 0.82;
+
+        const r =
+            enemy.radius *
+            visualScale;
 
         ctx.save();
 
         const trailLength =
             80 +
-            (1 - progress) * 75;
+            (1 - progress) *
+            75;
 
         const trailGradient =
             ctx.createLinearGradient(
                 enemy.x,
                 enemy.y,
+
                 enemy.x - 36,
                 enemy.y - trailLength
             );
@@ -484,13 +452,16 @@ const meteor = {
             enemy.y
         );
 
-        ctx.rotate(enemy.rotation);
+        ctx.rotate(
+            enemy.rotation
+        );
 
         const rockGradient =
             ctx.createRadialGradient(
                 -r * 0.30,
                 -r * 0.34,
                 r * 0.08,
+
                 0,
                 0,
                 r
@@ -530,7 +501,9 @@ const meteor = {
         ctx.shadowBlur = 0;
 
         const image =
-            api.getAssetImage(this.image);
+            api.getAssetImage(
+                this.image
+            );
 
         if (
             image &&
@@ -550,6 +523,7 @@ const meteor = {
             );
 
             ctx.clip();
+
             ctx.globalAlpha = 0.38;
 
             ctx.drawImage(
@@ -563,7 +537,8 @@ const meteor = {
             ctx.restore();
         }
 
-        ctx.strokeStyle = "#ff9f20";
+        ctx.strokeStyle =
+            "#ff9f20";
 
         ctx.lineWidth =
             Math.max(
@@ -605,7 +580,9 @@ const meteor = {
 
         ctx.stroke();
 
-        ctx.strokeStyle = "#9a4c20";
+        ctx.strokeStyle =
+            "#9a4c20";
+
         ctx.lineWidth = 4;
 
         ctx.beginPath();
@@ -619,8 +596,10 @@ const meteor = {
         );
 
         ctx.stroke();
+
         ctx.restore();
     }
 };
+
 
 export default meteor;

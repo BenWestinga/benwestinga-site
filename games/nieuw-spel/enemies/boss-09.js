@@ -21,11 +21,9 @@ function isProjectileOutside(
 
     return (
         projectile.x < -margin ||
-        projectile.x >
-            canvas.width + margin ||
+        projectile.x > canvas.width + margin ||
         projectile.y < -margin ||
-        projectile.y >
-            canvas.height + margin
+        projectile.y > canvas.height + margin
     );
 }
 
@@ -35,7 +33,8 @@ function drawEnergyBall(
     ball,
     outgoing = false
 ) {
-    const r = ball.radius;
+    const r =
+        ball.radius;
 
     ctx.save();
 
@@ -44,6 +43,7 @@ function drawEnergyBall(
             ball.x - r * 0.28,
             ball.y - r * 0.30,
             r * 0.08,
+
             ball.x,
             ball.y,
             r
@@ -79,12 +79,11 @@ function drawEnergyBall(
         Math.PI * 2
     );
 
-    ctx.fillStyle = gradient;
+    ctx.fillStyle =
+        gradient;
 
     ctx.shadowBlur =
-        outgoing
-            ? 15
-            : 10;
+        outgoing ? 15 : 10;
 
     ctx.shadowColor =
         outgoing
@@ -109,41 +108,59 @@ function drawEnergyBall(
 
 const lavaBen = {
     id: "lava-ben",
+
     name: "LavaBen",
+
     behavior: "lava-ben-boss",
 
     boss: true,
 
     hp: 1000,
+
     size: 8,
+
     speed: "medium",
 
     image: "ben.png",
 
     hideWorldHealthBar: true,
+
     alwaysShowHealthBar: true,
+
     hideLevelTitleWhenActive: true,
 
     attackDuration: 15,
+
     attackBreakDuration: 8,
 
     meteorEnemy: "meteor",
+
     meteorCount: 30,
 
     energyBallCount: 40,
+
     energyBallSize: 1.5,
+
     energyBallSpeed: "fast",
+
     energyBallSpawnDuration: 8,
+
     energyBallTravelDuration: 3,
+
     energyBallReleaseDuration: 3,
 
     lavaBombCount: 10,
+
     lavaBombSize: 15.5,
+
     lavaBombTravelDuration: 2.8,
+
     lavaBombArcHeight: 170,
 
     shrapnelCount: 8,
+
     shrapnelSize: 1.5,
+
     shrapnelSpeed: "medium",
 
     reset() {
@@ -178,24 +195,33 @@ const lavaBen = {
             enemy.baseLavaBenSpeed;
 
         enemy.ragePhase = 0;
+
         enemy.redness = 0;
 
-        enemy.attackState = "break";
+        enemy.attackState =
+            "break";
 
         enemy.attackBreakRemaining =
             this.attackBreakDuration;
 
         enemy.activeAttack = -1;
+
         enemy.nextAttack = 0;
+
         enemy.attackElapsed = 0;
 
         enemy.meteorsSpawned = 0;
 
         enemy.energyBallsSpawned = 0;
+
         enemy.energyBallsAbsorbed = 0;
+
         enemy.energyBallsReleased = 0;
+
         enemy.energyReleaseStarted = false;
+
         enemy.energyReleaseElapsed = 0;
+
         enemy.energyReleaseBaseAngle = 0;
 
         enemy.lavaBombsThrown = 0;
@@ -205,28 +231,27 @@ const lavaBen = {
             Math.PI *
             2;
 
-        api.aimVelocityAtPlayer(enemy);
+        api.aimVelocityAtPlayer(
+            enemy
+        );
     },
 
     applyRagePhase(enemy, api) {
-        const lostHp =
-            Math.max(
-                0,
-                enemy.maxHp -
-                enemy.hp
-            );
+        const lostHp = Math.max(
+            0,
+            enemy.maxHp - enemy.hp
+        );
 
-        const phase =
-            Math.min(
-                4,
-                Math.floor(
-                    (
-                        lostHp +
-                        0.0001
-                    ) /
-                    200
-                )
-            );
+        const phase = Math.min(
+            4,
+            Math.floor(
+                (
+                    lostHp +
+                    0.0001
+                ) /
+                200
+            )
+        );
 
         if (
             phase ===
@@ -235,8 +260,11 @@ const lavaBen = {
             return;
         }
 
-        enemy.ragePhase = phase;
-        enemy.redness = phase;
+        enemy.ragePhase =
+            phase;
+
+        enemy.redness =
+            phase;
 
         enemy.size =
             this.size +
@@ -249,8 +277,7 @@ const lavaBen = {
 
         enemy.speed =
             enemy.baseLavaBenSpeed +
-            phase *
-            20;
+            phase * 20;
 
         const velocityLength =
             Math.hypot(
@@ -302,8 +329,12 @@ const lavaBen = {
         enemy,
         attackIndex
     ) {
-        enemy.attackState = "active";
-        enemy.activeAttack = attackIndex;
+        enemy.attackState =
+            "active";
+
+        enemy.activeAttack =
+            attackIndex;
+
         enemy.attackElapsed = 0;
 
         if (attackIndex === 0) {
@@ -315,11 +346,12 @@ const lavaBen = {
             enemy.vy = 0;
 
             enemy.energyBallsSpawned = 0;
+
             enemy.energyBallsAbsorbed = 0;
+
             enemy.energyBallsReleased = 0;
 
-            enemy.energyReleaseStarted =
-                false;
+            enemy.energyReleaseStarted = false;
 
             enemy.energyReleaseElapsed = 0;
 
@@ -338,7 +370,8 @@ const lavaBen = {
         const finishedAttack =
             enemy.activeAttack;
 
-        enemy.attackState = "break";
+        enemy.attackState =
+            "break";
 
         enemy.attackBreakRemaining =
             this.attackBreakDuration;
@@ -351,6 +384,7 @@ const lavaBen = {
             3;
 
         enemy.activeAttack = -1;
+
         enemy.attackElapsed = 0;
 
         if (finishedAttack === 1) {
@@ -364,17 +398,16 @@ const lavaBen = {
         enemy,
         api
     ) {
-        const targetCount =
-            Math.min(
-                this.meteorCount,
+        const targetCount = Math.min(
+            this.meteorCount,
 
-                Math.floor(
-                    enemy.attackElapsed /
-                    this.attackDuration *
-                    this.meteorCount +
-                    0.0001
-                )
-            );
+            Math.floor(
+                enemy.attackElapsed /
+                this.attackDuration *
+                this.meteorCount +
+                0.0001
+            )
+        );
 
         while (
             enemy.meteorsSpawned <
@@ -440,8 +473,7 @@ const lavaBen = {
             );
 
         const angle =
-            enemy
-                .energyReleaseBaseAngle +
+            enemy.energyReleaseBaseAngle +
             index *
             Math.PI *
             2 /
@@ -486,8 +518,7 @@ const lavaBen = {
 
                 Math.floor(
                     enemy.attackElapsed /
-                    this
-                        .energyBallSpawnDuration *
+                    this.energyBallSpawnDuration *
                     this.energyBallCount +
                     0.0001
                 )
@@ -506,12 +537,9 @@ const lavaBen = {
         }
 
         if (
-            !enemy
-                .energyReleaseStarted &&
-
+            !enemy.energyReleaseStarted &&
             enemy.energyBallsSpawned >=
                 this.energyBallCount &&
-
             enemy.energyBallsAbsorbed >=
                 this.energyBallCount
         ) {
@@ -528,18 +556,15 @@ const lavaBen = {
             return;
         }
 
-        enemy.energyReleaseElapsed +=
-            dt;
+        enemy.energyReleaseElapsed += dt;
 
         const targetReleaseCount =
             Math.min(
                 this.energyBallCount,
 
                 Math.floor(
-                    enemy
-                        .energyReleaseElapsed /
-                    this
-                        .energyBallReleaseDuration *
+                    enemy.energyReleaseElapsed /
+                    this.energyBallReleaseDuration *
                     this.energyBallCount +
                     0.0001
                 )
@@ -559,7 +584,10 @@ const lavaBen = {
         }
     },
 
-    spawnLavaBomb(enemy, api) {
+    spawnLavaBomb(
+        enemy,
+        api
+    ) {
         const player =
             api.getPlayer();
 
@@ -646,8 +674,7 @@ const lavaBen = {
                 dt;
 
             if (
-                enemy
-                    .attackBreakRemaining <=
+                enemy.attackBreakRemaining <=
                 0
             ) {
                 this.startAttack(
@@ -699,7 +726,9 @@ const lavaBen = {
             enemy.attackElapsed >=
             this.attackDuration
         ) {
-            this.finishAttack(enemy);
+            this.finishAttack(
+                enemy
+            );
         }
     },
 
@@ -711,12 +740,10 @@ const lavaBen = {
         if (
             enemy.attackState ===
                 "active" &&
-
             enemy.activeAttack === 1
         ) {
             enemy.vx = 0;
             enemy.vy = 0;
-
             return;
         }
 
@@ -724,7 +751,8 @@ const lavaBen = {
             Math.hypot(
                 enemy.vx,
                 enemy.vy
-            ) || 1;
+            ) ||
+            1;
 
         enemy.vx =
             enemy.vx /
@@ -736,13 +764,17 @@ const lavaBen = {
             velocityLength *
             enemy.speed;
 
-        api.moveStraight(enemy, dt);
+        api.moveStraight(
+            enemy,
+            dt
+        );
 
         if (
             !enemy.enteredArena &&
             api.isInsideArena(enemy)
         ) {
-            enemy.enteredArena = true;
+            enemy.enteredArena =
+                true;
         }
 
         if (enemy.enteredArena) {
@@ -767,8 +799,7 @@ const lavaBen = {
         );
 
         enemy.bossAnimation +=
-            dt *
-            4;
+            dt * 4;
 
         if (!enemy.enteredArena) {
             return;
@@ -781,7 +812,11 @@ const lavaBen = {
         );
     },
 
-    createShrapnel(x, y, api) {
+    createShrapnel(
+        x,
+        y,
+        api
+    ) {
         const radius =
             api.getEnemyRadius(
                 this.shrapnelSize
@@ -807,18 +842,12 @@ const lavaBen = {
                 x:
                     x +
                     Math.cos(angle) *
-                    (
-                        radius +
-                        8
-                    ),
+                    (radius + 8),
 
                 y:
                     y +
                     Math.sin(angle) *
-                    (
-                        radius +
-                        8
-                    ),
+                    (radius + 8),
 
                 vx:
                     Math.cos(angle) *
@@ -838,13 +867,15 @@ const lavaBen = {
         const canvas =
             api.getCanvas();
 
+        /*
+            INKOMENDE ENERGIEBALLEN
+        */
+
         for (
             let i =
-                incomingEnergyBalls.length -
-                1;
+                incomingEnergyBalls.length - 1;
 
             i >= 0;
-
             i--
         ) {
             const ball =
@@ -925,25 +956,25 @@ const lavaBen = {
             }
         }
 
+        /*
+            UITGAANDE ENERGIEBALLEN
+        */
+
         for (
             let i =
-                outgoingEnergyBalls.length -
-                1;
+                outgoingEnergyBalls.length - 1;
 
             i >= 0;
-
             i--
         ) {
             const ball =
                 outgoingEnergyBalls[i];
 
             ball.x +=
-                ball.vx *
-                dt;
+                ball.vx * dt;
 
             ball.y +=
-                ball.vy *
-                dt;
+                ball.vy * dt;
 
             if (
                 api.playerTouchesCircle(
@@ -969,12 +1000,21 @@ const lavaBen = {
             }
         }
 
+        /*
+            LAVABOMMEN
+
+            Tijdens het vliegen zijn ze
+            expres niet gevaarlijk.
+
+            Alleen de landing en daarna
+            de acht scherven zijn gevaarlijk.
+        */
+
         for (
             let i =
                 lavaBombs.length - 1;
 
             i >= 0;
-
             i--
         ) {
             const bomb =
@@ -1023,17 +1063,6 @@ const lavaBen = {
                 bomb.arcHeight;
 
             if (
-                api.playerTouchesCircle(
-                    bomb.x,
-                    bomb.y,
-                    bomb.radius
-                )
-            ) {
-                api.killPlayer();
-                return;
-            }
-
-            if (
                 bomb.remaining <= 0
             ) {
                 lavaBombs.splice(
@@ -1053,27 +1082,39 @@ const lavaBen = {
                     bomb.targetY,
                     api
                 );
+
+                if (
+                    api.playerTouchesCircle(
+                        bomb.targetX,
+                        bomb.targetY,
+                        bomb.radius
+                    )
+                ) {
+                    api.killPlayer();
+                    return;
+                }
             }
         }
+
+        /*
+            LAVASCHERVEN
+        */
 
         for (
             let i =
                 lavaShrapnel.length - 1;
 
             i >= 0;
-
             i--
         ) {
             const shard =
                 lavaShrapnel[i];
 
             shard.x +=
-                shard.vx *
-                dt;
+                shard.vx * dt;
 
             shard.y +=
-                shard.vy *
-                dt;
+                shard.vy * dt;
 
             if (
                 api.playerTouchesCircle(
@@ -1101,10 +1142,7 @@ const lavaBen = {
     },
 
     drawBelow(ctx) {
-        for (
-            const bomb
-            of lavaBombs
-        ) {
+        for (const bomb of lavaBombs) {
             const progress =
                 Math.max(
                     0,
@@ -1118,6 +1156,7 @@ const lavaBen = {
                 );
 
             ctx.save();
+
             ctx.beginPath();
 
             ctx.arc(
@@ -1129,19 +1168,19 @@ const lavaBen = {
             );
 
             ctx.fillStyle =
-                `rgba(255,80,10,${
-                    0.08 +
+                `rgba(190,0,0,${
+                    0.10 +
                     progress *
-                    0.12
+                    0.22
                 })`;
 
             ctx.fill();
 
             ctx.strokeStyle =
-                `rgba(255,184,58,${
-                    0.48 +
+                `rgba(255,38,22,${
+                    0.50 +
                     progress *
-                    0.46
+                    0.48
                 })`;
 
             ctx.lineWidth = 4;
@@ -1152,14 +1191,15 @@ const lavaBen = {
             ]);
 
             ctx.stroke();
+
             ctx.restore();
         }
     },
 
     drawGlobal(ctx) {
         for (
-            const ball
-            of incomingEnergyBalls
+            const ball of
+            incomingEnergyBalls
         ) {
             drawEnergyBall(
                 ctx,
@@ -1169,8 +1209,8 @@ const lavaBen = {
         }
 
         for (
-            const ball
-            of outgoingEnergyBalls
+            const ball of
+            outgoingEnergyBalls
         ) {
             drawEnergyBall(
                 ctx,
@@ -1179,12 +1219,34 @@ const lavaBen = {
             );
         }
 
-        for (
-            const bomb
-            of lavaBombs
-        ) {
+        /*
+            LAVABOMMEN
+
+            Beginnen klein en groeien
+            naar volledige grootte.
+        */
+
+        for (const bomb of lavaBombs) {
+            const progress =
+                Math.max(
+                    0,
+                    Math.min(
+                        1,
+
+                        1 -
+                        bomb.remaining /
+                        bomb.maxRemaining
+                    )
+                );
+
+            const visualScale =
+                0.18 +
+                progress *
+                0.82;
+
             const r =
-                bomb.radius;
+                bomb.radius *
+                visualScale;
 
             ctx.save();
 
@@ -1202,6 +1264,7 @@ const lavaBen = {
                     -r * 0.28,
                     -r * 0.30,
                     r * 0.08,
+
                     0,
                     0,
                     r
@@ -1241,11 +1304,16 @@ const lavaBen = {
                 gradient;
 
             ctx.shadowBlur = 15;
-            ctx.shadowColor = "#ff4a00";
+
+            ctx.shadowColor =
+                "#ff4a00";
+
             ctx.fill();
 
             ctx.shadowBlur = 0;
-            ctx.strokeStyle = "#ff9d2d";
+
+            ctx.strokeStyle =
+                "#ff9d2d";
 
             ctx.lineWidth =
                 Math.max(
@@ -1255,7 +1323,8 @@ const lavaBen = {
 
             ctx.stroke();
 
-            ctx.strokeStyle = "#ffd55d";
+            ctx.strokeStyle =
+                "#ffd55d";
 
             ctx.lineWidth =
                 Math.max(
@@ -1296,12 +1365,13 @@ const lavaBen = {
             );
 
             ctx.stroke();
+
             ctx.restore();
         }
 
         for (
-            const shard
-            of lavaShrapnel
+            const shard of
+            lavaShrapnel
         ) {
             const r =
                 shard.radius;
@@ -1341,13 +1411,21 @@ const lavaBen = {
 
             ctx.closePath();
 
-            ctx.fillStyle = "#ff7218";
+            ctx.fillStyle =
+                "#ff7218";
+
             ctx.shadowBlur = 10;
-            ctx.shadowColor = "#ff3300";
+
+            ctx.shadowColor =
+                "#ff3300";
+
             ctx.fill();
 
             ctx.shadowBlur = 0;
-            ctx.strokeStyle = "#ffd05c";
+
+            ctx.strokeStyle =
+                "#ffd05c";
+
             ctx.lineWidth = 2;
             ctx.stroke();
 
@@ -1362,26 +1440,28 @@ const lavaBen = {
         const absorbing =
             enemy.attackState ===
                 "active" &&
-
-            enemy.activeAttack ===
-                1;
+            enemy.activeAttack === 1;
 
         const shakeX =
             absorbing
+
                 ? Math.sin(
                     enemy.bossAnimation *
                     13
                 ) *
                 4
+
                 : 0;
 
         const shakeY =
             absorbing
+
                 ? Math.cos(
                     enemy.bossAnimation *
                     11
                 ) *
                 4
+
                 : 0;
 
         const x =
@@ -1399,6 +1479,7 @@ const lavaBen = {
                 x - r * 0.28,
                 y - r * 0.32,
                 r * 0.10,
+
                 x,
                 y,
                 r
@@ -1429,15 +1510,19 @@ const lavaBen = {
             Math.PI * 2
         );
 
-        ctx.fillStyle = gradient;
+        ctx.fillStyle =
+            gradient;
 
         ctx.shadowBlur =
             14 +
             enemy.ragePhase *
             3;
 
-        ctx.shadowColor = "#ff3a00";
+        ctx.shadowColor =
+            "#ff3a00";
+
         ctx.fill();
+
         ctx.shadowBlur = 0;
 
         const image =
@@ -1451,6 +1536,7 @@ const lavaBen = {
             image.naturalWidth > 0
         ) {
             ctx.save();
+
             ctx.beginPath();
 
             ctx.arc(
@@ -1462,12 +1548,15 @@ const lavaBen = {
             );
 
             ctx.clip();
+
             ctx.globalAlpha = 0.74;
 
             ctx.drawImage(
                 image,
+
                 x - r,
                 y - r,
+
                 r * 2,
                 r * 2
             );
@@ -1530,8 +1619,12 @@ const lavaBen = {
                 "rgba(255,205,78,0.78)";
 
             ctx.lineWidth = 5;
+
             ctx.shadowBlur = 14;
-            ctx.shadowColor = "#ff5b00";
+
+            ctx.shadowColor =
+                "#ff5b00";
+
             ctx.stroke();
         }
 
@@ -1544,14 +1637,12 @@ const lavaBen = {
         definition
     ) {
         const boss =
-            api.getEnemies()
-                .find(
-                    enemy =>
-                        enemy.definition ===
-                            definition &&
-
-                        enemy.enteredArena
-                );
+            api.getEnemies().find(
+                enemy =>
+                    enemy.definition ===
+                        definition &&
+                    enemy.enteredArena
+            );
 
         if (!boss) {
             return;
@@ -1570,10 +1661,8 @@ const lavaBen = {
         const height = 26;
 
         const x =
-            canvas.width /
-            2 -
-            width /
-            2;
+            canvas.width / 2 -
+            width / 2;
 
         const y = 68;
 
@@ -1582,6 +1671,7 @@ const lavaBen = {
                 0,
                 Math.min(
                     1,
+
                     boss.hp /
                     boss.maxHp
                 )
@@ -1589,9 +1679,15 @@ const lavaBen = {
 
         ctx.save();
 
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.font = "bold 24px Arial";
+        ctx.textAlign =
+            "center";
+
+        ctx.textBaseline =
+            "middle";
+
+        ctx.font =
+            "bold 24px Arial";
+
         ctx.lineWidth = 5;
 
         ctx.strokeStyle =
@@ -1603,7 +1699,8 @@ const lavaBen = {
             y - 21
         );
 
-        ctx.fillStyle = "#ffb15a";
+        ctx.fillStyle =
+            "#ffb15a";
 
         ctx.fillText(
             "LAVABEN",
@@ -1649,7 +1746,9 @@ const lavaBen = {
             height
         );
 
-        ctx.strokeStyle = "#ffffff";
+        ctx.strokeStyle =
+            "#ffffff";
+
         ctx.lineWidth = 2;
 
         ctx.strokeRect(
@@ -1659,8 +1758,11 @@ const lavaBen = {
             height
         );
 
-        ctx.font = "bold 14px Arial";
-        ctx.fillStyle = "#ffffff";
+        ctx.font =
+            "bold 14px Arial";
+
+        ctx.fillStyle =
+            "#ffffff";
 
         ctx.fillText(
             `${Math.ceil(
@@ -1668,10 +1770,7 @@ const lavaBen = {
             )} / ${boss.maxHp}`,
 
             canvas.width / 2,
-
-            y +
-            height /
-            2
+            y + height / 2
         );
 
         ctx.restore();

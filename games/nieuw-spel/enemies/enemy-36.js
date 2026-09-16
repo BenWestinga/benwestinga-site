@@ -3,19 +3,24 @@ function circleTouchesWave(
     x,
     y,
     radius,
-    widthMultiplier
+    heightMultiplier
 ) {
     const horizontalRadius =
-        enemy.radius * widthMultiplier + radius;
+        enemy.radius +
+        radius;
 
     const verticalRadius =
-        enemy.radius + radius;
+        enemy.radius *
+        heightMultiplier +
+        radius;
 
     const normalizedX =
-        (x - enemy.x) / horizontalRadius;
+        (x - enemy.x) /
+        horizontalRadius;
 
     const normalizedY =
-        (y - enemy.y) / verticalRadius;
+        (y - enemy.y) /
+        verticalRadius;
 
     return (
         normalizedX * normalizedX +
@@ -27,9 +32,10 @@ function circleTouchesWave(
 
 function absorbOverlappingBullets(
     enemy,
-    widthMultiplier
+    heightMultiplier
 ) {
-    const bullets = window.bullets;
+    const bullets =
+        window.bullets;
 
     if (!Array.isArray(bullets)) {
         return;
@@ -40,7 +46,8 @@ function absorbOverlappingBullets(
         i >= 0;
         i--
     ) {
-        const bullet = bullets[i];
+        const bullet =
+            bullets[i];
 
         if (!bullet) {
             continue;
@@ -52,7 +59,7 @@ function absorbOverlappingBullets(
                 bullet.x,
                 bullet.y,
                 bullet.radius,
-                widthMultiplier
+                heightMultiplier
             )
         ) {
             bullet.remainingPierce = 0;
@@ -68,18 +75,24 @@ const lavaWave = {
     behavior: "horizontal-lava-wave",
 
     hp: 1,
+
     size: 18,
+
     speed: "mediumFast",
 
-    widthMultiplier: 2.5,
+    /*
+        De golf is nu 2.5 keer hoger
+        in plaats van 2.5 keer breder.
+    */
+
+    heightMultiplier: 2.5,
 
     color: "#ff5a0a",
-    image: "lava.png",
 
     modifyDamage(enemy) {
         absorbOverlappingBullets(
             enemy,
-            this.widthMultiplier
+            this.heightMultiplier
         );
 
         return 0;
@@ -97,9 +110,9 @@ const lavaWave = {
                 definition.size
             );
 
-        const halfWidth =
+        const halfHeight =
             radius *
-            definition.widthMultiplier;
+            definition.heightMultiplier;
 
         const side =
             Math.random() < 0.5
@@ -108,28 +121,28 @@ const lavaWave = {
 
         const position =
             api.randomSpawnPosition(
-                halfWidth,
-                {
-                    side
-                }
+                radius,
+                { side }
             );
 
         const minimumY =
-            radius + 20;
+            halfHeight + 20;
 
         const maximumY =
             canvas.height -
-            radius -
+            halfHeight -
             20;
 
         position.y =
             maximumY > minimumY
+
                 ? minimumY +
                   Math.random() *
                   (
                       maximumY -
                       minimumY
                   )
+
                 : canvas.height / 2;
 
         return api.createEntity(
@@ -164,11 +177,14 @@ const lavaWave = {
 
         enemy.vy = 0;
 
-        api.moveStraight(enemy, dt);
+        api.moveStraight(
+            enemy,
+            dt
+        );
 
         absorbOverlappingBullets(
             enemy,
-            this.widthMultiplier
+            this.heightMultiplier
         );
 
         const player =
@@ -180,7 +196,7 @@ const lavaWave = {
                 player.x,
                 player.y,
                 player.radius,
-                this.widthMultiplier
+                this.heightMultiplier
             )
         ) {
             api.killPlayer();
@@ -202,18 +218,14 @@ const lavaWave = {
         }
     },
 
-    draw(enemy, ctx, api) {
-        const r = enemy.radius;
+    draw(enemy, ctx) {
+        const r =
+            enemy.radius;
 
         const direction =
             enemy.vx >= 0
                 ? 1
                 : -1;
-
-        const image =
-            api.getAssetImage(
-                this.image
-            );
 
         ctx.save();
 
@@ -222,12 +234,23 @@ const lavaWave = {
             enemy.y
         );
 
+        /*
+            Horizontaal spiegelen voor
+            de bewegingsrichting.
+
+            Verticaal 2.5 keer uitrekken.
+        */
+
         ctx.scale(
-            direction < 0
-                ? -this.widthMultiplier
-                : this.widthMultiplier,
-            1
+            direction < 0 ? -1 : 1,
+            this.heightMultiplier
         );
+
+        /*
+            Eén eenvoudige gradient.
+            Geen lava.png, clipping of
+            zware shadows meer.
+        */
 
         const gradient =
             ctx.createLinearGradient(
@@ -239,17 +262,17 @@ const lavaWave = {
 
         gradient.addColorStop(
             0,
-            "#8d1d08"
+            "#8c1708"
         );
 
         gradient.addColorStop(
-            0.48,
-            "#ff5b08"
+            0.62,
+            "#ee3b08"
         );
 
         gradient.addColorStop(
             1,
-            "#ffd04a"
+            "#ff8b20"
         );
 
         ctx.beginPath();
@@ -296,41 +319,20 @@ const lavaWave = {
 
         ctx.closePath();
 
-        ctx.fillStyle = gradient;
-        ctx.shadowBlur = 18;
-
-        ctx.shadowColor =
-            "rgba(255,80,5,0.85)";
+        ctx.fillStyle =
+            gradient;
 
         ctx.fill();
-        ctx.shadowBlur = 0;
 
-        if (
-            image &&
-            image.complete &&
-            image.naturalWidth > 0
-        ) {
-            ctx.save();
-            ctx.clip();
-            ctx.globalAlpha = 0.48;
+        ctx.strokeStyle =
+            "#ff9d36";
 
-            ctx.drawImage(
-                image,
-                -r,
-                -r,
-                r * 2,
-                r * 2
-            );
-
-            ctx.restore();
-        }
-
-        ctx.strokeStyle = "#ffbd45";
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 3;
         ctx.stroke();
 
         ctx.restore();
     }
 };
+
 
 export default lavaWave;
