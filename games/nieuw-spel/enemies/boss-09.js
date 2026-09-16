@@ -121,7 +121,7 @@ const lavaBen = {
 
     speed: "medium",
 
-    image: "ben.png",
+    image: "Ben.png",
 
     hideWorldHealthBar: true,
 
