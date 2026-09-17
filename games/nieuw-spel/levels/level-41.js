@@ -44,13 +44,14 @@ export const config = {
 
     spawnGroups: [
 
-        { enemy: "lavaGoon", count: 5, start: 5, duration: 175},
-        { enemy: "meteor", count: 5, start: 5, duration: 175},
-        { enemy: "lavaWave", count: 5, start: 5, duration: 175},
-        { enemy: "lavaGolem", count: 5, start: 5, duration: 175},
-        { enemy: "lavaBurrower", count: 5, start: 5, duration: 175},
-        { enemy: "emberHealer", count: 5, start: 5, duration: 175},
-        { enemy: "ashPhantom", count: 5, start: 5, duration: 1},
+        { enemy: "lavaGoon", count: 20, start: 5, duration: 10},
+        { enemy: "meteor", count: 5, start: 20, duration: 1},
+        { enemy: "lavaWave", count: 5, start: 25, duration: 10},
+        { enemy: "lavaGolem", count: 1, start: 30, duration: 10},
+        { enemy: "lavaWizard", count: 2, start: 50, duration: 50},
+        { enemy: "lavaGoon", count: 110, start: 60, duration: 90},
+        { enemy: "meteor", count: 40, start: 80, duration: 70},
+        { enemy: "lavaWave", count: 15, start: 95, duration: 55}
         
     ]
 };
