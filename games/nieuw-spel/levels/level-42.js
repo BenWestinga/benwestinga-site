@@ -55,7 +55,8 @@ export const config = {
         { enemy: "lavaWave", count: 60, start: 5, duration: 130},
         { enemy: "meteor", count: 30, start: 5, duration: 130},
         { enemy: "plasmaGuy", count: 3, start: 5, duration: 130},
-        { enemy: "lavaGolem", count: 1, start: 5, duration: 1}
+        { enemy: "lavaGolem", count: 1, start: 5, duration: 1},
+        { enemy: "lavaGoon", count: 50, start: 5, duration: 130}
     ]
 };
 
