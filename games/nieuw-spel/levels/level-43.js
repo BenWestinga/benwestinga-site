@@ -63,7 +63,7 @@ export const config = {
         { enemy: "lavaGoon", count: 100, start: 5, duration: 145},
         { enemy: "plasmaGuy", count: 1, start: 110, duration: 1},
         { enemy: "lavaWizard", count: 1, start: 110, duration: 1},
-        { enemy: "lavaBurrower", count: 10, start: 125, duration: 10},
+        { enemy: "lavaBurrower", count: 10, start: 125, duration: 10}
     ]
 };
 
