@@ -1088,6 +1088,16 @@
 
                     enemyDamage
                 );
+                /*
+                    De enemy-death kan de speler doden
+                    en ondertussen alle kogels wissen.
+                */
+                if (
+                    window.levelPlayer?.alive !== true ||
+                    !bullets.includes(bullet)
+                ) {
+                    return;
+                }
 
 
                 if (
