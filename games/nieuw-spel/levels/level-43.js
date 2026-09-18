@@ -52,8 +52,8 @@ export const config = {
 
     spawnGroups: [
 
-        { enemy: "lavaBurrower", count: 5, start: 5, duration: 5},
-        { enemy: "meteor", count: 30, start: 10, duration: 25},
+        { enemy: "lavaBurrower", count: 10, start: 5, duration: 25},
+        { enemy: "meteor", count: 40, start: 10, duration: 45},
         { enemy: "plasmaGuy", count: 1, start: 50, duration: 1},
         { enemy: "lavaWizard", count: 1, start: 50, duration: 1},
         { enemy: "lavaBurrower", count: 8, start: 65, duration: 15},
