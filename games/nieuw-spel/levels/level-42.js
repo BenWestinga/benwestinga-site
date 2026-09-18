@@ -52,9 +52,10 @@ export const config = {
 
     spawnGroups: [
 
-        { enemy: "lavaWave", count: 160, start: 5, duration: 130},
-        { enemy: "meteor", count: 130, start: 5, duration: 130},
+        { enemy: "lavaWave", count: 60, start: 5, duration: 130},
+        { enemy: "meteor", count: 30, start: 5, duration: 130},
         { enemy: "plasmaGuy", count: 3, start: 5, duration: 130},
+        { enemy: "lavaGolem", count: 1, start: 5, duration: 1}
     ]
 };
 
