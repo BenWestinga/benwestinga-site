@@ -52,12 +52,12 @@ export const config = {
 
     spawnGroups: [
 
-        { enemy: "cinderSplitter", count: 8, start: 5, duration: 25},
-        { enemy: "lavaGolem", count: 4, start: 5, duration: 45},
-        { enemy: "lavaBurrower", count: 12, start: 5, duration: 130},
-        { enemy: "cinderSplitter", count: 8, start: 50, duration: 45},
-        { enemy: "cinderSplitter", count: 8, start: 100, duration: 45},
-        { enemy: "lavaWave", count: 40, start: 5, duration: 125},
+        { enemy: "cinderSplitter", count: 7, start: 5, duration: 25},
+        { enemy: "lavaGolem", count: 2, start: 5, duration: 45},
+        { enemy: "lavaBurrower", count: 10, start: 5, duration: 130},
+        { enemy: "cinderSplitter", count: 7, start: 50, duration: 45},
+        { enemy: "cinderSplitter", count: 7, start: 100, duration: 45},
+        { enemy: "lavaWave", count: 30, start: 5, duration: 125},
         
     ]
 };
