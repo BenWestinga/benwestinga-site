@@ -8,12 +8,20 @@ import lavaGolem, {
 
 import lavaWizard from "../enemies/enemy-38.js";
 import plasmaGuy from "../enemies/enemy-39.js";
+import lavaBen from "../enemies/boss-09.js";
+import lavaBurrower from "../enemies/enemy-40.js";
+import emberHealer from "../enemies/enemy-41.js";
+import ashPhantom from "../enemies/enemy-42.js";
+import cinderSplitter from "../enemies/enemy-43.js";
+import fireChainTwins from "../enemies/enemy-44.js";
+
+
 
 
 export const config = {
-    number: 41,
+    number: 42,
 
-    name: "Level 41",
+    name: "Level 42",
 
     startDelayMs: 5000,
 
@@ -30,26 +38,19 @@ export const config = {
         lavaGolem,
         lavaGolemite,
         lavaWizard,
-        plasmaGuy
+        plasmaGuy,
+        lavaBen,
+        lavaBurrower,
+        emberHealer,
+        ashPhantom,
+        cinderSplitter,
+        fireChainTwins
     },
 
     spawnGroups: [
-        /*
-            PLAATS HIER DE ENEMY WAVES.
 
-            Beschikbare namen:
-
-            "lavaGoon"
-            "meteor"
-            "lavaWave"
-            "lavaGolem"
-            "lavaWizard"
-            "plasmaGuy"
-
-            Lava Golemites worden automatisch
-            door een gedode Lava Golem gespawned.
-            Hiervoor is geen eigen wave nodig.
-        */
+        { enemy: "cinderSplitter", count: 4, start: 5, duration: 40},
+        { enemy: "fireChainTwins", count: 4, start: 15, duration: 50},
     ]
 };
 

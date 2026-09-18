@@ -58,6 +58,16 @@ const meteor = {
     },
 
     modifyDamage(enemy) {
+        /*
+            Tijdens de landingsanimatie krijgt de
+            meteoriet geen damage, maar kogels
+            vliegen er wel gewoon doorheen.
+        */
+
+        if (enemy.fallRemaining > 0) {
+            return 0;
+        }
+
         absorbOverlappingBullets(enemy);
         return 0;
     },
