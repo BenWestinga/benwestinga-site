@@ -998,10 +998,21 @@
                 /*
     Kogels vliegen door een vallende meteoriet.
                 */
-                if (
-                    enemy.definition?.id === "meteor" &&
-                    enemy.fallRemaining > 0
-                ) {
+                const burrowerMode =
+                    enemy.lavaBurrowerState?.mode ??
+                    enemy.stoneBurrowerState?.mode;
+
+                const bulletPassesThrough =
+                    (
+                        enemy.definition?.id === "meteor" &&
+                        enemy.fallRemaining > 0
+                    ) ||
+                    (
+                        enemy.definition?.id === "lava-burrower" &&
+                        burrowerMode !== "surface"
+                    );
+
+                if (bulletPassesThrough) {
                     continue;
                 }
 
