@@ -57,9 +57,9 @@ export const config = {
         { enemy: "meteor", count: 30, start: 5, duration: 150},
         { enemy: "lavaWave", count: 15, start: 5, duration: 150},
         { enemy: "lavaGolem", count: 2, start: 5, duration: 150},
-        { enemy: "lavaWizard", count: 4, start: 5, duration: 150},
+        { enemy: "lavaWizard", count: 2, start: 5, duration: 150},
         { enemy: "plasmaGuy", count: 2, start: 5, duration: 150},
-        { enemy: "lavaBurrower", count: 12, start: 5, duration: 150},
+        { enemy: "lavaBurrower", count: 10, start: 5, duration: 150},
         { enemy: "cinderSplitter", count: 10, start: 5, duration: 150},
         { enemy: "lavaGoon", count: 300, start: 160, duration: 240}
         
