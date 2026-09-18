@@ -12,7 +12,9 @@ import lavaBen from "../enemies/boss-09.js";
 import lavaBurrower from "../enemies/enemy-40.js";
 import emberHealer from "../enemies/enemy-41.js";
 import ashPhantom from "../enemies/enemy-42.js";
-import cinderSplitter from "../enemies/enemy-43.js";
+import cinderSplitter, {
+    cinder
+} from "../enemies/enemy-43.js";
 import fireChainTwins from "../enemies/enemy-44.js";
 
 
@@ -44,13 +46,15 @@ export const config = {
         emberHealer,
         ashPhantom,
         cinderSplitter,
+        cinder,
         fireChainTwins
     },
 
     spawnGroups: [
 
-        { enemy: "cinderSplitter", count: 4, start: 5, duration: 40},
-        { enemy: "fireChainTwins", count: 4, start: 15, duration: 50},
+        { enemy: "lavaWave", count: 160, start: 5, duration: 130},
+        { enemy: "meteor", count: 130, start: 5, duration: 130},
+        { enemy: "plasmaGuy", count: 3, start: 5, duration: 130},
     ]
 };
 

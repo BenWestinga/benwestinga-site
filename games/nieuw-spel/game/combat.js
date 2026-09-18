@@ -995,6 +995,16 @@
                     continue;
                 }
 
+                /*
+    Kogels vliegen door een vallende meteoriet.
+                */
+                if (
+                    enemy.definition?.id === "meteor" &&
+                    enemy.fallRemaining > 0
+                ) {
+                    continue;
+                }
+
 
                 if (
                     bullet
