@@ -21,9 +21,9 @@ import fireChainTwins from "../enemies/enemy-44.js";
 
 
 export const config = {
-    number: 44,
+    number: 45,
 
-    name: "Level 44",
+    name: "Level 45",
 
     startDelayMs: 5000,
 
