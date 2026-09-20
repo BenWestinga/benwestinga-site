@@ -61,7 +61,7 @@ export const config = {
         { enemy: "lavaGoon", count: 10, start: 50, duration: 30},
         { enemy: "ashPhantom", count: 5, start: 105, duration: 5},
         { enemy: "lavaBurrower", count: 3, start: 105, duration: 15},
-        { enemy: "emberHealer", count: 2, start: 110, duration: 10},
+        { enemy: "emberHealer", count: 1, start: 110, duration: 10},
         { enemy: "meteor", count: 10, start: 5, duration: 135},
         { enemy: "lavaBurrower", count: 4, start: 120, duration: 5},
         { enemy: "lavaGoon", count: 20, start: 125, duration: 15}
