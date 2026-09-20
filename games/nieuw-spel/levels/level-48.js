@@ -53,7 +53,7 @@ export const config = {
     spawnGroups: [
 
         { enemy: "fireChainTwins", count: 5, start: 5, duration: 1},
-        { enemy: "lavaGoon", count: 500, start: 20, duration: 180},
+        { enemy: "lavaGoon", count: 350, start: 20, duration: 180},
         { enemy: "fireChainTwins", count: 5, start: 50, duration: 1},
         { enemy: "fireChainTwins", count: 5, start: 100, duration: 1},
         { enemy: "fireChainTwins", count: 5, start: 150, duration: 1},
