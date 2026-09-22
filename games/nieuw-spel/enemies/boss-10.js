@@ -204,7 +204,7 @@ const finalLavaBen = {
 
 
     energyBallSpeedMultiplier:
-        2,
+        1,
 
 
     lavaBombCount:
