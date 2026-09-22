@@ -163,6 +163,8 @@ const LEVEL_RADIUS = 43;
 
 const BOSS_RADIUS = 52;
 
+const FINAL_BOSS_RADIUS = 68;
+
 const LEVEL_INTERACT_RADIUS = 72;
 
 
@@ -4561,6 +4563,282 @@ function drawMarkerTexture(
 // ======================================================
 // LEVEL MARKERS
 // ======================================================
+function drawFinalBossFire(
+    x,
+    y,
+    radius,
+    unlocked
+) {
+    const time =
+        performance.now() /
+        1000;
+
+    const strength =
+        unlocked
+            ? 1
+            : 0.42;
+
+    const pulse =
+        1 +
+        Math.sin(
+            time * 3
+        ) *
+        0.07;
+
+    ctx.save();
+
+    /*
+        Grote pulserende vuurgloed.
+    */
+
+    const glowRadius =
+        radius *
+        1.72 *
+        pulse;
+
+    const glow =
+        ctx.createRadialGradient(
+            x,
+            y,
+            radius * 0.35,
+
+            x,
+            y,
+            glowRadius
+        );
+
+    glow.addColorStop(
+        0,
+        `rgba(255,230,80,${
+            0.38 * strength
+        })`
+    );
+
+    glow.addColorStop(
+        0.45,
+        `rgba(255,70,10,${
+            0.32 * strength
+        })`
+    );
+
+    glow.addColorStop(
+        1,
+        "rgba(120,0,0,0)"
+    );
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y,
+        glowRadius,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fillStyle = glow;
+    ctx.fill();
+
+    /*
+        Bewegende vlammen rondom
+        de ster van level 50.
+    */
+
+    const flameCount = 14;
+
+    for (
+        let i = 0;
+        i < flameCount;
+        i++
+    ) {
+        const baseAngle =
+            i *
+            Math.PI *
+            2 /
+            flameCount;
+
+        const angle =
+            baseAngle +
+            Math.sin(
+                time * 2.4 +
+                i * 1.7
+            ) *
+            0.10;
+
+        const flameLength =
+            radius *
+            (
+                0.34 +
+                0.12 *
+                (
+                    0.5 +
+                    0.5 *
+                    Math.sin(
+                        time * 5 +
+                        i * 2.1
+                    )
+                )
+            );
+
+        const innerRadius =
+            radius * 0.82;
+
+        const outerRadius =
+            radius +
+            flameLength;
+
+        const sideWidth =
+            0.12;
+
+        const leftAngle =
+            angle -
+            sideWidth;
+
+        const rightAngle =
+            angle +
+            sideWidth;
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x +
+            Math.cos(leftAngle) *
+            innerRadius,
+
+            y +
+            Math.sin(leftAngle) *
+            innerRadius
+        );
+
+        ctx.quadraticCurveTo(
+            x +
+            Math.cos(angle) *
+            radius *
+            1.08,
+
+            y +
+            Math.sin(angle) *
+            radius *
+            1.08,
+
+            x +
+            Math.cos(angle) *
+            outerRadius,
+
+            y +
+            Math.sin(angle) *
+            outerRadius
+        );
+
+        ctx.quadraticCurveTo(
+            x +
+            Math.cos(angle) *
+            radius *
+            1.03,
+
+            y +
+            Math.sin(angle) *
+            radius *
+            1.03,
+
+            x +
+            Math.cos(rightAngle) *
+            innerRadius,
+
+            y +
+            Math.sin(rightAngle) *
+            innerRadius
+        );
+
+        ctx.closePath();
+
+        ctx.fillStyle =
+            i % 2 === 0
+                ? `rgba(255,55,5,${
+                    0.82 * strength
+                })`
+                : `rgba(255,170,20,${
+                    0.88 * strength
+                })`;
+
+        ctx.fill();
+    }
+
+    /*
+        Rondvliegende vonken.
+    */
+
+    const sparkCount = 10;
+
+    for (
+        let i = 0;
+        i < sparkCount;
+        i++
+    ) {
+        const progress =
+            (
+                time * 0.55 +
+                i / sparkCount
+            ) % 1;
+
+        const angle =
+            i *
+            Math.PI *
+            2 /
+            sparkCount +
+            time *
+            (
+                i % 2 === 0
+                    ? 0.35
+                    : -0.28
+            );
+
+        const distance =
+            radius *
+            (
+                1.05 +
+                progress * 0.72
+            );
+
+        const sparkX =
+            x +
+            Math.cos(angle) *
+            distance;
+
+        const sparkY =
+            y +
+            Math.sin(angle) *
+            distance -
+            progress * 10;
+
+        const sparkRadius =
+            4 *
+            (
+                1 -
+                progress * 0.65
+            );
+
+        ctx.beginPath();
+
+        ctx.arc(
+            sparkX,
+            sparkY,
+            sparkRadius,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fillStyle =
+            `rgba(255,210,65,${
+                (1 - progress) *
+                strength
+            })`;
+
+        ctx.fill();
+    }
+
+    ctx.restore();
+}
 
 function drawLevelMarkers() {
 
@@ -4589,7 +4867,9 @@ function drawLevelMarkers() {
             bossLevels.has(
                 levelNumber
             );
-
+        
+        const finalBoss =
+            levelNumber === 50;
 
         const unlocked =
             StoryProgress
@@ -4607,14 +4887,28 @@ function drawLevelMarkers() {
 
         const radius =
 
-            boss
+            finalBoss
 
-                ? BOSS_RADIUS
+                ? FINAL_BOSS_RADIUS
 
-                : LEVEL_RADIUS;
+                : boss
 
+                    ? BOSS_RADIUS
+
+                    : LEVEL_RADIUS;
 
         // NORMALE TEXTURE
+
+        if (
+            finalBoss
+        ) {
+            drawFinalBossFire(
+                position.x,
+                position.y,
+                radius,
+                unlocked
+            );
+        }
 
         drawMarkerTexture(
 
