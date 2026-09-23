@@ -1140,6 +1140,17 @@
 
                         isGuardianShielded
                     });
+                
+                /*
+                    Een upgrade-effect kan eveneens
+                    de speler doden of de kogel verwijderen.
+                */
+                if (
+                    window.levelPlayer?.alive !== true ||
+                    !bullets.includes(bullet)
+                ) {
+                    return;
+                }
 
 
                 if (

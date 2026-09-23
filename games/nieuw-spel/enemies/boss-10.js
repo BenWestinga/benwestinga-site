@@ -173,7 +173,7 @@ const finalLavaBen = {
     */
 
     energyBallCount:
-        80,
+        50,
 
 
     energyBallSize:
@@ -181,7 +181,7 @@ const finalLavaBen = {
 
 
     energyBallSpeed:
-        "fast",
+        "slow",
 
 
     energyBallSpawnDuration:
@@ -196,7 +196,7 @@ const finalLavaBen = {
     */
 
     energyBallTravelDuration:
-        1.5,
+        6,
 
 
     energyBallReleaseDuration:
@@ -204,12 +204,14 @@ const finalLavaBen = {
 
 
     energyBallSpeedMultiplier:
-        1,
+        0.25,
 
 
     lavaBombCount:
         10,
-
+    
+    energyBallPlayerSafeRadius:
+        100,
 
     lavaBombSize:
         15.5,
@@ -712,89 +714,104 @@ const finalLavaBen = {
             api.getCanvas();
 
 
+        const player =
+            api.getPlayer();
+
+
+        let x = 0;
+
+        let y = 0;
+
+
         /*
-            Willekeurige buitenrand.
-
-            Er is bewust GEEN veilige
-            afstand tot de speler.
-
-            De bal kan dus vlak naast
-            een speler verschijnen die
-            bij de rand staat.
+            Maximaal 50 pogingen om een plek
+            buiten de veilige radius van de
+            speler te vinden.
         */
 
-        const edge =
-            Math.floor(
-                Math.random() *
-                4
-            );
-
-
-        let x;
-
-        let y;
-
-
-        if (
-            edge === 0
+        for (
+            let attempt = 0;
+            attempt < 50;
+            attempt++
         ) {
-            x =
-                -radius -
-                1;
+            const edge =
+                Math.floor(
+                    Math.random() *
+                    4
+                );
 
 
-            y =
-                Math.random() *
-                canvas.height;
+            if (
+                edge === 0
+            ) {
+                x =
+                    -radius -
+                    1;
 
-        } else if (
-            edge === 1
-        ) {
-            x =
-                canvas.width +
+
+                y =
+                    Math.random() *
+                    canvas.height;
+
+            } else if (
+                edge === 1
+            ) {
+                x =
+                    canvas.width +
+                    radius +
+                    1;
+
+
+                y =
+                    Math.random() *
+                    canvas.height;
+
+            } else if (
+                edge === 2
+            ) {
+                x =
+                    Math.random() *
+                    canvas.width;
+
+
+                y =
+                    -radius -
+                    1;
+
+            } else {
+                x =
+                    Math.random() *
+                    canvas.width;
+
+
+                y =
+                    canvas.height +
+                    radius +
+                    1;
+            }
+
+
+            const distanceToPlayer =
+                Math.hypot(
+                    x - player.x,
+                    y - player.y
+                );
+
+
+            if (
+                distanceToPlayer >=
+
+                this
+                    .energyBallPlayerSafeRadius +
+
                 radius +
-                1;
 
-
-            y =
-                Math.random() *
-                canvas.height;
-
-        } else if (
-            edge === 2
-        ) {
-            x =
-                Math.random() *
-                canvas.width;
-
-
-            y =
-                -radius -
-                1;
-
-        } else {
-            x =
-                Math.random() *
-                canvas.width;
-
-
-            y =
-                canvas.height +
-                radius +
-                1;
+                player.radius
+            ) {
+                break;
+            }
         }
 
-
-        /*
-            Boss 09 bewaart zijn ballen
-            in eigen interne arrays.
-
-            Door tijdelijk deze exacte
-            spawnpositie terug te geven,
-            blijven tekenen, collision
-            en opruimen van Boss 09
-            volledig werken.
-        */
 
         const originalRandomSpawnPosition =
             api.randomSpawnPosition;
@@ -821,7 +838,6 @@ const finalLavaBen = {
                 originalRandomSpawnPosition;
         }
     },
-
 
     spawnOutgoingEnergyBall(
         enemy,
