@@ -1,5 +1,4 @@
-import lavaBen
-from "./boss-09.js";
+import lavaBen from "./boss-09.js";
 
 
 function pointSegmentDistance(
@@ -10,63 +9,28 @@ function pointSegmentDistance(
     x2,
     y2
 ) {
-    const dx =
-        x2 - x1;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const lengthSquared = dx * dx + dy * dy;
 
-
-    const dy =
-        y2 - y1;
-
-
-    const lengthSquared =
-        dx * dx +
-        dy * dy;
-
-
-    if (
-        lengthSquared === 0
-    ) {
-        return Math.hypot(
-            px - x1,
-            py - y1
-        );
+    if (lengthSquared === 0) {
+        return Math.hypot(px - x1, py - y1);
     }
 
+    const progress = Math.max(
+        0,
+        Math.min(
+            1,
+            (
+                (px - x1) * dx +
+                (py - y1) * dy
+            ) /
+            lengthSquared
+        )
+    );
 
-    const progress =
-        Math.max(
-            0,
-
-            Math.min(
-                1,
-
-                (
-                    (
-                        px - x1
-                    ) *
-                    dx +
-
-                    (
-                        py - y1
-                    ) *
-                    dy
-                ) /
-                lengthSquared
-            )
-        );
-
-
-    const closestX =
-        x1 +
-        dx *
-        progress;
-
-
-    const closestY =
-        y1 +
-        dy *
-        progress;
-
+    const closestX = x1 + dx * progress;
+    const closestY = y1 + dy * progress;
 
     return Math.hypot(
         px - closestX,
@@ -78,278 +42,124 @@ function pointSegmentDistance(
 const finalLavaBen = {
     ...lavaBen,
 
+    id: "final-lava-ben",
+    name: "Final LavaBen",
+    behavior: "final-lava-ben-boss",
 
-    id:
-        "final-lava-ben",
+    boss: true,
 
+    hp: 2000,
+    size: 10,
+    speed: "medium",
 
-    name:
-        "Final LavaBen",
+    image: "Ben.png",
 
+    attackDuration: 15,
+    attackBreakDuration: 4,
 
-    behavior:
-        "final-lava-ben-boss",
-
-
-    boss:
-        true,
-
-
-    hp:
-        2000,
-
+    meteorCount: 35,
 
     /*
-        Boss 09 heeft size 8.
-
-        +2 size betekent dus size 10.
+        Attack 2: energieballen.
     */
 
-    size:
-        10,
-
-
-    speed:
-        "medium",
-
+    energyBallCount: 50,
+    energyBallSize: 1.5,
+    energyBallSpeed: "slow",
+    energyBallSpawnDuration: 8,
 
     /*
-        Exact met hoofdletter B.
+        Hogere tijd = langzamer naar
+        de boss vliegen.
     */
 
-    image:
-        "Ben.png",
+    energyBallTravelDuration: 6,
 
-
-    hideWorldHealthBar:
-        true,
-
-
-    alwaysShowHealthBar:
-        true,
-
-
-    hideLevelTitleWhenActive:
-        true,
-
+    energyBallReleaseDuration: 3,
 
     /*
-        Zelfde aanvalsduur als Boss 09.
+        De uitgespuugde ballen gaan
+        op 25% van hun normale snelheid.
     */
 
-    attackDuration:
-        15,
-
+    energyBallSpeedMultiplier: 0.25,
 
     /*
-        Boss 09 heeft 8 seconden pauze.
-
-        Deze boss heeft dus exact
-        twee keer minder pauze.
+        Binnen 100 pixels rondom de
+        speler mogen geen ballen spawnen.
     */
 
-    attackBreakDuration:
-        4,
+    energyBallPlayerSafeRadius: 100,
 
+    lavaBombCount: 10,
+    lavaBombSize: 15.5,
+    lavaBombTravelDuration: 2.8,
+    lavaBombArcHeight: 170,
 
-    /*
-        Boss 09 heeft 30 meteoren.
+    shrapnelCount: 8,
+    shrapnelSize: 1.5,
+    shrapnelSpeed: "medium",
 
-        Deze boss heeft +5.
-    */
+    landingDuration: 1,
 
-    meteorEnemy:
-        "meteor",
-
-
-    meteorCount:
-        35,
-
-
-    /*
-        Boss 09 heeft 40 energieballen.
-
-        Deze boss heeft 80.
-    */
-
-    energyBallCount:
-        50,
-
-
-    energyBallSize:
-        1.5,
-
-
-    energyBallSpeed:
-        "slow",
-
-
-    energyBallSpawnDuration:
-        8,
-
-
-    /*
-        De ballen vliegen in 1.5 seconde
-        naar de boss in plaats van 3.
-
-        Dus twee keer sneller.
-    */
-
-    energyBallTravelDuration:
-        6,
-
-
-    energyBallReleaseDuration:
-        3,
-
-
-    energyBallSpeedMultiplier:
-        0.25,
-
-
-    lavaBombCount:
-        10,
-    
-    energyBallPlayerSafeRadius:
-        100,
-
-    lavaBombSize:
-        15.5,
-
-
-    lavaBombTravelDuration:
-        2.8,
-
-
-    lavaBombArcHeight:
-        170,
-
-
-    shrapnelCount:
-        8,
-
-
-    shrapnelSize:
-        1.5,
-
-
-    shrapnelSpeed:
-        "medium",
-
-
-    landingDuration:
-        1,
-
-
-    /*
-        Twee draaiende lijnen.
-
-        1.8 radiaal per seconde is
-        redelijk snel.
-    */
-
-    spiralSpeed:
-        1.8,
-
-
-    spiralWidth:
-        18,
+    spiralSpeed: 0.6,
+    spiralWidth: 18,
 
 
     onSpawn(
         enemy,
         api
     ) {
-        /*
-            Eerst alle bestaande Boss 09
-            instellingen activeren.
-        */
-
-        lavaBen
-            .onSpawn
-            .call(
-                this,
-                enemy,
-                api
-            );
-
+        lavaBen.onSpawn.call(
+            this,
+            enemy,
+            api
+        );
 
         const player =
             api.getPlayer();
 
-
-        /*
-            Spawners verschijnen bij:
-
-            1900 HP
-            1800 HP
-            ...
-            100 HP
-
-            Dat zijn exact 19 Spawners.
-        */
-
         enemy.nextSpawnerHp =
             1900;
 
-
         enemy.spawnersCreated =
             0;
-
 
         enemy.spiralAngle =
             Math.random() *
             Math.PI *
             2;
 
-
-        /*
-            Boss landt meteen op de plek
-            waar de speler stond toen
-            level 50 begon.
-        */
-
         enemy.landing =
             true;
-
 
         enemy.landingTimer =
             this.landingDuration;
 
-
         enemy.landingMax =
             this.landingDuration;
-
 
         enemy.landingTargetX =
             player.x;
 
-
         enemy.landingTargetY =
             player.y;
-
 
         enemy.landingStartY =
             -enemy.radius *
             4;
 
-
         enemy.x =
             enemy.landingTargetX;
-
 
         enemy.y =
             enemy.landingStartY;
 
-
         enemy.vx = 0;
-
         enemy.vy = 0;
-
 
         enemy.enteredArena =
             false;
-
 
         enemy.collidesWithPlayer =
             false;
@@ -359,22 +169,11 @@ const finalLavaBen = {
     getSpawnerWorld(
         spawnerNumber
     ) {
-        /*
-            Spawner 1 t/m 4:
-            wereld 1.
-        */
-
         if (
             spawnerNumber <= 4
         ) {
             return 1;
         }
-
-
-        /*
-            Spawner 5 t/m 8:
-            wereld 2.
-        */
 
         if (
             spawnerNumber <= 8
@@ -382,35 +181,17 @@ const finalLavaBen = {
             return 2;
         }
 
-
-        /*
-            Spawner 9 t/m 12:
-            wereld 3.
-        */
-
         if (
             spawnerNumber <= 12
         ) {
             return 3;
         }
 
-
-        /*
-            Spawner 13 t/m 16:
-            wereld 4.
-        */
-
         if (
             spawnerNumber <= 16
         ) {
             return 4;
         }
-
-
-        /*
-            Spawner 17 t/m 19:
-            wereld 5.
-        */
 
         return 5;
     },
@@ -423,16 +204,13 @@ const finalLavaBen = {
         const canvas =
             api.getCanvas();
 
-
         const player =
             api.getPlayer();
-
 
         const margin =
             85;
 
-
-        let bestPosition = {
+        let best = {
             x:
                 canvas.width /
                 2,
@@ -441,13 +219,6 @@ const finalLavaBen = {
                 canvas.height /
                 2
         };
-
-
-        /*
-            Probeer een plek te vinden
-            die niet direct op de speler
-            of boss staat.
-        */
 
         for (
             let attempt = 0;
@@ -462,7 +233,6 @@ const finalLavaBen = {
 
                     Math.max(
                         1,
-
                         canvas.width -
                         margin * 2
                     ),
@@ -474,16 +244,13 @@ const finalLavaBen = {
 
                     Math.max(
                         1,
-
                         canvas.height -
                         margin * 2
                     )
             };
 
-
-            bestPosition =
+            best =
                 candidate;
-
 
             const awayFromPlayer =
                 Math.hypot(
@@ -494,7 +261,6 @@ const finalLavaBen = {
                     player.y
                 ) >= 180;
 
-
             const awayFromBoss =
                 Math.hypot(
                     candidate.x -
@@ -504,7 +270,6 @@ const finalLavaBen = {
                     enemy.y
                 ) >= 150;
 
-
             if (
                 awayFromPlayer &&
                 awayFromBoss
@@ -513,8 +278,7 @@ const finalLavaBen = {
             }
         }
 
-
-        return bestPosition;
+        return best;
     },
 
 
@@ -524,19 +288,16 @@ const finalLavaBen = {
     ) {
         enemy.spawnersCreated++;
 
-
         const world =
             this.getSpawnerWorld(
                 enemy.spawnersCreated
             );
-
 
         const position =
             this.findSpawnerPosition(
                 enemy,
                 api
             );
-
 
         const spawned =
             api.spawnEnemyAt(
@@ -545,15 +306,9 @@ const finalLavaBen = {
                 position.y
             );
 
-
         if (spawned) {
             spawned.spawnWorld =
                 world;
-
-
-            spawned.spawnTimer =
-                1;
-
 
             spawned.enteredArena =
                 true;
@@ -567,29 +322,20 @@ const finalLavaBen = {
         oldHp,
         api
     ) {
-        /*
-            Bestaande rage-fases van
-            Boss 09 blijven werken.
-        */
-
-        lavaBen
-            .onDamage
-            .call(
-                this,
-                enemy,
-                damage,
-                oldHp,
-                api
-            );
-
+        lavaBen.onDamage.call(
+            this,
+            enemy,
+            damage,
+            oldHp,
+            api
+        );
 
         /*
-            while is belangrijk.
+            Iedere 100 verloren HP
+            verschijnt een Spawner.
 
-            Als één kogel bijvoorbeeld
-            250 damage doet, worden alle
-            gepasseerde 100-HP-grenzen
-            alsnog verwerkt.
+            Van 1900 HP tot en met
+            100 HP zijn dit er 19.
         */
 
         while (
@@ -607,7 +353,6 @@ const finalLavaBen = {
                 api
             );
 
-
             enemy.nextSpawnerHp -=
                 100;
         }
@@ -618,60 +363,51 @@ const finalLavaBen = {
         enemy,
         attackIndex
     ) {
-        /*
-            De eerste drie aanvallen
-            gebruikt hij van Boss 09.
-        */
-
-        lavaBen
-            .startAttack
-            .call(
-                this,
-                enemy,
-                attackIndex
-            );
-
+        lavaBen.startAttack.call(
+            this,
+            enemy,
+            attackIndex
+        );
 
         /*
-            Attack 3 is de nieuwe
-            dubbele draaiende lijn.
+            Attack 3 zijn de draaiende
+            lijnen.
+
+            De boss wordt hierbij niet
+            stilgezet en blijft bewegen.
         */
 
         if (
             attackIndex === 3
         ) {
-            enemy.vx = 0;
-
-            enemy.vy = 0;
-
-
             enemy.spiralAngle =
                 Math.random() *
                 Math.PI *
                 2;
+
+            if (
+                Math.hypot(
+                    enemy.vx,
+                    enemy.vy
+                ) < 1
+            ) {
+                this.chooseMovementDirection(
+                    enemy
+                );
+            }
         }
     },
 
 
-    finishAttack(
-        enemy
-    ) {
+    finishAttack(enemy) {
         const finishedAttack =
             enemy.activeAttack;
-
 
         enemy.attackState =
             "break";
 
-
         enemy.attackBreakRemaining =
             this.attackBreakDuration;
-
-
-        /*
-            Vier aanvallen in plaats
-            van drie.
-        */
 
         enemy.nextAttack =
             (
@@ -680,14 +416,11 @@ const finalLavaBen = {
             ) %
             4;
 
-
         enemy.activeAttack =
             -1;
 
-
         enemy.attackElapsed =
             0;
-
 
         if (
             finishedAttack === 1 ||
@@ -709,24 +442,19 @@ const finalLavaBen = {
                 this.energyBallSize
             );
 
-
         const canvas =
             api.getCanvas();
-
 
         const player =
             api.getPlayer();
 
-
         let x = 0;
-
         let y = 0;
 
-
         /*
-            Maximaal 50 pogingen om een plek
-            buiten de veilige radius van de
-            speler te vinden.
+            Zoek een spawnplek buiten
+            de map en buiten de veilige
+            radius van de speler.
         */
 
         for (
@@ -740,14 +468,12 @@ const finalLavaBen = {
                     4
                 );
 
-
             if (
                 edge === 0
             ) {
                 x =
                     -radius -
                     1;
-
 
                 y =
                     Math.random() *
@@ -761,7 +487,6 @@ const finalLavaBen = {
                     radius +
                     1;
 
-
                 y =
                     Math.random() *
                     canvas.height;
@@ -773,7 +498,6 @@ const finalLavaBen = {
                     Math.random() *
                     canvas.width;
 
-
                 y =
                     -radius -
                     1;
@@ -783,20 +507,25 @@ const finalLavaBen = {
                     Math.random() *
                     canvas.width;
 
-
                 y =
                     canvas.height +
                     radius +
                     1;
             }
 
+            const playerRadius =
+                Number(
+                    player.radius
+                ) || 0;
 
             const distanceToPlayer =
                 Math.hypot(
-                    x - player.x,
-                    y - player.y
-                );
+                    x -
+                    player.x,
 
+                    y -
+                    player.y
+                );
 
             if (
                 distanceToPlayer >=
@@ -806,23 +535,28 @@ const finalLavaBen = {
 
                 radius +
 
-                player.radius
+                playerRadius
             ) {
                 break;
             }
         }
 
+        /*
+            Boss 09 bewaart deze ballen
+            in zijn eigen interne array.
+
+            Daarom geven we tijdelijk
+            onze gekozen positie terug.
+        */
 
         const originalRandomSpawnPosition =
             api.randomSpawnPosition;
-
 
         api.randomSpawnPosition =
             () => ({
                 x,
                 y
             });
-
 
         try {
             lavaBen
@@ -839,20 +573,20 @@ const finalLavaBen = {
         }
     },
 
+
     spawnOutgoingEnergyBall(
         enemy,
         api,
         index
     ) {
         /*
-            De uitgespuugde ballen
-            krijgen exact dubbele
-            snelheid.
+            Verlaag tijdelijk de snelheid
+            waarmee Boss 09 de uitgaande
+            bal aanmaakt.
         */
 
         const originalGetEnemySpeed =
             api.getEnemySpeed;
-
 
         api.getEnemySpeed =
             speed =>
@@ -861,7 +595,6 @@ const finalLavaBen = {
                 ) *
                 this
                     .energyBallSpeedMultiplier;
-
 
         try {
             lavaBen
@@ -892,7 +625,6 @@ const finalLavaBen = {
             enemy.attackBreakRemaining -=
                 dt;
 
-
             if (
                 enemy.attackBreakRemaining <=
                 0
@@ -903,10 +635,8 @@ const finalLavaBen = {
                 );
             }
 
-
             return;
         }
-
 
         enemy.attackElapsed =
             Math.min(
@@ -915,7 +645,6 @@ const finalLavaBen = {
                 enemy.attackElapsed +
                 dt
             );
-
 
         if (
             enemy.activeAttack === 0
@@ -950,7 +679,6 @@ const finalLavaBen = {
                 dt;
         }
 
-
         if (
             enemy.attackElapsed >=
             this.attackDuration
@@ -968,39 +696,36 @@ const finalLavaBen = {
         api
     ) {
         /*
-            Boss staat stil tijdens
-            energieballen en tijdens
-            de draaiende lijnen.
+            Alleen tijdens attack 1,
+            de energieballenaanval,
+            blijft de boss stilstaan.
+
+            Tijdens de draaiende lijnen
+            beweegt hij gewoon door.
         */
 
         if (
             enemy.attackState ===
                 "active" &&
 
-            (
-                enemy.activeAttack ===
-                    1 ||
-
-                enemy.activeAttack ===
-                    3
-            )
+            enemy.activeAttack ===
+                1
         ) {
-            enemy.vx = 0;
+            enemy.vx =
+                0;
 
-            enemy.vy = 0;
+            enemy.vy =
+                0;
 
             return;
         }
 
-
-        lavaBen
-            .updateMovement
-            .call(
-                this,
-                enemy,
-                dt,
-                api
-            );
+        lavaBen.updateMovement.call(
+            this,
+            enemy,
+            dt,
+            api
+        );
     },
 
 
@@ -1010,9 +735,8 @@ const finalLavaBen = {
         api
     ) {
         /*
-            ==================================
-            LANDING
-            ==================================
+            Landing aan het begin van
+            level 50.
         */
 
         if (
@@ -1020,7 +744,6 @@ const finalLavaBen = {
         ) {
             enemy.landingTimer -=
                 dt;
-
 
             const progress =
                 Math.max(
@@ -1036,15 +759,12 @@ const finalLavaBen = {
                     )
                 );
 
-
             const eased =
                 progress *
                 progress;
 
-
             enemy.x =
                 enemy.landingTargetX;
-
 
             enemy.y =
                 enemy.landingStartY +
@@ -1056,11 +776,9 @@ const finalLavaBen = {
 
                 eased;
 
-
             enemy.bossAnimation +=
                 dt *
                 4;
-
 
             if (
                 enemy.landingTimer <=
@@ -1069,46 +787,32 @@ const finalLavaBen = {
                 enemy.landing =
                     false;
 
-
                 enemy.x =
                     enemy.landingTargetX;
-
 
                 enemy.y =
                     enemy.landingTargetY;
 
-
                 enemy.collidesWithPlayer =
                     true;
 
-
                 enemy.enteredArena =
                     true;
-
 
                 this.chooseMovementDirection(
                     enemy
                 );
             }
 
-
             return;
         }
 
-
-        /*
-            Alle normale Boss 09-updates
-            blijven actief.
-        */
-
-        lavaBen
-            .update
-            .call(
-                this,
-                enemy,
-                dt,
-                api
-            );
+        lavaBen.update.call(
+            this,
+            enemy,
+            dt,
+            api
+        );
     },
 
 
@@ -1119,27 +823,12 @@ const finalLavaBen = {
         const canvas =
             api.getCanvas();
 
-
-        /*
-            Langer dan de volledige
-            schermdiagonaal.
-
-            Hierdoor bereiken de lijnen
-            altijd de buitenkant.
-        */
-
         const length =
             Math.hypot(
                 canvas.width,
                 canvas.height
             ) *
             1.15;
-
-
-        /*
-            Twee lijnen, exact
-            180 graden uit elkaar.
-        */
 
         return [
             0,
@@ -1150,34 +839,28 @@ const finalLavaBen = {
                     enemy.spiralAngle +
                     offset;
 
-
                 const inner =
                     enemy.radius *
                     0.82;
 
-
                 return {
                     x1:
                         enemy.x +
-
                         Math.cos(angle) *
                         inner,
 
                     y1:
                         enemy.y +
-
                         Math.sin(angle) *
                         inner,
 
                     x2:
                         enemy.x +
-
                         Math.cos(angle) *
                         length,
 
                     y2:
                         enemy.y +
-
                         Math.sin(angle) *
                         length
                 };
@@ -1195,14 +878,11 @@ const finalLavaBen = {
             en scherven van Boss 09.
         */
 
-        lavaBen
-            .beforeUpdate
-            .call(
-                this,
-                dt,
-                api
-            );
-
+        lavaBen.beforeUpdate.call(
+            this,
+            dt,
+            api
+        );
 
         const boss =
             api.getEnemies().find(
@@ -1221,25 +901,21 @@ const finalLavaBen = {
                         3
             );
 
-
         if (!boss) {
             return;
         }
 
-
         const player =
             api.getPlayer();
-
 
         const playerRadius =
             Number(
                 player.radius
             ) || 0;
 
-
         /*
-            Beide lijnen zijn direct
-            dodelijk.
+            Collision voor beide
+            draaiende lijnen.
         */
 
         for (
@@ -1261,7 +937,6 @@ const finalLavaBen = {
                     ray.y2
                 );
 
-
             if (
                 distance <=
 
@@ -1282,18 +957,15 @@ const finalLavaBen = {
         api
     ) {
         /*
-            Waarschuwingen van de oude
-            lavabommen blijven zichtbaar.
+            Lavabomwaarschuwingen van
+            Boss 09 blijven werken.
         */
 
-        lavaBen
-            .drawBelow
-            .call(
-                this,
-                ctx,
-                api
-            );
-
+        lavaBen.drawBelow.call(
+            this,
+            ctx,
+            api
+        );
 
         const boss =
             api.getEnemies().find(
@@ -1304,11 +976,9 @@ const finalLavaBen = {
                     enemy.hp > 0
             );
 
-
         if (!boss) {
             return;
         }
-
 
         /*
             Landingwaarschuwing.
@@ -1331,12 +1001,9 @@ const finalLavaBen = {
                     )
                 );
 
-
             ctx.save();
 
-
             ctx.beginPath();
-
 
             ctx.arc(
                 boss.landingTargetX,
@@ -1353,7 +1020,6 @@ const finalLavaBen = {
                 Math.PI * 2
             );
 
-
             ctx.fillStyle =
                 `rgba(255,35,0,${
                     0.10 +
@@ -1361,9 +1027,7 @@ const finalLavaBen = {
                     0.18
                 })`;
 
-
             ctx.fill();
-
 
             ctx.strokeStyle =
                 `rgba(255,205,65,${
@@ -1372,22 +1036,18 @@ const finalLavaBen = {
                     0.45
                 })`;
 
-
             ctx.lineWidth =
                 7;
-
 
             ctx.setLineDash([
                 14,
                 9
             ]);
 
-
             ctx.stroke();
 
             ctx.restore();
         }
-
 
         if (
             boss.landing ||
@@ -1401,20 +1061,16 @@ const finalLavaBen = {
             return;
         }
 
-
         const rays =
             this.getSpiralRays(
                 boss,
                 api
             );
 
-
         ctx.save();
-
 
         ctx.lineCap =
             "round";
-
 
         for (
             const ray
@@ -1436,26 +1092,20 @@ const finalLavaBen = {
                 ray.y2
             );
 
-
             ctx.strokeStyle =
                 "rgba(75,0,0,0.92)";
-
 
             ctx.lineWidth =
                 this.spiralWidth +
                 12;
 
-
             ctx.shadowBlur =
                 25;
-
 
             ctx.shadowColor =
                 "#ff2100";
 
-
             ctx.stroke();
-
 
             /*
                 Rode kern.
@@ -1464,7 +1114,6 @@ const finalLavaBen = {
             ctx.shadowBlur =
                 12;
 
-
             ctx.beginPath();
 
             ctx.moveTo(
@@ -1477,26 +1126,21 @@ const finalLavaBen = {
                 ray.y2
             );
 
-
             ctx.strokeStyle =
                 "#ff3c08";
-
 
             ctx.lineWidth =
                 this.spiralWidth;
 
-
             ctx.stroke();
 
-
             /*
-                Gele hete middenlijn.
+                Gele middenlijn.
             */
 
             ctx.shadowBlur =
                 0;
 
-
             ctx.beginPath();
 
             ctx.moveTo(
@@ -1509,18 +1153,14 @@ const finalLavaBen = {
                 ray.y2
             );
 
-
             ctx.strokeStyle =
                 "#ffd45b";
-
 
             ctx.lineWidth =
                 4;
 
-
             ctx.stroke();
         }
-
 
         ctx.restore();
     },
@@ -1532,20 +1172,16 @@ const finalLavaBen = {
         api
     ) {
         /*
-            Eerst de volledige tekening
-            van Boss 09, inclusief
-            Ben.png.
+            Volledige Boss 09-tekening,
+            inclusief Ben.png.
         */
 
-        lavaBen
-            .draw
-            .call(
-                this,
-                enemy,
-                ctx,
-                api
-            );
-
+        lavaBen.draw.call(
+            this,
+            enemy,
+            ctx,
+            api
+        );
 
         /*
             Extra rode tint.
@@ -1561,12 +1197,9 @@ const finalLavaBen = {
 
             0.035;
 
-
         ctx.save();
 
-
         ctx.beginPath();
-
 
         ctx.arc(
             enemy.x,
@@ -1576,12 +1209,10 @@ const finalLavaBen = {
             Math.PI * 2
         );
 
-
         ctx.fillStyle =
             `rgba(170,0,0,${
                 pulse
             })`;
-
 
         ctx.fill();
 
@@ -1603,27 +1234,23 @@ const finalLavaBen = {
                     enemy.enteredArena
             );
 
-
         if (!boss) {
             return;
         }
 
-
         const canvas =
             api.getCanvas();
-
 
         const width =
             Math.min(
                 700,
+
                 canvas.width *
                 0.68
             );
 
-
         const height =
             30;
-
 
         const x =
             canvas.width /
@@ -1631,10 +1258,8 @@ const finalLavaBen = {
             width /
             2;
 
-
         const y =
             70;
-
 
         const hpRatio =
             Math.max(
@@ -1648,29 +1273,22 @@ const finalLavaBen = {
                 )
             );
 
-
         ctx.save();
-
 
         ctx.textAlign =
             "center";
 
-
         ctx.textBaseline =
             "middle";
-
 
         ctx.font =
             "bold 27px Arial";
 
-
         ctx.lineWidth =
             6;
 
-
         ctx.strokeStyle =
             "rgba(0,0,0,0.90)";
-
 
         ctx.strokeText(
             "FINAL LAVABEN",
@@ -1678,10 +1296,8 @@ const finalLavaBen = {
             y - 23
         );
 
-
         ctx.fillStyle =
             "#ff7040";
-
 
         ctx.fillText(
             "FINAL LAVABEN",
@@ -1689,10 +1305,8 @@ const finalLavaBen = {
             y - 23
         );
 
-
         ctx.fillStyle =
             "rgba(0,0,0,0.86)";
-
 
         ctx.fillRect(
             x - 5,
@@ -1700,7 +1314,6 @@ const finalLavaBen = {
             width + 10,
             height + 10
         );
-
 
         const healthGradient =
             ctx.createLinearGradient(
@@ -1710,44 +1323,37 @@ const finalLavaBen = {
                 y
             );
 
-
         healthGradient.addColorStop(
             0,
             "#ffbd31"
         );
-
 
         healthGradient.addColorStop(
             0.45,
             "#f04417"
         );
 
-
         healthGradient.addColorStop(
             1,
             "#9d0710"
         );
 
-
         ctx.fillStyle =
             healthGradient;
-
 
         ctx.fillRect(
             x,
             y,
-            width * hpRatio,
+            width *
+            hpRatio,
             height
         );
-
 
         ctx.strokeStyle =
             "#ffffff";
 
-
         ctx.lineWidth =
             2;
-
 
         ctx.strokeRect(
             x,
@@ -1756,14 +1362,11 @@ const finalLavaBen = {
             height
         );
 
-
         ctx.font =
             "bold 15px Arial";
 
-
         ctx.fillStyle =
             "#ffffff";
-
 
         ctx.fillText(
             `${
@@ -1781,7 +1384,6 @@ const finalLavaBen = {
             height /
             2
         );
-
 
         ctx.restore();
     }
