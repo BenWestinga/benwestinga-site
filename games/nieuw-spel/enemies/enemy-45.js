@@ -2,77 +2,132 @@ const deathSequences = [];
 
 
 /*
-    PAS HIER LATER DE ENEMIES EN AANTALLEN AAN.
+    Alle normale bewegende enemies uit wereld 1 t/m 5.
 
-    Iedere Spawner geeft bij deze test:
-    - 10 sandGoon
-    - 1 sandWorm
+    Niet opgenomen:
+    - bosses;
+    - meteor, lavaWave en snowstorm;
+    - lavaGolemite en cinder;
+    - de Spawner zelf.
 */
 
-const DEATH_SPAWNS = Object.freeze([
-    Object.freeze({
-        enemy: "sandGoon",
-        count: 10,
-        preview: "circle",
-        previewRadius: 14
-    }),
+const RANDOM_ENEMIES = Object.freeze([
+    "sandGoon",
+    "bigsandGoon",
+    "sandBomb",
+    "sandShooter",
+    "sandWorm",
+    "sandGuy",
+    "sandBall",
+    "sandguardianWorm",
 
-    Object.freeze({
-        enemy: "sandWorm",
-        count: 1,
-        preview: "worm",
-        previewRadius: 13,
-        previewParts: 4
-    })
+    "grassGoon",
+    "knight",
+    "camoGoon",
+    "shotgunGoon",
+    "snake",
+    "shielder",
+    "snakeQueen",
+    "biggrassGoon",
+
+    "stone",
+    "stoneGoon",
+    "stoneThrower",
+    "insect",
+    "stoneRoller",
+    "stoner",
+    "stoneBurrower",
+
+    "iceGoon",
+    "snowGuy",
+    "snowMan",
+    "snowball",
+    "snowProtector",
+    "snowWorm",
+    "snowHealer",
+    "snowWarrior",
+    "icePuller",
+
+    "lavaGoon",
+    "lavaGolem",
+    "lavaWizard",
+    "plasmaGuy",
+    "lavaBurrower",
+    "emberHealer",
+    "ashPhantom",
+    "cinderSplitter",
+    "fireChainTwins"
 ]);
 
 
 /*
-    Kleuren:
+    Speciale outlines voor enemies
+    die uit meerdere delen bestaan.
 
-    Wereld 1 = geel
-    Wereld 2 = groen
-    Wereld 3 = grijs
-    Wereld 4 = blauw
-    Wereld 5 = rood
+    Alle andere enemies gebruiken
+    automatisch één ronde outline.
 */
 
-const WORLD_STYLES = Object.freeze({
-    1: Object.freeze({
-        main: "#f1c94a",
-        light: "#fff1a0",
-        dark: "#9a6b16",
-        glow: "rgba(255,205,55,0.85)"
+const PREVIEW_CONFIGS = Object.freeze({
+    sandWorm: Object.freeze({
+        preview: "worm",
+        previewRadius: 13,
+        previewParts: 4
     }),
 
-    2: Object.freeze({
-        main: "#55b84a",
-        light: "#caff9d",
-        dark: "#1e682b",
-        glow: "rgba(75,220,70,0.85)"
+    sandguardianWorm: Object.freeze({
+        preview: "worm",
+        previewRadius: 15,
+        previewParts: 5
     }),
 
-    3: Object.freeze({
-        main: "#858b91",
-        light: "#e1e4e7",
-        dark: "#3f4449",
-        glow: "rgba(185,195,205,0.85)"
+    snake: Object.freeze({
+        preview: "worm",
+        previewRadius: 11,
+        previewParts: 5
     }),
 
-    4: Object.freeze({
-        main: "#40aee8",
-        light: "#d7f7ff",
-        dark: "#175b91",
-        glow: "rgba(65,190,255,0.88)"
+    snakeQueen: Object.freeze({
+        preview: "worm",
+        previewRadius: 15,
+        previewParts: 6
     }),
 
-    5: Object.freeze({
-        main: "#e63c22",
-        light: "#ffca58",
-        dark: "#791014",
-        glow: "rgba(255,55,25,0.90)"
+    snowWorm: Object.freeze({
+        preview: "worm",
+        previewRadius: 13,
+        previewParts: 4
+    }),
+
+    fireChainTwins: Object.freeze({
+        preview: "worm",
+        previewRadius: 15,
+        previewParts: 2
     })
 });
+
+
+const DEFAULT_PREVIEW = Object.freeze({
+    preview: "circle",
+    previewRadius: 14,
+    previewParts: 1
+});
+
+
+const SPAWNER_STYLE = Object.freeze({
+    main: "#9b55e8",
+    light: "#f0c9ff",
+    dark: "#42146e",
+    glow: "rgba(178,80,255,0.88)"
+});
+
+
+/*
+    Exact vijf willekeurige enemies
+    per kapotte Spawner.
+*/
+
+const RANDOM_ENEMIES_ON_DEATH = 5;
 
 
 const SHAKE_DURATION = 0.5;
@@ -98,31 +153,12 @@ function clamp(
 ) {
     return Math.max(
         minimum,
+
         Math.min(
             maximum,
             value
         )
     );
-}
-
-
-function getWorld(enemy) {
-    return clamp(
-        Math.round(
-            Number(
-                enemy?.spawnWorld
-            ) || 1
-        ),
-        1,
-        5
-    );
-}
-
-
-function getWorldStyle(enemy) {
-    return WORLD_STYLES[
-        getWorld(enemy)
-    ];
 }
 
 
@@ -152,84 +188,44 @@ function buildSpawnList() {
     const list = [];
 
 
-    for (
-        const group
-        of DEATH_SPAWNS
-    ) {
-        const count =
-            Math.max(
-                0,
-
-                Math.floor(
-                    Number(
-                        group.count
-                    ) || 0
-                )
-            );
-
-
-        for (
-            let index = 0;
-            index < count;
-            index++
-        ) {
-            list.push({
-                enemy:
-                    group.enemy,
-
-                preview:
-                    group.preview ||
-                    "circle",
-
-                previewRadius:
-                    Number(
-                        group.previewRadius
-                    ) || 14,
-
-                previewParts:
-                    Math.max(
-                        1,
-
-                        Math.floor(
-                            Number(
-                                group.previewParts
-                            ) || 1
-                        )
-                    )
-            });
-        }
-    }
-
-
     /*
-        Willekeurige spawnvolgorde.
+        Iedere keuze is los willekeurig.
+
+        Hierdoor kunnen er ook twee
+        dezelfde enemies verschijnen.
     */
 
     for (
-        let index =
-            list.length - 1;
-
-        index > 0;
-
-        index--
+        let index = 0;
+        index < RANDOM_ENEMIES_ON_DEATH;
+        index++
     ) {
-        const otherIndex =
-            Math.floor(
-                Math.random() *
-                (
-                    index +
-                    1
+        const enemy =
+            RANDOM_ENEMIES[
+                Math.floor(
+                    Math.random() *
+                    RANDOM_ENEMIES.length
                 )
-            );
+            ];
 
 
-        [
-            list[index],
-            list[otherIndex]
-        ] = [
-            list[otherIndex],
-            list[index]
-        ];
+        const preview =
+            PREVIEW_CONFIGS[enemy] ||
+            DEFAULT_PREVIEW;
+
+
+        list.push({
+            enemy,
+
+            preview:
+                preview.preview,
+
+            previewRadius:
+                preview.previewRadius,
+
+            previewParts:
+                preview.previewParts
+        });
     }
 
 
@@ -253,7 +249,8 @@ function createSpawnEntries(
     const entries = [];
 
 
-    const margin = 35;
+    const margin =
+        35;
 
 
     for (
@@ -270,9 +267,11 @@ function createSpawnEntries(
 
 
         /*
-            Probeer te voorkomen dat
-            alle spawn-outlines over
-            elkaar heen staan.
+            Kies een willekeurige plek
+            rondom de kapotte Spawner.
+
+            De enemies staan dus niet
+            allemaal exact op dezelfde plek.
         */
 
         for (
@@ -380,12 +379,12 @@ function createSpawnEntries(
                 false,
 
             /*
-                De outlines staan eerst
-                minimaal één seconde.
+                Eerst één seconde de
+                rode outline tonen.
 
-                Daarna verschijnen de
-                enemies verspreid over
-                een halve seconde.
+                Daarna worden de vijf
+                enemies over 0.5 seconde
+                verdeeld gespawned.
             */
 
             spawnAt:
@@ -443,9 +442,9 @@ function spawnEntry(
     /*
         Bewaar welke enemies er al waren.
 
-        Daardoor werkt dit later ook
-        voor custom multi-spawns zoals
-        Fire Chain Twins.
+        Daardoor werkt dit ook met
+        custom spawns zoals Fire Chain
+        Twins, die twee enemies maakt.
     */
 
     const enemiesBeforeSpawn =
@@ -576,11 +575,6 @@ function drawWormPreview(
     ctx.shadowColor =
         "#ff0000";
 
-
-    /*
-        De Sand Worm krijgt vier
-        afzonderlijke rode cirkels.
-    */
 
     for (
         let part = 0;
@@ -751,9 +745,7 @@ function drawDestroyedPortal(
 
 
     const style =
-        WORLD_STYLES[
-            sequence.world
-        ];
+        SPAWNER_STYLE;
 
 
     const radius =
@@ -916,7 +908,7 @@ const spawner = {
 
 
     color:
-        "#f1c94a",
+        "#9b55e8",
 
 
     image:
@@ -925,7 +917,7 @@ const spawner = {
 
     /*
         Iedere levende Spawner healt
-        de boss met 1 HP per seconde.
+        de boss met 2 HP per seconde.
     */
 
     healAmount:
@@ -952,10 +944,6 @@ const spawner = {
 
 
     onSpawn(enemy) {
-        enemy.spawnWorld =
-            getWorld(enemy);
-
-
         enemy.healTimer =
             this.healInterval;
 
@@ -970,9 +958,12 @@ const spawner = {
             0;
 
 
-        enemy.vx = 0;
+        enemy.vx =
+            0;
 
-        enemy.vy = 0;
+
+        enemy.vy =
+            0;
 
 
         enemy.enteredArena =
@@ -989,13 +980,12 @@ const spawner = {
             De Spawner staat stil.
         */
 
-        enemy.vx = 0;
+        enemy.vx =
+            0;
 
-        enemy.vy = 0;
 
-
-        enemy.spawnWorld =
-            getWorld(enemy);
+        enemy.vy =
+            0;
 
 
         enemy.portalAnimation +=
@@ -1019,6 +1009,7 @@ const spawner = {
         if (!boss) {
             enemy.healTimer =
                 this.healInterval;
+
 
             return;
         }
@@ -1060,14 +1051,6 @@ const spawner = {
         enemy,
         api
     ) {
-        /*
-            De echte Spawner wordt door
-            de engine verwijderd.
-
-            Daarom slaan we hier een
-            tijdelijke doodanimatie op.
-        */
-
         deathSequences.push({
             x:
                 enemy.x,
@@ -1077,9 +1060,6 @@ const spawner = {
 
             radius:
                 enemy.radius,
-
-            world:
-                getWorld(enemy),
 
             time:
                 0,
@@ -1117,11 +1097,6 @@ const spawner = {
                 dt;
 
 
-            /*
-                Iedere enemy heeft een
-                eigen spawnmoment.
-            */
-
             for (
                 const entry
                 of sequence.entries
@@ -1140,14 +1115,12 @@ const spawner = {
             }
 
 
-            const finished =
+            if (
                 sequence.entries.every(
                     entry =>
                         entry.spawned
-                );
-
-
-            if (finished) {
+                )
+            ) {
                 deathSequences.splice(
                     index,
                     1
@@ -1158,7 +1131,8 @@ const spawner = {
 
 
     /*
-        Beam achter de enemies tekenen.
+        Teken de healingbeam achter
+        de enemies.
     */
 
     drawBelow(
@@ -1194,9 +1168,7 @@ const spawner = {
 
 
             const style =
-                getWorldStyle(
-                    enemy
-                );
+                SPAWNER_STYLE;
 
 
             const pulse =
@@ -1215,7 +1187,7 @@ const spawner = {
 
 
             /*
-                Dikke donkere buitenbeam.
+                Donkere buitenbeam.
             */
 
             ctx.beginPath();
@@ -1257,7 +1229,7 @@ const spawner = {
 
 
             /*
-                Lichtgevende binnenbeam.
+                Lichte binnenbeam.
             */
 
             ctx.beginPath();
@@ -1373,7 +1345,7 @@ const spawner = {
 
     /*
         Doodanimatie en rode outlines
-        worden boven de enemies getekend.
+        boven de enemies tekenen.
     */
 
     drawGlobal(ctx) {
@@ -1406,9 +1378,7 @@ const spawner = {
         ctx
     ) {
         const style =
-            getWorldStyle(
-                enemy
-            );
+            SPAWNER_STYLE;
 
 
         const radius =
@@ -1433,10 +1403,6 @@ const spawner = {
             enemy.y
         );
 
-
-        /*
-            Buitenste gekleurde portal.
-        */
 
         ctx.beginPath();
 
@@ -1476,7 +1442,7 @@ const spawner = {
 
 
         /*
-            Drie draaiende ringen.
+            Drie draaiende portalringen.
         */
 
         for (
@@ -1539,6 +1505,7 @@ const spawner = {
             ctx.lineWidth =
                 Math.max(
                     3,
+
                     radius *
                     0.10
                 );
@@ -1615,7 +1582,7 @@ const spawner = {
 
 
         /*
-            Wereldnummer.
+            S van Spawner.
         */
 
         ctx.fillStyle =
@@ -1634,6 +1601,7 @@ const spawner = {
             `bold ${
                 Math.max(
                     15,
+
                     radius *
                     0.42
                 )
@@ -1649,18 +1617,14 @@ const spawner = {
 
 
         ctx.strokeText(
-            String(
-                getWorld(enemy)
-            ),
+            "S",
             0,
             1
         );
 
 
         ctx.fillText(
-            String(
-                getWorld(enemy)
-            ),
+            "S",
             0,
             1
         );
@@ -1672,8 +1636,8 @@ const spawner = {
 
 
 export {
-    DEATH_SPAWNS,
-    WORLD_STYLES
+    RANDOM_ENEMIES,
+    PREVIEW_CONFIGS
 };
 
 
